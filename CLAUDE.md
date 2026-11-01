@@ -14,3 +14,5 @@ An evolution game in Godot 4.5 (GDScript), built for Android first and Windows s
 
 - No Godot binary is available in the Claude environment. Run `gdparse` and `gdlint` from `pip install "gdtoolkit==4.*"` for syntax, then rely on CI.
 - CI (`.github/workflows/build.yml`) runs the game headless for 15 game-seconds with `-- --smoke` (2-second generations, mutations auto-picked, the save reloaded once at generation 2) and fails on any `SCRIPT ERROR`, then exports the APK and Windows build. Merges to `main` replace the `playtest` release.
+- Headless runs never draw, so CI also runs `-- --shot` under xvfb with the real renderer (`scripts/screenshot_tour.gd`): gameplay, pause menu, population screen and title. Artifact downloads are blocked from the Claude environment, so each shot is also printed to the job log as `shotb64 <name> <base64 jpeg chunk>` lines; decode them to look at UI changes.
+- Make full-screen controls with `set_anchors_and_offsets_preset`, not `set_anchors_preset` (that left the pause menu zero-sized).
