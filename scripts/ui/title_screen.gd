@@ -15,11 +15,11 @@ var _has_save := false
 func _ready() -> void:
 	var shade := ColorRect.new()
 	shade.color = Color(0.02, 0.08, 0.14)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 
 	var column := VBoxContainer.new()
-	column.set_anchors_preset(Control.PRESET_CENTER)
+	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	column.grow_vertical = Control.GROW_DIRECTION_BOTH
 	column.alignment = BoxContainer.ALIGNMENT_CENTER

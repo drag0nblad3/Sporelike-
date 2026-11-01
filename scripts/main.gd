@@ -28,6 +28,7 @@ func _start_screenshot_tour() -> void:
 	_start({})
 	var tour := ScreenshotTour.new()
 	tour.game = _game
+	tour.title = _title
 	add_child(tour)
 
 

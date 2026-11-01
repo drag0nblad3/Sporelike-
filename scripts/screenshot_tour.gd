@@ -7,6 +7,7 @@ extends Node
 const OUT_DIR := "res://build/shots"
 
 var game: Game
+var title: TitleScreen
 
 
 func _ready() -> void:
@@ -21,6 +22,12 @@ func _run() -> void:
 	game.hud.pause_menu.open()
 	await _shoot("pause")
 	game.hud.pause_menu.close()
+	game.cycle.finish("time")
+	await _shoot("generation")
+	game.visible = false
+	game.hud.visible = false
+	title.open(true)
+	await _shoot("title")
 	print("shot: done")
 	get_tree().quit()
 
