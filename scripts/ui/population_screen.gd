@@ -6,6 +6,7 @@ extends Control
 signal chosen(choice: MutationChoice)
 
 const BAR_WIDTH := 260.0
+const MARGIN := 24.0
 const UP := Color(0.5, 1.0, 0.55)
 const DOWN := Color(1.0, 0.55, 0.45)
 
@@ -22,12 +23,10 @@ func _ready() -> void:
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
 	_box = VBoxContainer.new()
 	_box.add_theme_constant_override("separation", 6)
-	center.add_child(_box)
+	add_child(_box)
+	get_viewport().size_changed.connect(_fit)
 
 
 func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
@@ -63,6 +62,26 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 		button.pressed.connect(func() -> void: _pick(c))
 		row.add_child(button)
 	visible = true
+	# Wait one frame for the layout to settle, then shrink it onto the screen.
+	await get_tree().process_frame
+	_fit()
+
+
+## Scales the content down (never up) so all of it, buttons included, fits
+## inside the visible screen with a margin, and centers it.
+func _fit() -> void:
+	if not visible:
+		return
+	var screen := get_viewport_rect().size
+	_box.reset_size()
+	var content := _box.get_combined_minimum_size()
+	if content.x <= 0.0 or content.y <= 0.0:
+		return
+	var fit_x := (screen.x - MARGIN * 2.0) / content.x
+	var fit_y := (screen.y - MARGIN * 2.0) / content.y
+	var s := minf(1.0, minf(fit_x, fit_y))
+	_box.scale = Vector2(s, s)
+	_box.position = (screen - content * s) / 2.0
 
 
 func _pick(choice: MutationChoice) -> void:
