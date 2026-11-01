@@ -1,0 +1,8 @@
+# Godot cache and import data
+.godot/
+*.import
+# Local build output
+build/
+*.apk
+*.aab
+*.tmp
