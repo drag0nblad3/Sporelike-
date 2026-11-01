@@ -27,12 +27,13 @@ The `ci/debug.keystore` file is a debug-only signing key with the standard publi
 
 | Path | What it is |
 | --- | --- |
-| `scripts/main.gd` | Wires everything together and runs the generation loop |
+| `scripts/main.gd` | Entry point: title screen, then starts or continues a `Game` |
+| `scripts/game.gd` | One play session: wires the world together and runs the generation loop |
 | `scripts/player_director.gd` | The player's current body: spawn, steering, camera, death |
-| `scripts/core/` | `Genome` (eight heritable traits and mutation) and `FoodKind` (the four food types and their zones) |
+| `scripts/core/` | `Genome` (eight heritable traits and mutation), `FoodKind` (the four food types and their zones), `SaveGame` (the save file) |
 | `scripts/creatures/` | `Organism` base class, its visuals, the player, AI species members, predators |
-| `scripts/world/` | Arena zones, food items and field, and the ecosystem that runs eating, hunting and births |
-| `scripts/ui/` | HUD text and the touch joystick |
+| `scripts/world/` | Arena zones, food items and field, the ecosystem that runs eating, hunting and births, and `GameSaver` |
+| `scripts/ui/` | HUD, touch joystick, title screen, pause menu and glossary, population screen |
 | `export_presets.cfg` | Android and Windows export settings |
 
 See `CLAUDE.md` for code conventions.

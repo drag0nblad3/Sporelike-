@@ -1,9 +1,10 @@
 class_name Hud
 extends CanvasLayer
-## On-screen text and the touch joystick. The population screen is added as
-## a child by main.gd.
+## On-screen text, the touch joystick, and the pause button with its menu.
+## The population screen is added as a child by Game.
 
 var joystick: VirtualJoystick
+var pause_menu: PauseMenu
 
 var _status: Label
 var _generation: Label
@@ -32,6 +33,19 @@ func _ready() -> void:
 	_hint = _center_label(-90.0, 28)
 	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
 	_message = _center_label(-200.0, 40)
+
+	var pause := Button.new()
+	pause.text = "II  Help"
+	pause.add_theme_font_size_override("font_size", 26)
+	pause.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	pause.offset_left = -180.0
+	pause.offset_right = -24.0
+	pause.offset_top = 64.0
+	pause.offset_bottom = 124.0
+	add_child(pause)
+	pause_menu = PauseMenu.new()
+	add_child(pause_menu)
+	pause.pressed.connect(pause_menu.open)
 
 
 func _process(delta: float) -> void:
