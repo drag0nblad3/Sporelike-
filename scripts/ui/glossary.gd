@@ -27,8 +27,9 @@ you come close. Rich if you can catch it.
 [b]Motes[/b] (faint blue, plant): in the deep center. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
-are worth up to four times as much energy as small pale ones, but are tougher \
-to crack, harder to spot, or flee faster. Small pale pieces are easy pickings.
+are worth a bit more energy, but are much tougher to crack, harder to spot, \
+and faster and nimbler at dodging. Small pale pieces are slow, sluggish and \
+soft: easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predators that chase the nearest prey they want. \
