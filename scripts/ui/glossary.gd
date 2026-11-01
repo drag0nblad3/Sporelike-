@@ -17,7 +17,9 @@ const TEXT := """[font_size=34][b]How it works[/b][/font_size]
 [b]Toxin[/b]: poison that stings a hunter that bites you. Stung hunters back \
 off for a while and learn to avoid toxic prey.
 [b]Diet[/b]: 0 digests plants best, 1 digests meat best. In between gets less from both.
-[b]Jaw[/b]: bite strength. Food harder than your jaw cannot be eaten at all.
+[b]Jaw[/b]: bite strength. Food a little harder than your jaw can still be \
+chewed through: stay on top of it while it shakes until it breaks open. Bigger \
+bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
 [b]Algae[/b] (green, plant): plentiful in the sunlit outer ring. Easy, low value.
@@ -27,8 +29,9 @@ you come close. Rich if you can catch it.
 [b]Motes[/b] (faint blue, plant): in the deep center. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
-are worth more energy but are tougher to crack, harder to spot, or flee faster. \
-Small pale pieces are easy pickings.
+are worth a bit more energy, but are much tougher to crack, harder to spot, \
+and faster and nimbler at dodging. Small pale pieces are slow, sluggish and \
+soft: easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predators that chase the nearest prey they want. \
@@ -44,6 +47,9 @@ their own. The top-left line shows their average traits.
 changed and what killed it.
 [b]Mutation choice[/b]: pick a trait to push your whole species toward.
 [b]Influence[/b]: the more food you ate this generation, the stronger your choice.
+[b]Multicellular progress[/b]: thriving generations (a big population and \
+plenty of food eaten) move your species toward its next stage, where single \
+cells band together into one body.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """

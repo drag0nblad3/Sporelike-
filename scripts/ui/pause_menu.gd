@@ -37,20 +37,19 @@ func _ready() -> void:
 	buttons.add_child(_button("Resume", close))
 	buttons.add_child(_button("Save and quit", _on_quit))
 
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
-
+	# The label scrolls itself. (A fit_content label inside a ScrollContainer
+	# that starts hidden never got a height, so the text did not show.)
 	_text = RichTextLabel.new()
 	_text.bbcode_enabled = true
-	_text.fit_content = true
-	_text.scroll_active = false
+	_text.scroll_active = true
 	_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_text.add_theme_font_size_override("normal_font_size", 22)
-	_text.add_theme_font_size_override("bold_font_size", 22)
+	_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_text.add_theme_font_size_override("normal_font_size", 24)
+	_text.add_theme_font_size_override("bold_font_size", 24)
+	_text.add_theme_color_override("default_color", Color(0.92, 0.97, 1.0))
+	_text.get_v_scroll_bar().custom_minimum_size.x = 40.0
 	_text.text = Glossary.TEXT
-	scroll.add_child(_text)
+	column.add_child(_text)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -68,6 +67,11 @@ func open() -> void:
 		return
 	get_tree().paused = true
 	visible = true
+
+
+## Height of the glossary text as laid out; CI checks it is not blank.
+func text_height() -> int:
+	return _text.get_content_height()
 
 
 func close() -> void:

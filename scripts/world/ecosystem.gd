@@ -47,11 +47,11 @@ func _ready() -> void:
 		_spawn_predator(_random_point(14.0, arena_radius - 3.0))
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	var prey := prey_list()
 	var movers: Array[Vector2] = []
 	for org in prey:
-		_feed(org)
+		_feed(org, delta)
 		movers.append(org.flat_pos())
 	food.startle_near(movers)
 	_hunt(prey)
@@ -112,10 +112,10 @@ func _spawn_predator(at: Vector2) -> void:
 	predators.append(hunter)
 
 
-func _feed(org: Organism) -> void:
+func _feed(org: Organism, delta: float) -> void:
 	if not org.alive:
 		return
-	var gained := food.consume_near(org)
+	var gained := food.consume_near(org, delta)
 	if gained > 0.0:
 		org.eat(gained)
 

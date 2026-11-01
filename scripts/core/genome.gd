@@ -8,6 +8,8 @@ const MUTATION_CHANCE := 0.4
 const MUTATION_STEP := 0.08
 ## Scales energy burned per second by every trait. Lower = slower starvation.
 const UPKEEP_RATE := 0.75
+## How far food hardness can exceed the jaw and still be chewed through.
+const CHEW_MARGIN := 0.2
 
 ## diet: 0 = eats plants well, 1 = eats animals well. jaw cracks shells.
 var values := {
@@ -106,6 +108,18 @@ func upkeep() -> float:
 ## Whether the jaw is strong enough for food of this hardness.
 func can_crack(hardness: float) -> bool:
 	return value_of("jaw") >= hardness
+
+
+## Seconds of holding still on food this hard before breaking through:
+## 0 if the jaw cracks it at once, INF if it is too far beyond the jaw.
+## Bigger bodies grind through faster.
+func crack_time(hardness: float) -> float:
+	var gap := hardness - value_of("jaw")
+	if gap <= 0.0:
+		return 0.0
+	if gap > CHEW_MARGIN:
+		return INF
+	return (0.5 + gap * 10.0) / (0.7 + value_of("size"))
 
 
 ## Energy gained from food worth `energy`, after digestive efficiency.

@@ -48,6 +48,8 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 
 	_add_label("You ate %d food: your choice counts x%.1f" % [
 		stats.food_eaten, stats.influence()], 22)
+	if stats.progress_text != "":
+		_add_label(stats.progress_text, 22)
 	_add_label("Encourage a mutation in your species:", 24)
 
 	var row := HBoxContainer.new()

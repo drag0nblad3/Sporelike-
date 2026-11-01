@@ -17,6 +17,7 @@ var camera: CameraRig
 var hud: Hud
 var screen: PopulationScreen
 var saver: GameSaver
+var progress := EvolutionProgress.new()
 var rng := RandomNumberGenerator.new()
 ## Set by CI ("-- --smoke"): short generations, mutations picked automatically.
 var smoke_test := false
@@ -70,6 +71,8 @@ func _ready() -> void:
 	saver.ecosystem = ecosystem
 	saver.director = director
 	saver.cycle = cycle
+	saver.progress = progress
+	progress.points = float(_save.get("progress", 0.0))
 	add_child(saver)
 
 	if _save.is_empty():
@@ -106,7 +109,8 @@ func _begin_generation() -> void:
 func _announce() -> void:
 	generation_started.emit(cycle.number)
 	if smoke_test:
-		print("smoke: generation %d started, species %d" % [cycle.number, ecosystem.species.size()])
+		print("smoke: generation %d started, species %d, progress %d" % [
+			cycle.number, ecosystem.species.size(), progress.points])
 
 
 func _on_player_died(cause: String) -> void:
@@ -119,6 +123,7 @@ func _on_player_died(cause: String) -> void:
 
 func _on_generation_ended(stats: GenerationStats) -> void:
 	get_tree().paused = true
+	stats.progress_text = progress.summary(progress.add_generation(stats))
 	var choices := MutationChoice.roll(rng, 3)
 	screen.open(stats, choices)
 	if smoke_test:

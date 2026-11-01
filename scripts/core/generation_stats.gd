@@ -13,6 +13,8 @@ var end_population := 0
 var births := 0
 var deaths := {"eaten": 0, "starved": 0}
 var food_eaten := 0
+## Filled in by Game: how close the species is to its next stage.
+var progress_text := ""
 
 
 ## 0.5x to 2x, growing with how much the player's avatar ate.

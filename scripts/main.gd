@@ -58,3 +58,18 @@ func _on_generation_started(number: int) -> void:
 		_smoke_reloaded = true
 		print("smoke: reloading save")
 		_on_continue.call_deferred()
+	elif smoke_test and number == 3:
+		_check_glossary()
+
+
+## In CI, open the pause menu and fail if the glossary text is blank.
+func _check_glossary() -> void:
+	var menu := _game.hud.pause_menu
+	menu.open()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var height := menu.text_height()
+	print("smoke: glossary height %d" % height)
+	if height < 200:
+		push_error("Glossary text is blank in the pause menu")
+	menu.close()
