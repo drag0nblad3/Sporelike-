@@ -44,7 +44,7 @@ func think(delta: float) -> void:
 ## between neighbouring patches instead of crossing the whole world.
 func _pick_forage_target(me: Vector2) -> void:
 	_forage_timer = FORAGE_GIVE_UP
-	var patches := ecosystem.map.patches.duplicate()
+	var patches := ecosystem.food.patches.duplicate()
 	patches.sort_custom(func(a: FoodPatch, b: FoodPatch) -> bool:
 		return me.distance_to(a.center) < me.distance_to(b.center))
 	var count := mini(FORAGE_CHOICES, patches.size())

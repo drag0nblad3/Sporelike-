@@ -11,8 +11,8 @@ const MAX_POPULATION := 100
 const PREDATOR_COUNT := 7
 const REPRODUCE_AT := 10.0
 
-var arena_radius := 55.0
-var map: BiomeMap
+## Where the player is; new members and hunters appear around it.
+var focus := Vector2.ZERO
 var food: FoodField
 var player: PlayerCell
 var rng := RandomNumberGenerator.new()
@@ -27,16 +27,14 @@ var saved_members: Array = []
 var _founder: Genome
 
 
-func setup(biome_map: BiomeMap, founder: Genome) -> void:
-	map = biome_map
-	arena_radius = biome_map.radius
+func setup(founder: Genome) -> void:
 	_founder = founder
 
 
 func _ready() -> void:
 	rng.randomize()
 	food = FoodField.new()
-	food.setup(map, rng)
+	food.setup(rng)
 	add_child(food)
 	for entry in saved_members:
 		var saved_genome: Genome = entry[0]
@@ -47,7 +45,7 @@ func _ready() -> void:
 		for _i in START_POPULATION:
 			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(2.0, 12.0), 6.0)
 	for _i in PREDATOR_COUNT:
-		_spawn_predator(_random_point(20.0, arena_radius - 3.0))
+		_spawn_predator(_random_point(25.0, 50.0))
 
 
 func _physics_process(delta: float) -> void:
@@ -90,11 +88,17 @@ func start_roster() -> void:
 	roster.reset(genomes)
 
 
-## A random living member to be the player's next body, or null if extinct.
+## The player's next body: a random awake member near the player if any,
+## else any living member, or null if extinct.
 func pick_parent() -> SpeciesCell:
-	if species.is_empty():
+	var awake: Array[SpeciesCell] = []
+	for member in species:
+		if not member.dormant:
+			awake.append(member)
+	var pool := awake if not awake.is_empty() else species
+	if pool.is_empty():
 		return null
-	return species[rng.randi() % species.size()]
+	return pool[rng.randi() % pool.size()]
 
 
 ## Restart the species from one genome after an extinction.
@@ -105,7 +109,7 @@ func reseed(founder: Genome) -> void:
 
 func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:
 	var cell := SpeciesCell.new()
-	cell.setup(g, arena_radius, start_energy)
+	cell.setup(g, start_energy)
 	cell.ecosystem = self
 	cell.position = Vector3(at.x, 0.0, at.y)
 	cell.died.connect(_on_member_died)
@@ -118,7 +122,7 @@ func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:
 
 func _spawn_predator(at: Vector2) -> void:
 	var hunter := Predator.new()
-	hunter.setup(Predator.make_genome(), arena_radius, 1.0)
+	hunter.setup(Predator.make_genome(), 1.0)
 	hunter.ecosystem = self
 	hunter.position = Vector3(at.x, 0.0, at.y)
 	add_child(hunter)
@@ -151,7 +155,7 @@ func _reproduce() -> void:
 		if species.size() >= MAX_POPULATION:
 			return
 		var parent := item as SpeciesCell
-		if parent.alive and parent.energy >= REPRODUCE_AT:
+		if parent.alive and not parent.dormant and parent.energy >= REPRODUCE_AT:
 			parent.energy *= 0.5
 			var offset := Vector2.from_angle(rng.randf() * TAU) * parent.radius() * 2.0
 			spawn_member(parent.genome.mutated(rng), parent.flat_pos() + offset, parent.energy)
@@ -162,7 +166,7 @@ func _reproduce() -> void:
 func prey_list() -> Array[Organism]:
 	var list: Array[Organism] = []
 	for member in species:
-		if member.alive:
+		if member.alive and not member.dormant:
 			list.append(member)
 	if is_instance_valid(player) and player.alive:
 		list.append(player)
@@ -170,7 +174,7 @@ func prey_list() -> Array[Organism]:
 
 
 func _random_point(min_dist: float, max_dist: float) -> Vector2:
-	return Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(min_dist, max_dist)
+	return focus + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(min_dist, max_dist)
 
 
 func _on_member_died(org: Organism, cause: String) -> void:

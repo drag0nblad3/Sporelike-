@@ -32,7 +32,7 @@ The `ci/debug.keystore` file is a debug-only signing key with the standard publi
 | `scripts/player_director.gd` | The player's current body: spawn, steering, camera, death |
 | `scripts/core/` | `Genome` (eight heritable traits and mutation), `FoodKind` (the four food types and their patches), `SaveGame` (the save file) |
 | `scripts/creatures/` | `Organism` base class, its visuals, the player, AI species members, predators |
-| `scripts/world/` | Arena floor, the `BiomeMap` of food patches, food items, field and grid, the ecosystem that runs eating, hunting and births, and `GameSaver` |
+| `scripts/world/` | Endless chunked sea floor (`ChunkStreamer`, `ChunkGenerator`, `WorldChunk`), blob-shaped food patches, food items, field and grid, the ecosystem that runs eating, hunting and births, and `GameSaver` |
 | `scripts/ui/` | HUD, touch joystick, title screen, pause menu and glossary, population screen |
 | `export_presets.cfg` | Android and Windows export settings |
 

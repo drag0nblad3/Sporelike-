@@ -22,13 +22,15 @@ chewed through: stay on top of it while it shakes until it breaks open. Bigger \
 bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
-Food grows in patches scattered around the world, each with its own floor colour.
-[b]Algae[/b] (green, plant): big teal meadows, one where your species starts. \
+The sea goes on forever in every direction, and food grows in blob-shaped \
+patches on the floor. Regions shade from algae meadows to open water to dark \
+trenches, with vents deep in the trenches.
+[b]Algae[/b] (green, plant): teal meadows, one where your species starts. \
 Easy, low value.
-[b]Plankton[/b] (yellow, meat): clouds over blue open water. Drifts and darts \
-away when you come close. Rich if you can catch it.
-[b]Shells[/b] (purple, meat): small beds around glowing orange vents. Very \
-rich, but need a strong jaw.
+[b]Plankton[/b] (yellow, meat): clouds over blue open water, often at a \
+meadow's edge. Drifts and darts away when you come close. Rich if caught.
+[b]Shells[/b] (purple, meat): beds on glowing orange vents, often beside \
+trenches. Very rich, but need a strong jaw.
 [b]Motes[/b] (faint blue, plant): dark trenches. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
@@ -44,7 +46,8 @@ Armor and toxin both make them think twice.
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
 the timer runs out or you die.
 [b]Species[/b]: the other cells of your kind. They eat, breed and die on \
-their own, and roam between nearby patches when food runs out. The \
+their own, and roam between nearby patches when food runs out. Cells left \
+far behind you sleep until you come back. The \
 top-left line shows their average traits: a description of \
 everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.

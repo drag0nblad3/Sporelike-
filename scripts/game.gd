@@ -7,7 +7,6 @@ extends Node3D
 signal quit_to_title
 signal generation_started(number: int)
 
-const ARENA_RADIUS := 55.0
 const DEATH_PAUSE := 1.5
 
 var ecosystem: Ecosystem
@@ -17,6 +16,7 @@ var camera: CameraRig
 var hud: Hud
 var screen: PopulationScreen
 var saver: GameSaver
+var streamer: ChunkStreamer
 var progress := EvolutionProgress.new()
 var rng := RandomNumberGenerator.new()
 ## Set by CI ("-- --smoke"): short generations, mutations picked automatically.
@@ -34,8 +34,7 @@ func setup(save: Dictionary, smoke: bool) -> void:
 func _ready() -> void:
 	rng.randomize()
 	var world_seed := int(_save.get("world_seed", randi()))
-	var map := BiomeMap.generate(world_seed, ARENA_RADIUS, FoodKind.all())
-	add_child(Arena.new(map))
+	add_child(Arena.new())
 	camera = CameraRig.new()
 	add_child(camera)
 	hud = Hud.new()
@@ -47,11 +46,15 @@ func _ready() -> void:
 
 	var founder := Genome.new()
 	ecosystem = Ecosystem.new()
-	ecosystem.setup(map, founder)
+	ecosystem.setup(founder)
+	if not _save.is_empty():
+		var you_at: Vector2 = GameSaver.player_from(_save)[1]
+		ecosystem.focus = you_at
 	ecosystem.saved_members = GameSaver.members_from(_save)
 	ecosystem.births = int(_save.get("births", 0))
 	ecosystem.species_changed.connect(_refresh_species)
 	add_child(ecosystem)
+	_add_world(world_seed)
 
 	cycle = GenerationCycle.new()
 	cycle.ecosystem = ecosystem
@@ -64,7 +67,6 @@ func _ready() -> void:
 	director.ecosystem = ecosystem
 	director.camera = camera
 	director.hud = hud
-	director.arena_radius = ARENA_RADIUS
 	director.died.connect(_on_player_died)
 	director.ate.connect(cycle.record_food)
 	add_child(director)
@@ -87,7 +89,26 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	if director.is_alive():
+		ecosystem.focus = director.player.flat_pos()
+	streamer.update(ecosystem.focus)
 	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.food_eaten)
+
+
+## The endless sea floor: chunks load around the player and bring their
+## food patches with them; far-off members sleep until the player returns.
+func _add_world(world_seed: int) -> void:
+	streamer = ChunkStreamer.new(world_seed)
+	streamer.chunk_loaded.connect(func(c: WorldChunk) -> void:
+		ecosystem.food.add_patches(c.patches))
+	streamer.chunk_unloaded.connect(func(c: WorldChunk) -> void:
+		ecosystem.food.remove_patches(c.patches))
+	add_child(streamer)
+	streamer.update(ecosystem.focus)
+	var zone := ActivityZone.new()
+	zone.ecosystem = ecosystem
+	zone.streamer = streamer
+	add_child(zone)
 
 
 func _resume() -> void:

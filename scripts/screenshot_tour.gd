@@ -19,6 +19,15 @@ func _ready() -> void:
 func _run() -> void:
 	await get_tree().create_timer(1.5).timeout
 	await _shoot("play")
+	game.camera.zoom = 6.0
+	await get_tree().create_timer(1.5).timeout
+	await _shoot("map")
+	# Swim far away instantly to check that new chunks load there.
+	game.director.player.position = Vector3(130.0, 0.0, -90.0)
+	await get_tree().create_timer(1.5).timeout
+	await _shoot("far")
+	game.camera.zoom = 1.0
+	await get_tree().create_timer(1.0).timeout
 	game.hud.pause_menu.open()
 	await _shoot("pause")
 	game.hud.pause_menu.close()

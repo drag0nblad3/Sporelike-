@@ -1,50 +1,61 @@
 class_name FoodField
 extends Node3D
-## All food in the world, of every FoodKind. Each kind regrows in its own
-## patches (from the BiomeMap) at its own pace, so a big population runs
-## short and has to compete. A FoodGrid keeps lookups local.
+## All food in the loaded part of the world. Each FoodPatch regrows its own
+## pieces at its kind's pace, so a big population runs short and has to
+## compete. Patches arrive and leave with their chunks. A FoodGrid keeps
+## lookups local.
 
 const STARTLE_RANGE := 2.5
 ## Organisms are never bigger than this, so it bounds the eating reach.
 const MAX_REACH := 2.5
 
-var map: BiomeMap
 var rng: RandomNumberGenerator
-var kinds: Array[FoodKind] = []
+var patches: Array[FoodPatch] = []
 
 var _meshes := {}
 var _materials := {}
-var _counts := {}
-var _timers := {}
-var _patches := {}
 var _grid := FoodGrid.new()
 
 
-func setup(biome_map: BiomeMap, random: RandomNumberGenerator) -> void:
-	map = biome_map
+func setup(random: RandomNumberGenerator) -> void:
 	rng = random
 
 
 func _ready() -> void:
-	kinds = FoodKind.all()
-	for kind in kinds:
+	for kind in FoodKind.all():
 		_meshes[kind.id] = FoodLook.mesh_for(kind)
 		for tier in FoodItem.TIERS:
 			_materials["%s%d" % [kind.id, tier]] = FoodLook.material_for(kind, tier)
-		_counts[kind.id] = 0
-		_timers[kind.id] = 0.0
-		_patches[kind.id] = map.patches_for(kind.id)
-		for _i in kind.target_count:
-			_spawn(kind)
-	refresh()
 
 
 func _process(delta: float) -> void:
-	for kind in kinds:
-		_timers[kind.id] -= delta
-		if _timers[kind.id] <= 0.0 and _counts[kind.id] < kind.target_count:
-			_timers[kind.id] = kind.regrow_interval
-			_spawn(kind)
+	for patch in patches:
+		if patch.count >= patch.target:
+			continue
+		patch.regrow_timer -= delta
+		if patch.regrow_timer <= 0.0:
+			patch.regrow_timer = patch.kind.regrow_interval
+			_spawn(patch)
+
+
+## Starts growing food in these patches, fully stocked.
+func add_patches(new_patches: Array[FoodPatch]) -> void:
+	for patch in new_patches:
+		patches.append(patch)
+		for _i in patch.target - patch.count:
+			_spawn(patch)
+	refresh()
+
+
+## Removes these patches and every piece of food in them.
+func remove_patches(old_patches: Array[FoodPatch]) -> void:
+	for patch in old_patches:
+		patches.erase(patch)
+	for child in get_children():
+		var item := child as FoodItem
+		if item.home in old_patches:
+			item.queue_free()
+	refresh()
 
 
 ## Re-buckets all food. The ecosystem calls this once per physics frame.
@@ -95,16 +106,13 @@ func consume_near(org: Organism, delta: float) -> float:
 		if crack == INF or (crack > 0.0 and not item.chew_for(delta, crack)):
 			continue
 		gained += org.genome.digest(item.energy, item.kind.is_plant)
-		_counts[item.kind.id] -= 1
+		item.home.count -= 1
 		item.queue_free()
 	return gained
 
 
-func _spawn(kind: FoodKind) -> void:
-	var patches: Array[FoodPatch] = _patches[kind.id]
-	if patches.is_empty():
-		return
-	var patch := patches[rng.randi() % patches.size()]
+func _spawn(patch: FoodPatch) -> void:
+	var kind := patch.kind
 	var item := FoodItem.new()
 	item.roll(kind, rng)
 	item.home = patch
@@ -113,4 +121,4 @@ func _spawn(kind: FoodKind) -> void:
 	var p := patch.random_point(rng)
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)
-	_counts[kind.id] += 1
+	patch.count += 1

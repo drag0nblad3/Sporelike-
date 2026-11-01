@@ -12,8 +12,9 @@ var genome: Genome
 var energy := 6.0
 var move_input := Vector2.ZERO
 var velocity := Vector3.ZERO
-var arena_radius := 30.0
 var alive := true
+## Far from the player, in an unloaded chunk: frozen in place until it loads.
+var dormant := false
 ## Multiplier on genome upkeep; predators set it to 0.
 var upkeep_scale := 1.0
 
@@ -21,9 +22,8 @@ var _wander_dir := Vector2.ZERO
 var _wander_timer := 0.0
 
 
-func setup(g: Genome, arena: float, start_energy: float) -> void:
+func setup(g: Genome, start_energy: float) -> void:
 	genome = g
-	arena_radius = arena
 	energy = start_energy
 
 
@@ -44,6 +44,14 @@ func tint() -> Color:
 
 func flat_pos() -> Vector2:
 	return Vector2(position.x, position.z)
+
+
+func set_dormant(value: bool) -> void:
+	if value == dormant:
+		return
+	dormant = value
+	process_mode = Node.PROCESS_MODE_DISABLED if value else Node.PROCESS_MODE_INHERIT
+	visible = not value
 
 
 ## Override in subclasses.
@@ -80,8 +88,6 @@ func wander_input(delta: float) -> Vector2:
 	if _wander_timer <= 0.0:
 		_wander_timer = randf_range(1.0, 3.0)
 		_wander_dir = Vector2.from_angle(randf() * TAU) * 0.5
-	if flat_pos().length() > arena_radius * 0.85:
-		_wander_dir = -flat_pos().normalized() * 0.5
 	return _wander_dir
 
 
@@ -94,14 +100,6 @@ func _move(delta: float) -> void:
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
-
-	var flat := flat_pos()
-	var limit := arena_radius - radius()
-	if flat.length() > limit:
-		flat = flat.normalized() * limit
-		position.x = flat.x
-		position.z = flat.y
-		velocity *= 0.5
 
 	if velocity.length() > 0.1:
 		var target := atan2(velocity.x, velocity.z)

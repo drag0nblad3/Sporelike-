@@ -9,7 +9,6 @@ signal ate
 var ecosystem: Ecosystem
 var camera: CameraRig
 var hud: Hud
-var arena_radius := 30.0
 var player: PlayerCell
 var genome := Genome.new()
 
@@ -23,7 +22,7 @@ func is_alive() -> bool:
 func spawn(g: Genome, at: Vector2) -> void:
 	genome = g
 	player = PlayerCell.new()
-	player.setup(g, arena_radius, 8.0)
+	player.setup(g, 8.0)
 	player.position = Vector3(at.x, 0.0, at.y)
 	player.died.connect(_on_player_died)
 	player.ate.connect(_on_player_ate)
