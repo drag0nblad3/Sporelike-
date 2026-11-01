@@ -28,9 +28,9 @@ The `ci/debug.keystore` file is a debug-only signing key with the standard publi
 | Path | What it is |
 | --- | --- |
 | `scripts/main.gd` | Wires the arena, ecosystem, player, camera and HUD together |
-| `scripts/core/genome.gd` | Heritable traits (size, speed, sense, armor) and mutation |
+| `scripts/core/` | `Genome` (eight heritable traits and mutation) and `FoodKind` (the four food types and their zones) |
 | `scripts/creatures/` | `Organism` base class, its visuals, the player, AI species members, predators |
-| `scripts/world/` | Arena, food field, and the ecosystem that runs eating, hunting and births |
+| `scripts/world/` | Arena zones, food items and field, and the ecosystem that runs eating, hunting and births |
 | `scripts/ui/` | HUD text and the touch joystick |
 | `export_presets.cfg` | Android and Windows export settings |
 

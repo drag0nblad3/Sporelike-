@@ -39,6 +39,12 @@ func _ready() -> void:
 	ocean_floor.position.y = -1.5
 	add_child(ocean_floor)
 
+	# Zones on the floor: sunlit shallows outside, deep water inside,
+	# warm vents in the middle. FoodKind zones match these radii.
+	_floor_disc(radius - 0.5, Color(0.12, 0.38, 0.4), 0.0, -1.38)
+	_floor_disc(13.0, Color(0.03, 0.1, 0.16), 0.0, -1.37)
+	_floor_disc(6.0, Color(0.45, 0.18, 0.08), 0.6, -1.36)
+
 	var rim_mesh := TorusMesh.new()
 	rim_mesh.inner_radius = radius - 0.25
 	rim_mesh.outer_radius = radius + 0.25
@@ -52,3 +58,21 @@ func _ready() -> void:
 	rim.material_override = rim_mat
 	rim.position.y = -1.3
 	add_child(rim)
+
+
+func _floor_disc(r: float, color: Color, glow: float, y: float) -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = r
+	mesh.bottom_radius = r
+	mesh.height = 0.02
+	mesh.radial_segments = 64
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	if glow > 0.0:
+		mat.emission_enabled = true
+		mat.emission = color * glow
+	var disc := MeshInstance3D.new()
+	disc.mesh = mesh
+	disc.material_override = mat
+	disc.position.y = y
+	add_child(disc)

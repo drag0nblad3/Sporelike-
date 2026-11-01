@@ -17,12 +17,12 @@ func _ready() -> void:
 	add_child(joystick)
 
 	_status = _corner_label(Vector2(24, 18), 30)
-	_species = _corner_label(Vector2(24, 60), 22)
-	_debug = _corner_label(Vector2(24, 92), 18)
+	_species = _corner_label(Vector2(24, 58), 20)
+	_debug = _corner_label(Vector2(24, 122), 18)
 	_debug.modulate = Color(1, 1, 1, 0.5)
 
 	_hint = _center_label(-90.0, 28)
-	_hint.text = "Drag on the left side to swim. Eat green food. Avoid the red hunters."
+	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
 	_message = _center_label(-200.0, 40)
 
 
@@ -37,9 +37,10 @@ func show_status(energy: float, max_energy: float, eaten: int) -> void:
 
 
 func show_species(population: int, births: int, averages: Dictionary) -> void:
-	_species.text = "Species %d  (births %d)   size %.2f  speed %.2f  sense %.2f  armor %.2f" % [
-		population, births, averages["size"], averages["speed"],
-		averages["sense"], averages["armor"]]
+	var parts := PackedStringArray()
+	for t in Genome.TRAITS:
+		parts.append("%s %.2f" % [t, averages[t]])
+	_species.text = "Species %d (births %d)\n%s" % [population, births, "  ".join(parts)]
 
 
 func set_hint_visible(visible_now: bool) -> void:

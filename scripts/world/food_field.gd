@@ -1,20 +1,18 @@
 class_name FoodField
 extends Node3D
-## Glowing food particles scattered over the arena. Eaten food regrows
-## slowly, so a big population runs short and has to compete.
+## All food in the arena, of every FoodKind. Each kind regrows in its own
+## zone at its own pace, so a big population runs short and has to compete.
 
-const TARGET_COUNT := 60
-const REGROW_INTERVAL := 0.3
-const FOOD_RADIUS := 0.22
-const ENERGY_PER_FOOD := 2.5
+const STARTLE_RANGE := 2.5
 
 var arena_radius := 30.0
 var rng: RandomNumberGenerator
+var kinds: Array[FoodKind] = []
 
-var _mesh: SphereMesh
-var _material: StandardMaterial3D
-var _regrow_timer := 0.0
-var _time := 0.0
+var _meshes := {}
+var _materials := {}
+var _counts := {}
+var _timers := {}
 
 
 func setup(arena: float, random: RandomNumberGenerator) -> void:
@@ -23,64 +21,85 @@ func setup(arena: float, random: RandomNumberGenerator) -> void:
 
 
 func _ready() -> void:
-	_mesh = SphereMesh.new()
-	_mesh.radius = FOOD_RADIUS
-	_mesh.height = FOOD_RADIUS * 2.0
-	_mesh.radial_segments = 12
-	_mesh.rings = 6
-	_material = StandardMaterial3D.new()
-	_material.albedo_color = Color(0.5, 1.0, 0.45)
-	_material.emission_enabled = true
-	_material.emission = Color(0.3, 0.9, 0.3)
-	_material.emission_energy_multiplier = 1.5
-	for _i in TARGET_COUNT:
-		_spawn()
+	kinds = FoodKind.all()
+	for kind in kinds:
+		_meshes[kind.id] = FoodLook.mesh_for(kind)
+		_materials[kind.id] = FoodLook.material_for(kind)
+		_counts[kind.id] = 0
+		_timers[kind.id] = 0.0
+		for _i in kind.target_count:
+			_spawn(kind)
 
 
 func _process(delta: float) -> void:
-	_time += delta
+	for kind in kinds:
+		_timers[kind.id] -= delta
+		if _timers[kind.id] <= 0.0 and _counts[kind.id] < kind.target_count:
+			_timers[kind.id] = kind.regrow_interval
+			_spawn(kind)
+
+
+## Darting food flees from any of these positions that come close.
+func startle_near(threats: Array[Vector2]) -> void:
 	for child in get_children():
-		var f := child as Node3D
-		f.position.y = 0.15 * sin(_time * 2.0 + f.position.x)
-	_regrow_timer -= delta
-	if _regrow_timer <= 0.0 and get_child_count() < TARGET_COUNT:
-		_regrow_timer = REGROW_INTERVAL
-		_spawn()
+		var item := child as FoodItem
+		if item.kind.flee_speed <= 0.0:
+			continue
+		for t in threats:
+			if item.flat_pos().distance_squared_to(t) < STARTLE_RANGE * STARTLE_RANGE:
+				item.startle(t)
+				break
 
 
-## Closest uneaten food within max_range, or null.
-func nearest(pos: Vector2, max_range: float) -> Node3D:
-	var best: Node3D = null
-	var best_d := max_range * max_range
+## The most worthwhile food this organism can notice and digest, or null.
+func best_for(org: Organism) -> FoodItem:
+	var best: FoodItem = null
+	var best_score := 0.0
+	var me := org.flat_pos()
 	for child in get_children():
 		if child.is_queued_for_deletion():
 			continue
-		var f := child as Node3D
-		var d := pos.distance_squared_to(Vector2(f.position.x, f.position.z))
-		if d < best_d:
-			best_d = d
-			best = f
+		var item := child as FoodItem
+		if not org.genome.can_eat(item.kind):
+			continue
+		var d := me.distance_to(item.flat_pos())
+		if d > org.genome.detect_range(item.kind):
+			continue
+		var score := org.genome.food_value(item.kind) / (d + 1.0)
+		if score > best_score:
+			best_score = score
+			best = item
 	return best
 
 
-## Removes all food within reach of pos and returns how many were eaten.
-func consume_near(pos: Vector2, reach: float) -> int:
-	var eaten := 0
+## Eats everything edible within reach. Returns the energy gained.
+func consume_near(org: Organism) -> float:
+	var gained := 0.0
+	var me := org.flat_pos()
 	for child in get_children():
 		if child.is_queued_for_deletion():
 			continue
-		var f := child as Node3D
-		if pos.distance_squared_to(Vector2(f.position.x, f.position.z)) < reach * reach:
-			f.queue_free()
-			eaten += 1
-	return eaten
+		var item := child as FoodItem
+		var reach := org.radius() + item.kind.size
+		if me.distance_squared_to(item.flat_pos()) > reach * reach:
+			continue
+		if not org.genome.can_eat(item.kind):
+			continue
+		gained += org.genome.food_value(item.kind)
+		_counts[item.kind.id] -= 1
+		item.queue_free()
+	return gained
 
 
-func _spawn() -> void:
-	var food := MeshInstance3D.new()
-	food.mesh = _mesh
-	food.material_override = _material
-	var angle := rng.randf_range(0.0, TAU)
-	var dist := sqrt(rng.randf()) * (arena_radius - 1.0)
-	food.position = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
-	add_child(food)
+func _spawn(kind: FoodKind) -> void:
+	var item := FoodItem.new()
+	item.kind = kind
+	item.arena_radius = arena_radius
+	item.mesh = _meshes[kind.id]
+	item.material_override = _materials[kind.id]
+	var outer := minf(kind.zone_max, arena_radius - 1.0)
+	var dist := sqrt(rng.randf_range(kind.zone_min * kind.zone_min, outer * outer))
+	var p := Vector2.from_angle(rng.randf() * TAU) * dist
+	item.position = Vector3(p.x, 0.0, p.y)
+	add_child(item)
+	_counts[kind.id] += 1
