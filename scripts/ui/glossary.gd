@@ -41,7 +41,8 @@ Armor and toxin both make them think twice.
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
 the timer runs out or you die.
 [b]Species[/b]: the other cells of your kind. They eat, breed and die on \
-their own. The top-left line shows their average traits.
+their own. The top-left line shows their average traits: a description of \
+everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.

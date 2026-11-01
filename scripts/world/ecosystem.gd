@@ -18,6 +18,7 @@ var rng := RandomNumberGenerator.new()
 var species: Array[SpeciesCell] = []
 var predators: Array[Predator] = []
 var births := 0
+var roster := SpeciesRoster.new()
 ## Members to restore from a save as [Genome, Vector2, energy]; set before
 ## the ecosystem enters the tree. Empty means start fresh from the founder.
 var saved_members: Array = []
@@ -70,12 +71,20 @@ func nearest_predator(pos: Vector2, max_range: float) -> Predator:
 	return best
 
 
-## Average of each trait across the AI species members.
+## Average of each trait across everyone in the species this generation,
+## including members who have since died.
 func trait_averages() -> Dictionary:
+	return roster.averages()
+
+
+## Called as each generation begins: the roster restarts from the living.
+func start_roster() -> void:
 	var genomes: Array[Genome] = []
 	for member in species:
 		genomes.append(member.genome)
-	return Genome.average(genomes)
+	if is_instance_valid(player):
+		genomes.append(player.genome)
+	roster.reset(genomes)
 
 
 ## A random living member to be the player's next body, or null if extinct.
@@ -99,6 +108,7 @@ func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:
 	cell.died.connect(_on_member_died)
 	add_child(cell)
 	species.append(cell)
+	roster.add(g)
 	species_changed.emit()
 	return cell
 

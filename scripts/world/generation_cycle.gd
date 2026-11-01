@@ -32,6 +32,7 @@ func begin() -> void:
 	number += 1
 	stats = GenerationStats.new()
 	stats.number = number
+	ecosystem.start_roster()
 	stats.start_averages = ecosystem.trait_averages()
 	stats.start_population = ecosystem.species.size()
 	_births_at_start = ecosystem.births
