@@ -28,11 +28,11 @@ func _ready() -> void:
 func roll(food_kind: FoodKind, rng: RandomNumberGenerator) -> void:
 	kind = food_kind
 	grade = rng.randf()
-	energy = kind.energy * lerpf(0.7, 1.5, grade)
+	energy = kind.energy * lerpf(0.35, 1.5, grade)
 	hardness = lerpf(kind.hardness_min, kind.hardness_max, grade)
 	visibility = minf(kind.visibility * lerpf(1.3, 0.7, grade), 1.0)
 	flee_speed = kind.flee_speed * lerpf(0.6, 1.4, grade)
-	scale = Vector3.ONE * lerpf(0.8, 1.35, grade)
+	scale = Vector3.ONE * lerpf(0.65, 1.35, grade)
 
 
 ## 0, 1 or 2: which colour tier to draw this piece with.

@@ -7,6 +7,7 @@ extends Node
 var ecosystem: Ecosystem
 var director: PlayerDirector
 var cycle: GenerationCycle
+var progress: EvolutionProgress
 
 
 func _notification(what: int) -> void:
@@ -31,6 +32,7 @@ func save_now() -> void:
 		"generation": cycle.number,
 		"time_left": cycle.time_left,
 		"births": ecosystem.births,
+		"progress": progress.points,
 		"player": you,
 		"species": members,
 	})

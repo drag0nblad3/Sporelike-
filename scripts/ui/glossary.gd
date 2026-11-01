@@ -27,8 +27,8 @@ you come close. Rich if you can catch it.
 [b]Motes[/b] (faint blue, plant): in the deep center. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
-are worth more energy but are tougher to crack, harder to spot, or flee faster. \
-Small pale pieces are easy pickings.
+are worth up to four times as much energy as small pale ones, but are tougher \
+to crack, harder to spot, or flee faster. Small pale pieces are easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predators that chase the nearest prey they want. \
@@ -44,6 +44,9 @@ their own. The top-left line shows their average traits.
 changed and what killed it.
 [b]Mutation choice[/b]: pick a trait to push your whole species toward.
 [b]Influence[/b]: the more food you ate this generation, the stronger your choice.
+[b]Multicellular progress[/b]: thriving generations (a big population and \
+plenty of food eaten) move your species toward its next stage, where single \
+cells band together into one body.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """
