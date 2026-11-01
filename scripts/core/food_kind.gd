@@ -39,7 +39,7 @@ static func all() -> Array[FoodKind]:
 	plankton.drift_speed = 1.2
 	plankton.flee_speed = 5.5
 	plankton.hardness_max = 0.1
-	_patches(plankton, 6.0, 10.0, Color(0.1, 0.25, 0.35))
+	_patches(plankton, 6.0, 10.0, Color(0.14, 0.34, 0.52))
 
 	# Shells: beds around warm vents. Very rich, needs a strong jaw.
 	var shells := _make("shells", Color(0.75, 0.45, 1.0), 5.0, false, 0.2, 1.8)
