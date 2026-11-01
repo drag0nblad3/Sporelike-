@@ -12,16 +12,16 @@ var _text: RichTextLabel
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	visible = false
 
 	var shade := ColorRect.new()
 	shade.color = Color(0.0, 0.03, 0.06, 0.9)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 
 	var frame := MarginContainer.new()
-	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		frame.add_theme_constant_override("margin_" + side, MARGIN)
 	add_child(frame)
@@ -66,6 +66,10 @@ func open() -> void:
 	if visible or get_tree().paused:
 		return
 	get_tree().paused = true
+	# Fill the screen explicitly: anchors alone left this menu zero-sized
+	# on device, which hid the shade and squashed the text to nothing.
+	position = Vector2.ZERO
+	size = get_viewport_rect().size
 	visible = true
 
 

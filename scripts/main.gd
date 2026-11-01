@@ -18,8 +18,18 @@ func _ready() -> void:
 	if smoke_test:
 		SaveGame.delete()
 		_on_new_game.call_deferred()
+	elif "--shot" in OS.get_cmdline_user_args():
+		_start_screenshot_tour.call_deferred()
 	else:
 		_title.open(SaveGame.exists())
+
+
+func _start_screenshot_tour() -> void:
+	_start({})
+	var tour := ScreenshotTour.new()
+	tour.game = _game
+	tour.title = _title
+	add_child(tour)
 
 
 func _on_new_game() -> void:
