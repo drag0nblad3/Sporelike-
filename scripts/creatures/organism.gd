@@ -6,24 +6,27 @@ extends Node3D
 signal died(organism: Organism, cause: String)
 signal ate(amount: float)
 
-const MAX_ENERGY := 12.0
 
 var genome: Genome
 var energy := 6.0
 var move_input := Vector2.ZERO
 var velocity := Vector3.ZERO
-var arena_radius := 30.0
 var alive := true
+## Far from the player, in an unloaded chunk: frozen in place until it loads.
+var dormant := false
 ## Multiplier on genome upkeep; predators set it to 0.
 var upkeep_scale := 1.0
+
+## Seconds left on a jet boost, and until the next one is ready.
+var boost_time := 0.0
+var boost_cooldown := 0.0
 
 var _wander_dir := Vector2.ZERO
 var _wander_timer := 0.0
 
 
-func setup(g: Genome, arena: float, start_energy: float) -> void:
+func setup(g: Genome, start_energy: float) -> void:
 	genome = g
-	arena_radius = arena
 	energy = start_energy
 
 
@@ -46,13 +49,31 @@ func flat_pos() -> Vector2:
 	return Vector2(position.x, position.z)
 
 
+func set_dormant(value: bool) -> void:
+	if value == dormant:
+		return
+	dormant = value
+	process_mode = Node.PROCESS_MODE_DISABLED if value else Node.PROCESS_MODE_INHERIT
+	visible = not value
+
+
 ## Override in subclasses.
 func think(_delta: float) -> void:
 	pass
 
 
+## Fires the jet boost if this body has one and it is ready.
+func try_boost() -> bool:
+	var level := genome.feature("jet")
+	if level <= 0 or boost_cooldown > 0.0:
+		return false
+	boost_time = 0.35
+	boost_cooldown = 4.5 - 1.5 * level
+	return true
+
+
 func eat(amount: float) -> void:
-	energy = minf(energy + amount, MAX_ENERGY)
+	energy = minf(energy + amount, genome.max_energy())
 	ate.emit(amount)
 
 
@@ -80,28 +101,26 @@ func wander_input(delta: float) -> Vector2:
 	if _wander_timer <= 0.0:
 		_wander_timer = randf_range(1.0, 3.0)
 		_wander_dir = Vector2.from_angle(randf() * TAU) * 0.5
-	if flat_pos().length() > arena_radius * 0.85:
-		_wander_dir = -flat_pos().normalized() * 0.5
 	return _wander_dir
 
 
 func _move(delta: float) -> void:
 	var top_speed := genome.max_speed()
+	var push := genome.acceleration()
+	boost_cooldown = maxf(boost_cooldown - delta, 0.0)
+	if boost_time > 0.0:
+		boost_time -= delta
+		top_speed *= 2.2
+		push *= 4.0
 	var dir := Vector3(move_input.x, 0.0, move_input.y)
 	if dir.length() > 1.0:
 		dir = dir.normalized()
-	velocity += dir * genome.acceleration() * delta
+	if boost_time > 0.0 and dir.length() < 0.1:
+		dir = velocity.normalized() if velocity.length() > 0.1 else -global_basis.z
+	velocity += dir * push * delta
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
-
-	var flat := flat_pos()
-	var limit := arena_radius - radius()
-	if flat.length() > limit:
-		flat = flat.normalized() * limit
-		position.x = flat.x
-		position.z = flat.y
-		velocity *= 0.5
 
 	if velocity.length() > 0.1:
 		var target := atan2(velocity.x, velocity.z)

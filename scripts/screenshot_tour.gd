@@ -17,8 +17,25 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(1.0).timeout
+	# Show off the branching upgrades and the stored-food bar.
+	var g := game.director.genome.copy()
+	g.features = {"tail_bud": 1, "grabbing_cilia": 1, "fat_store": 2, "jet": 1,
+		"food_scent": 1}
+	game.director.retire()
+	game.director.spawn(g, Vector2.ZERO)
+	game.director.player.energy = 17.0
+	await get_tree().create_timer(0.5).timeout
 	await _shoot("play")
+	game.camera.zoom = 6.0
+	await get_tree().create_timer(1.5).timeout
+	await _shoot("map")
+	# Swim far away instantly to check that new chunks load there.
+	game.director.player.position = Vector3(130.0, 0.0, -90.0)
+	await get_tree().create_timer(1.5).timeout
+	await _shoot("far")
+	game.camera.zoom = 1.0
+	await get_tree().create_timer(1.0).timeout
 	game.hud.pause_menu.open()
 	await _shoot("pause")
 	game.hud.pause_menu.close()

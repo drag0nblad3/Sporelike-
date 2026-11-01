@@ -26,16 +26,17 @@ static func mesh_for(kind: FoodKind) -> Mesh:
 
 
 ## Tier 0 is the easy, bright version; higher tiers are deeper and duller,
-## so tougher, richer pieces read as different at a glance.
-static func material_for(kind: FoodKind, tier: int) -> StandardMaterial3D:
+## so tougher, richer pieces read as different at a glance. Food in hidden
+## patches is a dim ghost of itself.
+static func material_for(kind: FoodKind, tier: int, faint: bool) -> StandardMaterial3D:
 	var tint := kind.color.darkened(0.22 * tier)
-	tint.a = kind.color.a
+	tint.a = kind.color.a * (0.3 if faint else 1.0)
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = tint
 	mat.emission_enabled = true
 	mat.emission = Color(tint.r, tint.g, tint.b)
 	# Faint kinds glow faintly and are see-through.
-	mat.emission_energy_multiplier = lerpf(0.3, 1.5, kind.visibility)
-	if kind.color.a < 1.0:
+	mat.emission_energy_multiplier = lerpf(0.3, 1.5, kind.visibility) * (0.2 if faint else 1.0)
+	if tint.a < 1.0:
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	return mat

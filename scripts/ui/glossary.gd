@@ -5,8 +5,9 @@ extends RefCounted
 
 const TEXT := """[font_size=34][b]How it works[/b][/font_size]
 
-[b]Energy[/b]: your fuel. Every trait costs energy each second just to have \
-(its upkeep). Eat to refill it. At zero you starve.
+[b]Energy[/b]: your fuel, shown by the bar across the top. Every trait costs \
+energy each second just to have (its upkeep), so the bar keeps emptying. Eat \
+to refill it. When it runs out you starve.
 
 [font_size=28][b]Traits[/b][/font_size] (0 to 1; higher is stronger but costs more upkeep)
 [b]Size[/b]: a bigger body with a longer reach, but slower to turn.
@@ -22,13 +23,17 @@ chewed through: stay on top of it while it shakes until it breaks open. Bigger \
 bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
-Food grows in patches scattered around the world, each with its own floor colour.
-[b]Algae[/b] (green, plant): big teal meadows, one where your species starts. \
+The sea goes on forever in every direction, and food covers most of the \
+floor in large connected fields, cut by channels of bare sand. Regions shade \
+from algae meadows to open water to dark trenches, with vents in the trenches.
+[b]Hidden fields[/b]: rare stretches that look like bare sand but hold faint, \
+extra-rich food that is very hard to sense.
+[b]Algae[/b] (green, plant): teal meadows, one where your species starts. \
 Easy, low value.
-[b]Plankton[/b] (yellow, meat): clouds over blue open water. Drifts and darts \
-away when you come close. Rich if you can catch it.
-[b]Shells[/b] (purple, meat): small beds around glowing orange vents. Very \
-rich, but need a strong jaw.
+[b]Plankton[/b] (yellow, meat): clouds over blue open water, often at a \
+meadow's edge. Drifts and darts away when you come close. Rich if caught.
+[b]Shells[/b] (purple, meat): beds on glowing orange vents, often beside \
+trenches. Very rich, but need a strong jaw.
 [b]Motes[/b] (faint blue, plant): dark trenches. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
@@ -44,13 +49,29 @@ Armor and toxin both make them think twice.
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
 the timer runs out or you die.
 [b]Species[/b]: the other cells of your kind. They eat, breed and die on \
-their own, and roam between nearby patches when food runs out. The \
+their own, and roam between nearby patches when food runs out. Cells left \
+far behind you sleep until you come back. The \
 top-left line shows their average traits: a description of \
 everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.
 [b]Mutation choice[/b]: pick a trait to push your whole species toward.
+[b]Upgrades[/b]: each button says what it does. Pushing a trait far enough \
+unlocks new body parts that can appear as choices:
+  [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
+  [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
+  [b]Eye cluster[/b] (from high sense): spot food from farther away.
+  [b]Jet boost[/b] (from speed): tap the Jet button for a quick burst. Cells \
+of your species jet away from hunters on their own.
+  [b]Sticky coat[/b] (from armor): darting food that comes close gets stuck.
+  [b]Scent trail[/b] (from very high sense): an arrow by your cell points to \
+the nearest food your body can eat well, even in hidden fields. Cells of your \
+species follow the scent too.
+  [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
+gold bar over the energy bar and is burned once the stomach runs low.
+[b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \
+starved), your species adapts to burn less energy, so the game keeps going.
 [b]Influence[/b]: the more food you ate this generation, the stronger your choice.
 [b]Multicellular progress[/b]: thriving generations (a big population and \
 plenty of food eaten) move your species toward its next stage, where single \

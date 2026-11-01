@@ -50,6 +50,8 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 		stats.food_eaten, stats.influence()], 22)
 	if stats.progress_text != "":
 		_add_label(stats.progress_text, 22)
+	if stats.adapt_text != "":
+		_add_label(stats.adapt_text, 22)
 	_add_label("Encourage a mutation in your species:", 24)
 
 	var row := HBoxContainer.new()
@@ -58,9 +60,10 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 	_box.add_child(row)
 	for c in choices:
 		var button := Button.new()
-		button.text = c.label()
-		button.custom_minimum_size = Vector2(250, 80)
-		button.add_theme_font_size_override("font_size", 26)
+		button.text = "%s\n%s" % [c.label(), c.effect()]
+		button.custom_minimum_size = Vector2(300, 110)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 22)
 		button.pressed.connect(func() -> void: _pick(c))
 		row.add_child(button)
 	visible = true
