@@ -1,12 +1,15 @@
 class_name Arena
 extends Node3D
-## The patch of ocean: background, lighting, sea floor and glowing rim.
+## The patch of ocean: background, lighting, sea floor with each food
+## patch from the BiomeMap drawn on it, and a glowing rim.
 
-var radius := 30.0
+var radius := 55.0
+var map: BiomeMap
 
 
-func _init(arena_radius: float = 30.0) -> void:
-	radius = arena_radius
+func _init(biome_map: BiomeMap) -> void:
+	map = biome_map
+	radius = biome_map.radius
 
 
 func _ready() -> void:
@@ -30,7 +33,7 @@ func _ready() -> void:
 	floor_mesh.top_radius = radius
 	floor_mesh.bottom_radius = radius
 	floor_mesh.height = 0.2
-	floor_mesh.radial_segments = 64
+	floor_mesh.radial_segments = 96
 	var floor_mat := StandardMaterial3D.new()
 	floor_mat.albedo_color = Color(0.05, 0.2, 0.25)
 	var ocean_floor := MeshInstance3D.new()
@@ -39,16 +42,21 @@ func _ready() -> void:
 	ocean_floor.position.y = -1.5
 	add_child(ocean_floor)
 
-	# Zones on the floor: sunlit shallows outside, deep water inside,
-	# warm vents in the middle. FoodKind zones match these radii.
-	_floor_disc(radius - 0.5, Color(0.12, 0.38, 0.4), 0.0, -1.38)
-	_floor_disc(13.0, Color(0.03, 0.1, 0.16), 0.0, -1.37)
-	_floor_disc(6.0, Color(0.45, 0.18, 0.08), 0.6, -1.36)
+	# Each food patch tints the floor beneath it: meadows, open water,
+	# warm vents, dark trenches.
+	var looks := {}
+	for kind in FoodKind.all():
+		looks[kind.id] = kind
+	var y := -1.39
+	for patch in map.patches:
+		var kind: FoodKind = looks[patch.kind_id]
+		y += 0.001
+		_floor_disc(patch.center, patch.radius, kind.floor_color, kind.floor_glow, y)
 
 	var rim_mesh := TorusMesh.new()
 	rim_mesh.inner_radius = radius - 0.25
 	rim_mesh.outer_radius = radius + 0.25
-	rim_mesh.rings = 64
+	rim_mesh.rings = 96
 	var rim_mat := StandardMaterial3D.new()
 	rim_mat.albedo_color = Color(0.2, 0.6, 0.7)
 	rim_mat.emission_enabled = true
@@ -60,12 +68,12 @@ func _ready() -> void:
 	add_child(rim)
 
 
-func _floor_disc(r: float, color: Color, glow: float, y: float) -> void:
+func _floor_disc(at: Vector2, r: float, color: Color, glow: float, y: float) -> void:
 	var mesh := CylinderMesh.new()
 	mesh.top_radius = r
 	mesh.bottom_radius = r
 	mesh.height = 0.02
-	mesh.radial_segments = 64
+	mesh.radial_segments = 32
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = color
 	if glow > 0.0:
@@ -74,5 +82,5 @@ func _floor_disc(r: float, color: Color, glow: float, y: float) -> void:
 	var disc := MeshInstance3D.new()
 	disc.mesh = mesh
 	disc.material_override = mat
-	disc.position.y = y
+	disc.position = Vector3(at.x, y, at.y)
 	add_child(disc)

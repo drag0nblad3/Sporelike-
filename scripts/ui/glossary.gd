@@ -22,11 +22,14 @@ chewed through: stay on top of it while it shakes until it breaks open. Bigger \
 bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
-[b]Algae[/b] (green, plant): plentiful in the sunlit outer ring. Easy, low value.
-[b]Plankton[/b] (yellow, meat): drifts in the middle ring and darts away when \
-you come close. Rich if you can catch it.
-[b]Shells[/b] (purple, meat): around the warm center. Very rich, but need a strong jaw.
-[b]Motes[/b] (faint blue, plant): in the deep center. Hard to see, so they need keen sense.
+Food grows in patches scattered around the world, each with its own floor colour.
+[b]Algae[/b] (green, plant): big teal meadows, one where your species starts. \
+Easy, low value.
+[b]Plankton[/b] (yellow, meat): clouds over blue open water. Drifts and darts \
+away when you come close. Rich if you can catch it.
+[b]Shells[/b] (purple, meat): small beds around glowing orange vents. Very \
+rich, but need a strong jaw.
+[b]Motes[/b] (faint blue, plant): dark trenches. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
 are worth a bit more energy, but are much tougher to crack, harder to spot, \
@@ -41,7 +44,9 @@ Armor and toxin both make them think twice.
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
 the timer runs out or you die.
 [b]Species[/b]: the other cells of your kind. They eat, breed and die on \
-their own. The top-left line shows their average traits.
+their own, and roam between nearby patches when food runs out. The \
+top-left line shows their average traits: a description of \
+everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.

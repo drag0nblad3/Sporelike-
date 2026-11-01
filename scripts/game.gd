@@ -7,7 +7,7 @@ extends Node3D
 signal quit_to_title
 signal generation_started(number: int)
 
-const ARENA_RADIUS := 30.0
+const ARENA_RADIUS := 55.0
 const DEATH_PAUSE := 1.5
 
 var ecosystem: Ecosystem
@@ -33,7 +33,9 @@ func setup(save: Dictionary, smoke: bool) -> void:
 
 func _ready() -> void:
 	rng.randomize()
-	add_child(Arena.new(ARENA_RADIUS))
+	var world_seed := int(_save.get("world_seed", randi()))
+	var map := BiomeMap.generate(world_seed, ARENA_RADIUS, FoodKind.all())
+	add_child(Arena.new(map))
 	camera = CameraRig.new()
 	add_child(camera)
 	hud = Hud.new()
@@ -45,7 +47,7 @@ func _ready() -> void:
 
 	var founder := Genome.new()
 	ecosystem = Ecosystem.new()
-	ecosystem.setup(ARENA_RADIUS, founder)
+	ecosystem.setup(map, founder)
 	ecosystem.saved_members = GameSaver.members_from(_save)
 	ecosystem.births = int(_save.get("births", 0))
 	ecosystem.species_changed.connect(_refresh_species)
@@ -72,6 +74,7 @@ func _ready() -> void:
 	saver.director = director
 	saver.cycle = cycle
 	saver.progress = progress
+	saver.world_seed = world_seed
 	progress.points = float(_save.get("progress", 0.0))
 	add_child(saver)
 
@@ -109,8 +112,9 @@ func _begin_generation() -> void:
 func _announce() -> void:
 	generation_started.emit(cycle.number)
 	if smoke_test:
-		print("smoke: generation %d started, species %d, progress %d" % [
-			cycle.number, ecosystem.species.size(), progress.points])
+		print("smoke: generation %d started, species %d, progress %d, physics %.2f ms" % [
+			cycle.number, ecosystem.species.size(), progress.points,
+			Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0])
 
 
 func _on_player_died(cause: String) -> void:

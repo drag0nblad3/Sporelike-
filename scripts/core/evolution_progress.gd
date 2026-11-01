@@ -5,14 +5,14 @@ extends RefCounted
 ## player earn points; reaching GOAL unlocks the next stage.
 
 const GOAL := 100.0
-const MAX_PER_GENERATION := 20.0
+const MAX_PER_GENERATION := 15.0
 
 var points := 0.0
 
 
 ## Adds this generation's points and returns how many were earned.
 func add_generation(stats: GenerationStats) -> float:
-	var earned := 4.0 + 0.4 * stats.end_population + 0.5 * stats.food_eaten
+	var earned := 4.0 + 0.15 * stats.end_population + 0.5 * stats.food_eaten
 	if stats.end_population == 0:
 		earned = 0.0
 	earned = minf(earned, MAX_PER_GENERATION)
