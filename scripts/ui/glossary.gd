@@ -17,7 +17,9 @@ const TEXT := """[font_size=34][b]How it works[/b][/font_size]
 [b]Toxin[/b]: poison that stings a hunter that bites you. Stung hunters back \
 off for a while and learn to avoid toxic prey.
 [b]Diet[/b]: 0 digests plants best, 1 digests meat best. In between gets less from both.
-[b]Jaw[/b]: bite strength. Food harder than your jaw cannot be eaten at all.
+[b]Jaw[/b]: bite strength. Food a little harder than your jaw can still be \
+chewed through: stay on top of it while it shakes until it breaks open. Bigger \
+bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
 [b]Algae[/b] (green, plant): plentiful in the sunlit outer ring. Easy, low value.

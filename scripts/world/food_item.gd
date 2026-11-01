@@ -18,11 +18,15 @@ var drift_speed := 0.0
 ## 0..1: how sharply it dodges when startled and how often it turns.
 var agility := 1.0
 var velocity := Vector2.ZERO
+## Seconds something has spent chewing on this piece; wears off when left.
+var chew := 0.0
 var arena_radius := 30.0
 
 var _phase := 0.0
 var _drift_dir := Vector2.ZERO
 var _drift_timer := 0.0
+var _chewed_this_frame := false
+var _base_scale := 1.0
 
 
 func _ready() -> void:
@@ -38,12 +42,30 @@ func roll(food_kind: FoodKind, rng: RandomNumberGenerator) -> void:
 	flee_speed = kind.flee_speed * lerpf(0.15, 1.4, grade)
 	drift_speed = kind.drift_speed * lerpf(0.25, 1.3, grade)
 	agility = lerpf(0.25, 1.0, grade)
-	scale = Vector3.ONE * lerpf(0.75, 1.35, grade)
+	_base_scale = lerpf(0.75, 1.35, grade)
+	scale = Vector3.ONE * _base_scale
 
 
 ## 0, 1 or 2: which colour tier to draw this piece with.
 func tier() -> int:
 	return mini(int(grade * TIERS), TIERS - 1)
+
+
+## Called each physics frame by whatever is covering this piece. Returns
+## true once it has been chewed for long enough to break through.
+func chew_for(delta: float, needed: float) -> bool:
+	chew += delta
+	_chewed_this_frame = true
+	return chew >= needed
+
+
+func _physics_process(delta: float) -> void:
+	if not _chewed_this_frame and chew > 0.0:
+		chew = maxf(chew - delta, 0.0)
+	_chewed_this_frame = false
+	# Shake while being chewed so the player can see it working.
+	var shake := 0.08 * sin(_phase * 40.0) if chew > 0.0 else 0.0
+	scale = Vector3.ONE * _base_scale * (1.0 + shake)
 
 
 func flat_pos() -> Vector2:

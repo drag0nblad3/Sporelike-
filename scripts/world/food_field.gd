@@ -61,20 +61,22 @@ func best_for(org: Organism) -> FoodItem:
 		if child.is_queued_for_deletion():
 			continue
 		var item := child as FoodItem
-		if not org.genome.can_crack(item.hardness):
+		var crack := org.genome.crack_time(item.hardness)
+		if crack == INF:
 			continue
 		var d := me.distance_to(item.flat_pos())
 		if d > org.genome.notice_range(item.visibility):
 			continue
-		var score := org.genome.digest(item.energy, item.kind.is_plant) / (d + 1.0)
+		var score := org.genome.digest(item.energy, item.kind.is_plant) / (d + 1.0 + crack)
 		if score > best_score:
 			best_score = score
 			best = item
 	return best
 
 
-## Eats everything edible within reach. Returns the energy gained.
-func consume_near(org: Organism) -> float:
+## Eats everything within reach that the jaw cracks, or that it has chewed
+## on for long enough. Returns the energy gained.
+func consume_near(org: Organism, delta: float) -> float:
 	var gained := 0.0
 	var me := org.flat_pos()
 	for child in get_children():
@@ -84,7 +86,8 @@ func consume_near(org: Organism) -> float:
 		var reach := org.radius() + item.kind.size
 		if me.distance_squared_to(item.flat_pos()) > reach * reach:
 			continue
-		if not org.genome.can_crack(item.hardness):
+		var crack := org.genome.crack_time(item.hardness)
+		if crack == INF or (crack > 0.0 and not item.chew_for(delta, crack)):
 			continue
 		gained += org.genome.digest(item.energy, item.kind.is_plant)
 		_counts[item.kind.id] -= 1
