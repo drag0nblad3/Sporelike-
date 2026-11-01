@@ -20,7 +20,8 @@ var agility := 1.0
 var velocity := Vector2.ZERO
 ## Seconds something has spent chewing on this piece; wears off when left.
 var chew := 0.0
-var arena_radius := 30.0
+## The patch it grew in; drifting food stays inside it.
+var home: FoodPatch
 
 var _phase := 0.0
 var _drift_dir := Vector2.ZERO
@@ -94,12 +95,8 @@ func _process(delta: float) -> void:
 	velocity = velocity.move_toward(_drift_dir * drift_speed, delta * 4.0)
 
 	var p := flat_pos() + velocity * delta
-	var outer := minf(kind.zone_max, arena_radius - 1.0)
-	if p.length() > outer:
-		p = p.normalized() * outer
-		_drift_dir = -p.normalized()
-	elif p.length() < kind.zone_min and p.length() > 0.01:
-		p = p.normalized() * kind.zone_min
-		_drift_dir = p.normalized()
-	position.x = p.x
-	position.z = p.y
+	var held := home.keep_inside(p)
+	if held != p:
+		_drift_dir = (home.center - held).normalized()
+	position.x = held.x
+	position.z = held.y

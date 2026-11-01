@@ -1,11 +1,14 @@
 class_name FoodField
 extends Node3D
-## All food in the arena, of every FoodKind. Each kind regrows in its own
-## zone at its own pace, so a big population runs short and has to compete.
+## All food in the world, of every FoodKind. Each kind regrows in its own
+## patches (from the BiomeMap) at its own pace, so a big population runs
+## short and has to compete. A FoodGrid keeps lookups local.
 
 const STARTLE_RANGE := 2.5
+## Organisms are never bigger than this, so it bounds the eating reach.
+const MAX_REACH := 2.5
 
-var arena_radius := 30.0
+var map: BiomeMap
 var rng: RandomNumberGenerator
 var kinds: Array[FoodKind] = []
 
@@ -13,10 +16,12 @@ var _meshes := {}
 var _materials := {}
 var _counts := {}
 var _timers := {}
+var _patches := {}
+var _grid := FoodGrid.new()
 
 
-func setup(arena: float, random: RandomNumberGenerator) -> void:
-	arena_radius = arena
+func setup(biome_map: BiomeMap, random: RandomNumberGenerator) -> void:
+	map = biome_map
 	rng = random
 
 
@@ -28,8 +33,10 @@ func _ready() -> void:
 			_materials["%s%d" % [kind.id, tier]] = FoodLook.material_for(kind, tier)
 		_counts[kind.id] = 0
 		_timers[kind.id] = 0.0
+		_patches[kind.id] = map.patches_for(kind.id)
 		for _i in kind.target_count:
 			_spawn(kind)
+	refresh()
 
 
 func _process(delta: float) -> void:
@@ -40,16 +47,18 @@ func _process(delta: float) -> void:
 			_spawn(kind)
 
 
+## Re-buckets all food. The ecosystem calls this once per physics frame.
+func refresh() -> void:
+	_grid.rebuild(get_children())
+
+
 ## Darting food flees from any of these positions that come close.
 func startle_near(threats: Array[Vector2]) -> void:
-	for child in get_children():
-		var item := child as FoodItem
-		if item.flee_speed <= 0.0:
-			continue
-		for t in threats:
-			if item.flat_pos().distance_squared_to(t) < STARTLE_RANGE * STARTLE_RANGE:
+	for t in threats:
+		for item in _grid.near(t, STARTLE_RANGE):
+			if item.flee_speed > 0.0 and \
+					item.flat_pos().distance_squared_to(t) < STARTLE_RANGE * STARTLE_RANGE:
 				item.startle(t)
-				break
 
 
 ## The most worthwhile food this organism can notice and digest, or null.
@@ -57,10 +66,7 @@ func best_for(org: Organism) -> FoodItem:
 	var best: FoodItem = null
 	var best_score := 0.0
 	var me := org.flat_pos()
-	for child in get_children():
-		if child.is_queued_for_deletion():
-			continue
-		var item := child as FoodItem
+	for item in _grid.near(me, org.genome.sense_range()):
 		var crack := org.genome.crack_time(item.hardness)
 		if crack == INF:
 			continue
@@ -79,10 +85,9 @@ func best_for(org: Organism) -> FoodItem:
 func consume_near(org: Organism, delta: float) -> float:
 	var gained := 0.0
 	var me := org.flat_pos()
-	for child in get_children():
-		if child.is_queued_for_deletion():
+	for item in _grid.near(me, MAX_REACH):
+		if item.is_queued_for_deletion():
 			continue
-		var item := child as FoodItem
 		var reach := org.radius() + item.kind.size
 		if me.distance_squared_to(item.flat_pos()) > reach * reach:
 			continue
@@ -96,14 +101,16 @@ func consume_near(org: Organism, delta: float) -> float:
 
 
 func _spawn(kind: FoodKind) -> void:
+	var patches: Array[FoodPatch] = _patches[kind.id]
+	if patches.is_empty():
+		return
+	var patch := patches[rng.randi() % patches.size()]
 	var item := FoodItem.new()
 	item.roll(kind, rng)
-	item.arena_radius = arena_radius
+	item.home = patch
 	item.mesh = _meshes[kind.id]
 	item.material_override = _materials["%s%d" % [kind.id, item.tier()]]
-	var outer := minf(kind.zone_max, arena_radius - 1.0)
-	var dist := sqrt(rng.randf_range(kind.zone_min * kind.zone_min, outer * outer))
-	var p := Vector2.from_angle(rng.randf() * TAU) * dist
+	var p := patch.random_point(rng)
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)
 	_counts[kind.id] += 1

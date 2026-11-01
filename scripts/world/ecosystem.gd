@@ -6,12 +6,13 @@ extends Node3D
 signal species_changed
 signal member_died(cause: String)
 
-const START_POPULATION := 14
-const MAX_POPULATION := 40
-const PREDATOR_COUNT := 3
+const START_POPULATION := 30
+const MAX_POPULATION := 100
+const PREDATOR_COUNT := 7
 const REPRODUCE_AT := 10.0
 
-var arena_radius := 30.0
+var arena_radius := 55.0
+var map: BiomeMap
 var food: FoodField
 var player: PlayerCell
 var rng := RandomNumberGenerator.new()
@@ -26,15 +27,16 @@ var saved_members: Array = []
 var _founder: Genome
 
 
-func setup(arena: float, founder: Genome) -> void:
-	arena_radius = arena
+func setup(biome_map: BiomeMap, founder: Genome) -> void:
+	map = biome_map
+	arena_radius = biome_map.radius
 	_founder = founder
 
 
 func _ready() -> void:
 	rng.randomize()
 	food = FoodField.new()
-	food.setup(arena_radius, rng)
+	food.setup(map, rng)
 	add_child(food)
 	for entry in saved_members:
 		var saved_genome: Genome = entry[0]
@@ -43,12 +45,13 @@ func _ready() -> void:
 		spawn_member(saved_genome, saved_at, saved_energy)
 	if saved_members.is_empty():
 		for _i in START_POPULATION:
-			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(4.0, 20.0), 6.0)
+			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(2.0, 12.0), 6.0)
 	for _i in PREDATOR_COUNT:
-		_spawn_predator(_random_point(14.0, arena_radius - 3.0))
+		_spawn_predator(_random_point(20.0, arena_radius - 3.0))
 
 
 func _physics_process(delta: float) -> void:
+	food.refresh()
 	var prey := prey_list()
 	var movers: Array[Vector2] = []
 	for org in prey:
@@ -97,7 +100,7 @@ func pick_parent() -> SpeciesCell:
 ## Restart the species from one genome after an extinction.
 func reseed(founder: Genome) -> void:
 	for _i in START_POPULATION:
-		spawn_member(founder.mutated(rng), _random_point(4.0, 20.0), 6.0)
+		spawn_member(founder.mutated(rng), _random_point(2.0, 12.0), 6.0)
 
 
 func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:

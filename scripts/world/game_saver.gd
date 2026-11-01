@@ -8,6 +8,7 @@ var ecosystem: Ecosystem
 var director: PlayerDirector
 var cycle: GenerationCycle
 var progress: EvolutionProgress
+var world_seed := 0
 
 
 func _notification(what: int) -> void:
@@ -33,6 +34,7 @@ func save_now() -> void:
 		"time_left": cycle.time_left,
 		"births": ecosystem.births,
 		"progress": progress.points,
+		"world_seed": world_seed,
 		"player": you,
 		"species": members,
 	})
