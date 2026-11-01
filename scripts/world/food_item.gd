@@ -61,7 +61,9 @@ func chew_for(delta: float, needed: float) -> bool:
 
 
 func _physics_process(delta: float) -> void:
-	if not _chewed_this_frame and chew > 0.0:
+	if chew <= 0.0:
+		return
+	if not _chewed_this_frame:
 		chew = maxf(chew - delta, 0.0)
 	_chewed_this_frame = false
 	# Shake while being chewed so the player can see it working.
