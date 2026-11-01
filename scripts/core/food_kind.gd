@@ -8,8 +8,9 @@ var id := ""
 var color := Color.WHITE
 var energy := 2.0
 var is_plant := true
-## Jaw trait needed to crack it.
-var hardness := 0.0
+## Jaw trait needed to crack it, from the easiest piece to the toughest.
+var hardness_min := 0.0
+var hardness_max := 0.0
 ## Fraction of the eater's sense range at which it can be noticed.
 var visibility := 1.0
 var drift_speed := 0.0
@@ -25,15 +26,18 @@ var size := 0.22
 static func all() -> Array[FoodKind]:
 	# Algae: plentiful in the sunlit outer shallows. Easy, low value.
 	var algae := _make("algae", Color(0.45, 1.0, 0.4), 2.5, true, 14.0, 29.0, 45, 0.3)
+	algae.hardness_max = 0.3
 
 	# Plankton: drifts and darts away. Rich, but needs speed or agility.
 	var plankton := _make("plankton", Color(1.0, 0.9, 0.3), 3.5, false, 6.0, 24.0, 18, 0.9)
 	plankton.drift_speed = 1.2
 	plankton.flee_speed = 5.5
+	plankton.hardness_max = 0.1
 
 	# Shells: around the warm central vents. Very rich, needs a strong jaw.
 	var shells := _make("shells", Color(0.75, 0.45, 1.0), 5.0, false, 0.0, 10.0, 14, 1.2)
-	shells.hardness = 0.45
+	shells.hardness_min = 0.3
+	shells.hardness_max = 0.7
 	shells.size = 0.3
 
 	# Motes: faint glowing spores in the deep center. Only keen senses find them.

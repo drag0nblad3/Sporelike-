@@ -24,7 +24,8 @@ func _ready() -> void:
 	kinds = FoodKind.all()
 	for kind in kinds:
 		_meshes[kind.id] = FoodLook.mesh_for(kind)
-		_materials[kind.id] = FoodLook.material_for(kind)
+		for tier in FoodItem.TIERS:
+			_materials["%s%d" % [kind.id, tier]] = FoodLook.material_for(kind, tier)
 		_counts[kind.id] = 0
 		_timers[kind.id] = 0.0
 		for _i in kind.target_count:
@@ -43,7 +44,7 @@ func _process(delta: float) -> void:
 func startle_near(threats: Array[Vector2]) -> void:
 	for child in get_children():
 		var item := child as FoodItem
-		if item.kind.flee_speed <= 0.0:
+		if item.flee_speed <= 0.0:
 			continue
 		for t in threats:
 			if item.flat_pos().distance_squared_to(t) < STARTLE_RANGE * STARTLE_RANGE:
@@ -60,12 +61,12 @@ func best_for(org: Organism) -> FoodItem:
 		if child.is_queued_for_deletion():
 			continue
 		var item := child as FoodItem
-		if not org.genome.can_eat(item.kind):
+		if not org.genome.can_crack(item.hardness):
 			continue
 		var d := me.distance_to(item.flat_pos())
-		if d > org.genome.detect_range(item.kind):
+		if d > org.genome.notice_range(item.visibility):
 			continue
-		var score := org.genome.food_value(item.kind) / (d + 1.0)
+		var score := org.genome.digest(item.energy, item.kind.is_plant) / (d + 1.0)
 		if score > best_score:
 			best_score = score
 			best = item
@@ -83,9 +84,9 @@ func consume_near(org: Organism) -> float:
 		var reach := org.radius() + item.kind.size
 		if me.distance_squared_to(item.flat_pos()) > reach * reach:
 			continue
-		if not org.genome.can_eat(item.kind):
+		if not org.genome.can_crack(item.hardness):
 			continue
-		gained += org.genome.food_value(item.kind)
+		gained += org.genome.digest(item.energy, item.kind.is_plant)
 		_counts[item.kind.id] -= 1
 		item.queue_free()
 	return gained
@@ -93,10 +94,10 @@ func consume_near(org: Organism) -> float:
 
 func _spawn(kind: FoodKind) -> void:
 	var item := FoodItem.new()
-	item.kind = kind
+	item.roll(kind, rng)
 	item.arena_radius = arena_radius
 	item.mesh = _meshes[kind.id]
-	item.material_override = _materials[kind.id]
+	item.material_override = _materials["%s%d" % [kind.id, item.tier()]]
 	var outer := minf(kind.zone_max, arena_radius - 1.0)
 	var dist := sqrt(rng.randf_range(kind.zone_min * kind.zone_min, outer * outer))
 	var p := Vector2.from_angle(rng.randf() * TAU) * dist

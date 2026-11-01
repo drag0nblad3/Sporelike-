@@ -87,19 +87,21 @@ func upkeep() -> float:
 		+ 0.2 * value_of("jaw")
 
 
-func can_eat(kind: FoodKind) -> bool:
-	return value_of("jaw") >= kind.hardness
+## Whether the jaw is strong enough for food of this hardness.
+func can_crack(hardness: float) -> bool:
+	return value_of("jaw") >= hardness
 
 
-## Energy gained from one item, after digestive efficiency.
-func food_value(kind: FoodKind) -> float:
-	var efficiency := lerpf(1.0, 0.3, value_of("diet")) if kind.is_plant \
+## Energy gained from food worth `energy`, after digestive efficiency.
+func digest(energy: float, is_plant: bool) -> float:
+	var efficiency := lerpf(1.0, 0.3, value_of("diet")) if is_plant \
 		else lerpf(0.3, 1.0, value_of("diet"))
-	return kind.energy * efficiency
+	return energy * efficiency
 
 
-func detect_range(kind: FoodKind) -> float:
-	return sense_range() * kind.visibility
+## How far away food this visible (0..1) can be noticed.
+func notice_range(visibility: float) -> float:
+	return sense_range() * visibility
 
 
 func color() -> Color:
