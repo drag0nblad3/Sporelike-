@@ -33,3 +33,9 @@ func _shoot(shot_name: String) -> void:
 	var err := image.save_png(path)
 	print("shot: %s %dx%d -> %s (%s)" % [shot_name, image.get_width(), image.get_height(),
 		path, error_string(err)])
+	# Also print a small JPEG into the log, for reviewers who cannot
+	# download artifacts.
+	image.resize(960, 540)
+	var data := Marshalls.raw_to_base64(image.save_jpg_to_buffer(0.8))
+	for i in range(0, data.length(), 4000):
+		print("shotb64 %s %s" % [shot_name, data.substr(i, 4000)])
