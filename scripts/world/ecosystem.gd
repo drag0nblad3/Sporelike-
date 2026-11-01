@@ -18,6 +18,9 @@ var rng := RandomNumberGenerator.new()
 var species: Array[SpeciesCell] = []
 var predators: Array[Predator] = []
 var births := 0
+## Members to restore from a save as [Genome, Vector2, energy]; set before
+## the ecosystem enters the tree. Empty means start fresh from the founder.
+var saved_members: Array = []
 
 var _founder: Genome
 
@@ -32,8 +35,14 @@ func _ready() -> void:
 	food = FoodField.new()
 	food.setup(arena_radius, rng)
 	add_child(food)
-	for _i in START_POPULATION:
-		spawn_member(_founder.mutated(rng).mutated(rng), _random_point(4.0, 20.0), 6.0)
+	for entry in saved_members:
+		var saved_genome: Genome = entry[0]
+		var saved_at: Vector2 = entry[1]
+		var saved_energy: float = entry[2]
+		spawn_member(saved_genome, saved_at, saved_energy)
+	if saved_members.is_empty():
+		for _i in START_POPULATION:
+			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(4.0, 20.0), 6.0)
 	for _i in PREDATOR_COUNT:
 		_spawn_predator(_random_point(14.0, arena_radius - 3.0))
 

@@ -3,6 +3,8 @@ extends Control
 ## Pauses the game and shows the glossary of in-game terms. Opened from the
 ## HUD's pause button or Esc; Resume (or Esc again) closes it.
 
+signal quit_requested
+
 const MARGIN := 32
 
 var _text: RichTextLabel
@@ -28,13 +30,12 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 12)
 	frame.add_child(column)
 
-	var resume := Button.new()
-	resume.text = "Resume"
-	resume.custom_minimum_size = Vector2(220, 72)
-	resume.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	resume.add_theme_font_size_override("font_size", 28)
-	resume.pressed.connect(close)
-	column.add_child(resume)
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons.add_theme_constant_override("separation", 24)
+	column.add_child(buttons)
+	buttons.add_child(_button("Resume", close))
+	buttons.add_child(_button("Save and quit", _on_quit))
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -74,3 +75,17 @@ func close() -> void:
 		return
 	visible = false
 	get_tree().paused = false
+
+
+func _on_quit() -> void:
+	visible = false
+	quit_requested.emit()
+
+
+func _button(label: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = label
+	button.custom_minimum_size = Vector2(240, 72)
+	button.add_theme_font_size_override("font_size", 28)
+	button.pressed.connect(action)
+	return button

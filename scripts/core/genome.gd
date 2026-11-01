@@ -6,6 +6,8 @@ extends RefCounted
 const TRAITS := ["size", "speed", "agility", "sense", "armor", "toxin", "diet", "jaw"]
 const MUTATION_CHANCE := 0.4
 const MUTATION_STEP := 0.08
+## Scales energy burned per second by every trait. Lower = slower starvation.
+const UPKEEP_RATE := 0.75
 
 ## diet: 0 = eats plants well, 1 = eats animals well. jaw cracks shells.
 var values := {
@@ -26,6 +28,19 @@ static func average(genomes: Array[Genome]) -> Dictionary:
 		for t in TRAITS:
 			sums[t] /= genomes.size()
 	return sums
+
+
+## Rebuilds a genome saved with to_dict(); missing traits keep defaults.
+static func from_dict(data: Dictionary) -> Genome:
+	var g := Genome.new()
+	for t in TRAITS:
+		if data.has(t):
+			g.values[t] = clampf(float(data[t]), 0.0, 1.0)
+	return g
+
+
+func to_dict() -> Dictionary:
+	return values.duplicate()
 
 
 func copy() -> Genome:
@@ -82,9 +97,10 @@ func toxin() -> float:
 
 ## Energy burned per second. Every advantage has a running cost.
 func upkeep() -> float:
-	return 0.25 + 0.35 * value_of("size") + 0.3 * value_of("speed") + 0.2 * value_of("agility") \
-		+ 0.2 * value_of("sense") + 0.15 * value_of("armor") + 0.35 * value_of("toxin") \
-		+ 0.2 * value_of("jaw")
+	var cost := 0.25 + 0.35 * value_of("size") + 0.3 * value_of("speed") \
+		+ 0.2 * value_of("agility") + 0.2 * value_of("sense") + 0.15 * value_of("armor") \
+		+ 0.35 * value_of("toxin") + 0.2 * value_of("jaw")
+	return cost * UPKEEP_RATE
 
 
 ## Whether the jaw is strong enough for food of this hardness.

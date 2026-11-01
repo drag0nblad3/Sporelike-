@@ -1,7 +1,7 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen text, the touch joystick, and the pause button with its menu.
-## The population screen is added as a child by main.gd.
+## The population screen is added as a child by Game.
 
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
