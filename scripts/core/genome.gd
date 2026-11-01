@@ -134,7 +134,8 @@ func upkeep() -> float:
 		+ 0.35 * value_of("toxin") + 0.2 * value_of("jaw") \
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
-		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat")
+		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
+		+ 0.05 * feature("food_scent")
 	return cost * UPKEEP_RATE * lerpf(1.0, 0.7, efficiency)
 
 

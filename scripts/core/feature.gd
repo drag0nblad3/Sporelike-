@@ -12,6 +12,8 @@ const ALL := {
 	"eye_cluster": ["Eye cluster", "Spot food from farther away", "sense", 0.6, 2],
 	"jet": ["Jet boost", "Tap Jet for a quick burst of speed", "speed", 0.5, 2],
 	"sticky_coat": ["Sticky coat", "Darting food that comes close gets stuck", "armor", 0.3, 2],
+	"food_scent": ["Scent trail", "An arrow points to the nearest food you can eat, even hidden",
+		"sense", 0.65, 1],
 }
 
 

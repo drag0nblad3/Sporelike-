@@ -25,6 +25,8 @@ func _ready() -> void:
 	add_child(ground)
 	var y := -1.39
 	for patch in patches:
+		if patch.hidden:
+			continue
 		y += 0.001
 		_disc(patch, y)
 

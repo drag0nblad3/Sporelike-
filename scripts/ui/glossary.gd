@@ -23,9 +23,11 @@ chewed through: stay on top of it while it shakes until it breaks open. Bigger \
 bodies chew faster. Food far harder than your jaw cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
-The sea goes on forever in every direction, and food grows in blob-shaped \
-patches on the floor. Regions shade from algae meadows to open water to dark \
-trenches, with vents deep in the trenches.
+The sea goes on forever in every direction, and food covers most of the \
+floor in large connected fields, cut by channels of bare sand. Regions shade \
+from algae meadows to open water to dark trenches, with vents in the trenches.
+[b]Hidden fields[/b]: rare stretches that look like bare sand but hold faint, \
+extra-rich food that is very hard to sense.
 [b]Algae[/b] (green, plant): teal meadows, one where your species starts. \
 Easy, low value.
 [b]Plankton[/b] (yellow, meat): clouds over blue open water, often at a \
@@ -63,6 +65,9 @@ unlocks new body parts that can appear as choices:
   [b]Jet boost[/b] (from speed): tap the Jet button for a quick burst. Cells \
 of your species jet away from hunters on their own.
   [b]Sticky coat[/b] (from armor): darting food that comes close gets stuck.
+  [b]Scent trail[/b] (from very high sense): an arrow by your cell points to \
+the nearest food your body can eat well, even in hidden fields. Cells of your \
+species follow the scent too.
   [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
 gold bar over the energy bar and is burned once the stomach runs low.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \

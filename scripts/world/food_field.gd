@@ -25,7 +25,8 @@ func _ready() -> void:
 	for kind in FoodKind.all():
 		_meshes[kind.id] = FoodLook.mesh_for(kind)
 		for tier in FoodItem.TIERS:
-			_materials["%s%d" % [kind.id, tier]] = FoodLook.material_for(kind, tier)
+			_materials["%s%d" % [kind.id, tier]] = FoodLook.material_for(kind, tier, false)
+			_materials["%s%dh" % [kind.id, tier]] = FoodLook.material_for(kind, tier, true)
 
 
 func _process(delta: float) -> void:
@@ -126,7 +127,11 @@ func _spawn(patch: FoodPatch) -> void:
 	item.roll(kind, rng)
 	item.home = patch
 	item.mesh = _meshes[kind.id]
-	item.material_override = _materials["%s%d" % [kind.id, item.tier()]]
+	if patch.hidden:
+		item.visibility *= FoodPatch.HIDDEN_VISIBILITY
+		item.energy *= FoodPatch.HIDDEN_RICHNESS
+	var key := "%s%d%s" % [kind.id, item.tier(), "h" if patch.hidden else ""]
+	item.material_override = _materials[key]
 	var p := patch.random_point(rng)
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)

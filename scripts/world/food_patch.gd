@@ -3,8 +3,12 @@ extends RefCounted
 ## One blob-shaped stretch of sea floor where a single FoodKind grows,
 ## belonging to one world chunk. Its edge is a circle bent by a few random
 ## lobes. Tracks how many pieces it holds and when it regrows.
+## A rare hidden patch draws no floor and its food is faint and hard to
+## sense, but richer: it looks like empty sand until something finds it.
 
 const LOBES := 3
+const HIDDEN_VISIBILITY := 0.3
+const HIDDEN_RICHNESS := 1.3
 const OUTLINE_POINTS := 40
 
 var kind: FoodKind
@@ -16,6 +20,7 @@ var chunk := Vector2i.ZERO
 var target := 1
 var count := 0
 var regrow_timer := 0.0
+var hidden := false
 
 var _amplitudes := PackedFloat32Array()
 var _phases := PackedFloat32Array()

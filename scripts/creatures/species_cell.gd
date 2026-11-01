@@ -2,7 +2,8 @@ class_name SpeciesCell
 extends Organism
 ## An AI member of the player's species. Flees predators it can sense,
 ## otherwise swims to the most worthwhile food it can find and digest,
-## otherwise heads for one of the nearby food patches it knows about.
+## otherwise heads for one of the nearby food patches it knows about (or,
+## with the Scent trail upgrade, straight for the nearest food that suits it).
 
 const FORAGE_CHOICES := 3
 const FORAGE_GIVE_UP := 12.0
@@ -46,7 +47,13 @@ func think(delta: float) -> void:
 ## between neighbouring patches instead of crossing the whole world.
 func _pick_forage_target(me: Vector2) -> void:
 	_forage_timer = FORAGE_GIVE_UP
-	var patches := ecosystem.food.patches.duplicate()
+	if genome.feature("food_scent") > 0:
+		var scented := FoodScent.nearest(ecosystem.food.patches, genome, me)
+		if scented:
+			_forage_target = scented.random_point(ecosystem.rng)
+			return
+	var patches := ecosystem.food.patches.filter(func(p: FoodPatch) -> bool:
+		return not p.hidden)
 	patches.sort_custom(func(a: FoodPatch, b: FoodPatch) -> bool:
 		return me.distance_to(a.center) < me.distance_to(b.center))
 	var count := mini(FORAGE_CHOICES, patches.size())

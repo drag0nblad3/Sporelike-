@@ -2,30 +2,37 @@ class_name ChunkGenerator
 extends RefCounted
 ## Decides which food patches each square chunk of the endless sea floor
 ## holds, from the world seed alone, so a chunk always comes back the same.
-## A slow noise field groups chunks into regions that grade into each
-## other: algae meadows give way to open plankton water, then dark mote
-## trenches, with shell beds on vents deep inside the trenches. Some
-## patches also bring companions: vents beside trenches, plankton clouds
-## fringing meadows.
+## Each chunk is a grid of cells, and each cell gets one overlapping blob,
+## so food forms big connected regions. Slow noise fields decide the
+## region's kind (algae meadows grade into open plankton water, then dark
+## mote trenches, with shell vents inside the trenches), where narrow
+## channels of open sand run, and the rare faint "hidden" fields.
 
 const SIZE := 40.0
-const MIN_PATCHES := 3
-const MAX_PATCHES := 5
-## Placement attempts per chunk; a spot that overlaps an earlier patch is
-## skipped, so crowded chunks end up with fewer than the target.
-const TRIES := 12
-## Chance a patch is the region's own kind rather than any kind.
-const REGION_BIAS := 0.7
-## Kind -> [companion kind, chance]. Companions sit against the patch's edge.
+const GRID := 3
+## Blob radius as a fraction of the cell size; above 0.5 neighbours overlap.
+const REACH_MIN := 0.62
+const REACH_MAX := 0.8
+const JITTER := 0.15
+## Below this, the channel noise leaves a cell bare.
+const GAP_BELOW := -0.35
+## Above this, the hidden noise makes a patch faint and hard to sense.
+const HIDDEN_ABOVE := 0.5
+## Chance a cell is any kind rather than its region's (or companion) kind.
+const STRAY_CHANCE := 0.1
+## Region kind -> [companion kind, chance]: vents in trenches, plankton
+## clouds drifting over meadows.
 const COMPANIONS := {
-	"motes": ["shells", 0.5],
-	"algae": ["plankton", 0.4],
+	"motes": ["shells", 0.3],
+	"algae": ["plankton", 0.2],
 }
 
 var world_seed := 0
 var kinds: Array[FoodKind] = []
 var _by_id := {}
 var _regions := FastNoiseLite.new()
+var _gaps := FastNoiseLite.new()
+var _hidden := FastNoiseLite.new()
 
 
 func _init(seed_value: int) -> void:
@@ -35,6 +42,10 @@ func _init(seed_value: int) -> void:
 		_by_id[kind.id] = kind
 	_regions.seed = seed_value
 	_regions.frequency = 0.006
+	_gaps.seed = seed_value + 1
+	_gaps.frequency = 0.025
+	_hidden.seed = seed_value + 2
+	_hidden.frequency = 0.012
 
 
 static func chunk_of(p: Vector2) -> Vector2i:
@@ -45,26 +56,27 @@ func patches_for(coord: Vector2i) -> Array[FoodPatch]:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([world_seed, coord.x, coord.y])
 	var origin := Vector2(coord) * SIZE
+	var cell := SIZE / GRID
 	var list: Array[FoodPatch] = []
 	if coord == Vector2i.ZERO:
 		# The species always starts on an algae meadow at the center.
 		list.append(FoodPatch.make(_by_id["algae"], Vector2.ZERO, 10.0, coord, rng))
-	var n := rng.randi_range(MIN_PATCHES, MAX_PATCHES)
-	for _i in TRIES:
-		if list.size() >= n:
-			break
-		var kind := _pick_kind(origin + Vector2(SIZE, SIZE) * 0.5, rng)
-		var r := rng.randf_range(kind.patch_min, kind.patch_max)
-		var at := origin + Vector2(rng.randf_range(r, SIZE - r), rng.randf_range(r, SIZE - r))
-		if _overlaps(list, at, r):
-			continue
-		var patch := FoodPatch.make(kind, at, r, coord, rng)
-		list.append(patch)
-		_add_companion(list, patch, rng)
+	for gx in GRID:
+		for gy in GRID:
+			var at := origin + (Vector2(gx, gy) + Vector2(0.5, 0.5)) * cell
+			at += Vector2(rng.randf_range(-1, 1), rng.randf_range(-1, 1)) * cell * JITTER
+			if _gaps.get_noise_2d(at.x, at.y) < GAP_BELOW:
+				continue
+			var kind := _pick_kind(at, rng)
+			var r := cell * rng.randf_range(REACH_MIN, REACH_MAX) * kind.patch_scale
+			var patch := FoodPatch.make(kind, at, r, coord, rng)
+			patch.hidden = coord != Vector2i.ZERO \
+				and _hidden.get_noise_2d(at.x, at.y) > HIDDEN_ABOVE
+			list.append(patch)
 	return list
 
 
-## The region's food kind at this point, most of the time.
+## The region's food kind at this point.
 func region_kind(p: Vector2) -> FoodKind:
 	var n := _regions.get_noise_2d(p.x, p.y)
 	if n < -0.2:
@@ -76,32 +88,13 @@ func region_kind(p: Vector2) -> FoodKind:
 	return _by_id["shells"]
 
 
-func _add_companion(list: Array[FoodPatch], patch: FoodPatch,
-		rng: RandomNumberGenerator) -> void:
-	if not COMPANIONS.has(patch.kind.id):
-		return
-	var rule: Array = COMPANIONS[patch.kind.id]
-	var chance: float = rule[1]
-	if rng.randf() > chance:
-		return
-	var kind: FoodKind = _by_id[rule[0]]
-	var r := rng.randf_range(kind.patch_min, kind.patch_max)
-	var angle := rng.randf() * TAU
-	var at := patch.center + Vector2.from_angle(angle) * (patch.radius_at(angle) + r * 0.7)
-	var others := list.duplicate()
-	others.erase(patch)
-	if not _overlaps(others, at, r):
-		list.append(FoodPatch.make(kind, at, r, patch.chunk, rng))
-
-
 func _pick_kind(p: Vector2, rng: RandomNumberGenerator) -> FoodKind:
-	if rng.randf() < REGION_BIAS:
-		return region_kind(p)
-	return kinds[rng.randi() % kinds.size()]
-
-
-func _overlaps(list: Array[FoodPatch], at: Vector2, r: float) -> bool:
-	for other in list:
-		if at.distance_to(other.center) < r + other.radius + 1.0:
-			return true
-	return false
+	if rng.randf() < STRAY_CHANCE:
+		return kinds[rng.randi() % kinds.size()]
+	var kind := region_kind(p)
+	if COMPANIONS.has(kind.id):
+		var rule: Array = COMPANIONS[kind.id]
+		var chance: float = rule[1]
+		if rng.randf() < chance:
+			return _by_id[rule[0]]
+	return kind

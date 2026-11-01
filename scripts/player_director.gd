@@ -13,6 +13,11 @@ var player: PlayerCell
 var genome := Genome.new()
 
 var _has_moved := false
+var _scent := ScentArrow.new()
+
+
+func _ready() -> void:
+	add_child(_scent)
 
 
 func is_alive() -> bool:
@@ -42,7 +47,9 @@ func retire() -> void:
 func _process(delta: float) -> void:
 	hud.set_hint_visible(not _has_moved)
 	if not is_alive():
+		_scent.visible = false
 		return
+	_scent.track(player, ecosystem.food, delta)
 	var input := _read_move_input()
 	if input.length() > 0.1:
 		_has_moved = true
