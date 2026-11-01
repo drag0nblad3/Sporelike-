@@ -92,6 +92,21 @@ jobs:
             exit 1
           fi
 
+      - name: Screenshots (real renderer under a virtual display)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri > /dev/null
+          xvfb-run -a -s "-screen 0 1280x720x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1280x720 -- --shot \
+            2>&1 | tee /tmp/shot.log || true
+          ls -la build/shots || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: build/shots/
+          if-no-files-found: warn
+
       - name: Export Android APK
         run: |
           mkdir -p build/android
