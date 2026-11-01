@@ -60,6 +60,9 @@ unlocks new body parts that can appear as choices:
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
   [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
   [b]Eye cluster[/b] (from high sense): spot food from farther away.
+  [b]Jet boost[/b] (from speed): tap the Jet button for a quick burst. Cells \
+of your species jet away from hunters on their own.
+  [b]Sticky coat[/b] (from armor): darting food that comes close gets stuck.
   [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
 gold bar over the energy bar and is burned once the stomach runs low.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \

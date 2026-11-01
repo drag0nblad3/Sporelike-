@@ -100,7 +100,7 @@ func radius() -> float:
 
 ## Armor plates and a twitchy, agile body both cost top speed.
 func max_speed() -> float:
-	return lerpf(2.5, 8.0, value_of("speed")) * lerpf(1.0, 0.7, value_of("armor")) \
+	return lerpf(3.3, 8.5, value_of("speed")) * lerpf(1.0, 0.7, value_of("armor")) \
 		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.12 * feature("tail_bud"))
 
 
@@ -133,7 +133,8 @@ func upkeep() -> float:
 		+ 0.2 * value_of("agility") + 0.2 * value_of("sense") + 0.15 * value_of("armor") \
 		+ 0.35 * value_of("toxin") + 0.2 * value_of("jaw") \
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \
-		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster")
+		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
+		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat")
 	return cost * UPKEEP_RATE * lerpf(1.0, 0.7, efficiency)
 
 

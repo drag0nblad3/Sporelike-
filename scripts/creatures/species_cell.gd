@@ -24,6 +24,8 @@ func think(delta: float) -> void:
 	var threat := ecosystem.nearest_predator(me, genome.sense_range())
 	if threat and threat.wants(self):
 		move_input = (me - threat.flat_pos()).normalized()
+		if me.distance_to(threat.flat_pos()) < threat.radius() + radius() + 2.0:
+			try_boost()
 		return
 
 	_search_timer -= delta

@@ -51,11 +51,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	food.refresh()
 	var prey := prey_list()
-	var movers: Array[Vector2] = []
 	for org in prey:
 		_feed(org, delta)
-		movers.append(org.flat_pos())
-	food.startle_near(movers)
+	food.startle_near(prey)
 	_hunt(prey)
 	_reproduce()
 

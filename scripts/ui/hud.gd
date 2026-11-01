@@ -3,10 +3,13 @@ extends CanvasLayer
 ## On-screen text, the touch joystick, and the pause button with its menu.
 ## The population screen is added as a child by Game.
 
+signal jet_pressed
+
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
 
 var _energy: EnergyBar
+var _jet: Button
 var _generation: Label
 var _species: Label
 var _debug: Label
@@ -45,6 +48,17 @@ func _ready() -> void:
 	pause.offset_top = 80.0
 	pause.offset_bottom = 140.0
 	add_child(pause)
+	_jet = Button.new()
+	_jet.text = "Jet"
+	_jet.add_theme_font_size_override("font_size", 32)
+	_jet.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_jet.offset_left = -190.0
+	_jet.offset_top = -190.0
+	_jet.offset_right = -40.0
+	_jet.offset_bottom = -40.0
+	_jet.visible = false
+	_jet.pressed.connect(func() -> void: jet_pressed.emit())
+	add_child(_jet)
 	pause_menu = PauseMenu.new()
 	add_child(pause_menu)
 	pause.pressed.connect(pause_menu.open)
@@ -69,6 +83,12 @@ func show_species(population: int, births: int, averages: Dictionary) -> void:
 	for t in Genome.TRAITS:
 		parts.append("%s %.2f" % [t, averages[t]])
 	_species.text = "Species %d (births %d)\n%s" % [population, births, "  ".join(parts)]
+
+
+## Shows the Jet button when the body has a jet; dims it while recharging.
+func show_jet(has_jet: bool, ready: bool) -> void:
+	_jet.visible = has_jet
+	_jet.modulate.a = 1.0 if ready else 0.4
 
 
 func set_hint_visible(visible_now: bool) -> void:

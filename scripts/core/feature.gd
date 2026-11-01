@@ -10,6 +10,8 @@ const ALL := {
 	"tail_bud": ["Tail bud", "Grow another tail: faster, costs more energy", "speed", 0.6, 2],
 	"fat_store": ["Fat store", "Store extra food past full", "", 0.0, 3],
 	"eye_cluster": ["Eye cluster", "Spot food from farther away", "sense", 0.6, 2],
+	"jet": ["Jet boost", "Tap Jet for a quick burst of speed", "speed", 0.5, 2],
+	"sticky_coat": ["Sticky coat", "Darting food that comes close gets stuck", "armor", 0.3, 2],
 }
 
 

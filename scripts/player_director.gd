@@ -49,6 +49,15 @@ func _process(delta: float) -> void:
 	player.move_input = input
 	camera.follow(player.position, player.radius(), delta)
 	hud.show_status(player.energy, Genome.FULL_ENERGY, player.genome.max_energy())
+	hud.show_jet(player.genome.feature("jet") > 0, player.boost_cooldown <= 0.0)
+	if Input.is_physical_key_pressed(KEY_SPACE):
+		player.try_boost()
+
+
+## Called from the HUD's Jet button.
+func boost() -> void:
+	if is_alive():
+		player.try_boost()
 
 
 func _on_player_died(_org: Organism, cause: String) -> void:

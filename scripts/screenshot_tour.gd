@@ -20,7 +20,7 @@ func _run() -> void:
 	await get_tree().create_timer(1.0).timeout
 	# Show off the branching upgrades and the stored-food bar.
 	var g := game.director.genome.copy()
-	g.features = {"tail_bud": 1, "grabbing_cilia": 1, "fat_store": 2}
+	g.features = {"tail_bud": 1, "grabbing_cilia": 1, "fat_store": 2, "jet": 1}
 	game.director.retire()
 	game.director.spawn(g, Vector2.ZERO)
 	game.director.player.energy = 17.0

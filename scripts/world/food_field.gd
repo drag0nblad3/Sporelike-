@@ -63,12 +63,21 @@ func refresh() -> void:
 	_grid.rebuild(get_children())
 
 
-## Darting food flees from any of these positions that come close.
-func startle_near(threats: Array[Vector2]) -> void:
-	for t in threats:
+## Darting food flees from any of these organisms that come close, unless
+## one has a sticky coat and the food is within its sticky reach: then the
+## food is stuck where it is.
+func startle_near(movers: Array[Organism]) -> void:
+	for org in movers:
+		var t := org.flat_pos()
+		var sticky := org.genome.feature("sticky_coat")
+		var stick_reach := org.radius() + 0.8 * sticky
 		for item in _grid.near(t, STARTLE_RANGE):
-			if item.flee_speed > 0.0 and \
-					item.flat_pos().distance_squared_to(t) < STARTLE_RANGE * STARTLE_RANGE:
+			if item.flee_speed <= 0.0:
+				continue
+			var d := item.flat_pos().distance_to(t)
+			if sticky > 0 and d < stick_reach:
+				item.velocity = Vector2.ZERO
+			elif d < STARTLE_RANGE:
 				item.startle(t)
 
 

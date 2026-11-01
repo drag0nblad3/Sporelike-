@@ -69,6 +69,7 @@ func _ready() -> void:
 	director.hud = hud
 	director.died.connect(_on_player_died)
 	director.ate.connect(cycle.record_food)
+	hud.jet_pressed.connect(director.boost)
 	add_child(director)
 
 	saver = GameSaver.new()

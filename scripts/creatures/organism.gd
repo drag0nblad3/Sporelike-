@@ -17,6 +17,10 @@ var dormant := false
 ## Multiplier on genome upkeep; predators set it to 0.
 var upkeep_scale := 1.0
 
+## Seconds left on a jet boost, and until the next one is ready.
+var boost_time := 0.0
+var boost_cooldown := 0.0
+
 var _wander_dir := Vector2.ZERO
 var _wander_timer := 0.0
 
@@ -58,6 +62,16 @@ func think(_delta: float) -> void:
 	pass
 
 
+## Fires the jet boost if this body has one and it is ready.
+func try_boost() -> bool:
+	var level := genome.feature("jet")
+	if level <= 0 or boost_cooldown > 0.0:
+		return false
+	boost_time = 0.35
+	boost_cooldown = 4.5 - 1.5 * level
+	return true
+
+
 func eat(amount: float) -> void:
 	energy = minf(energy + amount, genome.max_energy())
 	ate.emit(amount)
@@ -92,10 +106,18 @@ func wander_input(delta: float) -> Vector2:
 
 func _move(delta: float) -> void:
 	var top_speed := genome.max_speed()
+	var push := genome.acceleration()
+	boost_cooldown = maxf(boost_cooldown - delta, 0.0)
+	if boost_time > 0.0:
+		boost_time -= delta
+		top_speed *= 2.2
+		push *= 4.0
 	var dir := Vector3(move_input.x, 0.0, move_input.y)
 	if dir.length() > 1.0:
 		dir = dir.normalized()
-	velocity += dir * genome.acceleration() * delta
+	if boost_time > 0.0 and dir.length() < 0.1:
+		dir = velocity.normalized() if velocity.length() > 0.1 else -global_basis.z
+	velocity += dir * push * delta
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
