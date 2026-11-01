@@ -23,12 +23,14 @@ func _ready() -> void:
 	ground.material_override = _material(BASE_COLOR, 0.0)
 	ground.position = Vector3((coord.x + 0.5) * size, -1.4, (coord.y + 0.5) * size)
 	add_child(ground)
-	var y := -1.39
+	# Blobs overlap, also across chunk edges, so each gets its own clear
+	# height step (neighbouring chunks start at different heights) to
+	# keep them from flickering through each other.
+	var y := -1.39 + 0.004 * posmod(coord.x + 2 * coord.y, 3)
 	for patch in patches:
-		if patch.hidden:
-			continue
-		y += 0.001
-		_disc(patch, y)
+		y += 0.012
+		if not patch.hidden:
+			_disc(patch, y)
 
 
 ## A flat blob following the patch's outline, as a triangle fan.
