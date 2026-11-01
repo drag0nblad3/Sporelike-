@@ -7,7 +7,7 @@ extends Node3D
 
 const STARTLE_RANGE := 2.5
 ## Organisms are never bigger than this, so it bounds the eating reach.
-const MAX_REACH := 2.5
+const MAX_REACH := 3.5
 
 var rng: RandomNumberGenerator
 var patches: Array[FoodPatch] = []
@@ -99,7 +99,7 @@ func consume_near(org: Organism, delta: float) -> float:
 	for item in _grid.near(me, MAX_REACH):
 		if item.is_queued_for_deletion():
 			continue
-		var reach := org.radius() + item.kind.size
+		var reach := org.radius() + item.kind.size + org.genome.grab_reach()
 		if me.distance_squared_to(item.flat_pos()) > reach * reach:
 			continue
 		var crack := org.genome.crack_time(item.hardness)

@@ -6,7 +6,6 @@ extends Node3D
 signal died(organism: Organism, cause: String)
 signal ate(amount: float)
 
-const MAX_ENERGY := 12.0
 
 var genome: Genome
 var energy := 6.0
@@ -60,7 +59,7 @@ func think(_delta: float) -> void:
 
 
 func eat(amount: float) -> void:
-	energy = minf(energy + amount, MAX_ENERGY)
+	energy = minf(energy + amount, genome.max_energy())
 	ate.emit(amount)
 
 

@@ -149,7 +149,11 @@ func _on_player_died(cause: String) -> void:
 func _on_generation_ended(stats: GenerationStats) -> void:
 	get_tree().paused = true
 	stats.progress_text = progress.summary(progress.add_generation(stats))
-	var choices := MutationChoice.roll(rng, 3)
+	var genomes: Array[Genome] = [director.genome]
+	for member in ecosystem.species:
+		genomes.append(member.genome)
+	stats.adapt_text = Hardship.adapt(stats, genomes)
+	var choices := MutationChoice.roll(rng, 3, ecosystem.trait_averages(), director.genome)
 	screen.open(stats, choices)
 	if smoke_test:
 		screen.call_deferred("_pick", choices[0])

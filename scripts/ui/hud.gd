@@ -6,7 +6,7 @@ extends CanvasLayer
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
 
-var _status: Label
+var _energy: EnergyBar
 var _generation: Label
 var _species: Label
 var _debug: Label
@@ -19,12 +19,13 @@ func _ready() -> void:
 	joystick = VirtualJoystick.new()
 	add_child(joystick)
 
-	_status = _corner_label(Vector2(24, 18), 30)
-	_species = _corner_label(Vector2(24, 58), 20)
-	_debug = _corner_label(Vector2(24, 122), 18)
+	_energy = EnergyBar.new()
+	add_child(_energy)
+	_species = _corner_label(Vector2(24, 36), 20)
+	_debug = _corner_label(Vector2(24, 100), 18)
 	_debug.modulate = Color(1, 1, 1, 0.5)
 
-	_generation = _corner_label(Vector2(0, 18), 30)
+	_generation = _corner_label(Vector2(0, 34), 30)
 	_generation.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_generation.offset_left = -360.0
 	_generation.offset_right = -24.0
@@ -40,8 +41,8 @@ func _ready() -> void:
 	pause.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	pause.offset_left = -180.0
 	pause.offset_right = -24.0
-	pause.offset_top = 64.0
-	pause.offset_bottom = 124.0
+	pause.offset_top = 80.0
+	pause.offset_bottom = 140.0
 	add_child(pause)
 	pause_menu = PauseMenu.new()
 	add_child(pause_menu)
@@ -54,8 +55,8 @@ func _process(delta: float) -> void:
 	_debug.text = "FPS %d" % Engine.get_frames_per_second()
 
 
-func show_status(energy: float, max_energy: float) -> void:
-	_status.text = "Energy %d/%d" % [ceili(energy), int(max_energy)]
+func show_status(energy: float, full: float, most: float) -> void:
+	_energy.show_energy(energy, full, most)
 
 
 func show_generation(number: int, seconds_left: float, food: int) -> void:

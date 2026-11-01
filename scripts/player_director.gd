@@ -48,7 +48,7 @@ func _process(delta: float) -> void:
 		_has_moved = true
 	player.move_input = input
 	camera.follow(player.position, player.radius(), delta)
-	hud.show_status(player.energy, Organism.MAX_ENERGY)
+	hud.show_status(player.energy, Genome.FULL_ENERGY, player.genome.max_energy())
 
 
 func _on_player_died(_org: Organism, cause: String) -> void:

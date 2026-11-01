@@ -5,8 +5,9 @@ extends RefCounted
 
 const TEXT := """[font_size=34][b]How it works[/b][/font_size]
 
-[b]Energy[/b]: your fuel. Every trait costs energy each second just to have \
-(its upkeep). Eat to refill it. At zero you starve.
+[b]Energy[/b]: your fuel, shown by the bar across the top. Every trait costs \
+energy each second just to have (its upkeep), so the bar keeps emptying. Eat \
+to refill it. When it runs out you starve.
 
 [font_size=28][b]Traits[/b][/font_size] (0 to 1; higher is stronger but costs more upkeep)
 [b]Size[/b]: a bigger body with a longer reach, but slower to turn.
@@ -54,6 +55,15 @@ everyone in the species this generation, so deaths do not drag it down.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.
 [b]Mutation choice[/b]: pick a trait to push your whole species toward.
+[b]Upgrades[/b]: each button says what it does. Pushing a trait far enough \
+unlocks new body parts that can appear as choices:
+  [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
+  [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
+  [b]Eye cluster[/b] (from high sense): spot food from farther away.
+  [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
+gold bar over the energy bar and is burned once the stomach runs low.
+[b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \
+starved), your species adapts to burn less energy, so the game keeps going.
 [b]Influence[/b]: the more food you ate this generation, the stronger your choice.
 [b]Multicellular progress[/b]: thriving generations (a big population and \
 plenty of food eaten) move your species toward its next stage, where single \
