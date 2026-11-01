@@ -14,6 +14,20 @@ var values := {
 }
 
 
+## Average of each trait across several genomes (all zeros when empty).
+static func average(genomes: Array[Genome]) -> Dictionary:
+	var sums := {}
+	for t in TRAITS:
+		sums[t] = 0.0
+	for g in genomes:
+		for t in TRAITS:
+			sums[t] += g.value_of(t)
+	if not genomes.is_empty():
+		for t in TRAITS:
+			sums[t] /= genomes.size()
+	return sums
+
+
 func copy() -> Genome:
 	var g := Genome.new()
 	g.values = values.duplicate()

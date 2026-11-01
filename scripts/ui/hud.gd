@@ -1,10 +1,12 @@
 class_name Hud
 extends CanvasLayer
-## On-screen text and the touch joystick.
+## On-screen text and the touch joystick. The population screen is added as
+## a child by main.gd.
 
 var joystick: VirtualJoystick
 
 var _status: Label
+var _generation: Label
 var _species: Label
 var _debug: Label
 var _hint: Label
@@ -21,6 +23,12 @@ func _ready() -> void:
 	_debug = _corner_label(Vector2(24, 122), 18)
 	_debug.modulate = Color(1, 1, 1, 0.5)
 
+	_generation = _corner_label(Vector2(0, 18), 30)
+	_generation.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_generation.offset_left = -360.0
+	_generation.offset_right = -24.0
+	_generation.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+
 	_hint = _center_label(-90.0, 28)
 	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
 	_message = _center_label(-200.0, 40)
@@ -32,8 +40,12 @@ func _process(delta: float) -> void:
 	_debug.text = "FPS %d" % Engine.get_frames_per_second()
 
 
-func show_status(energy: float, max_energy: float, eaten: int) -> void:
-	_status.text = "Energy %d/%d   Food %d" % [ceili(energy), int(max_energy), eaten]
+func show_status(energy: float, max_energy: float) -> void:
+	_status.text = "Energy %d/%d" % [ceili(energy), int(max_energy)]
+
+
+func show_generation(number: int, seconds_left: float, food: int) -> void:
+	_generation.text = "Gen %d  %ds  Food %d" % [number, ceili(maxf(seconds_left, 0.0)), food]
 
 
 func show_species(population: int, births: int, averages: Dictionary) -> void:

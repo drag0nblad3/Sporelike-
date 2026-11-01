@@ -4,6 +4,7 @@ extends Node3D
 ## the predators. Resolves eating, predation and reproduction each frame.
 
 signal species_changed
+signal member_died(cause: String)
 
 const START_POPULATION := 14
 const MAX_POPULATION := 40
@@ -62,17 +63,23 @@ func nearest_predator(pos: Vector2, max_range: float) -> Predator:
 
 ## Average of each trait across the AI species members.
 func trait_averages() -> Dictionary:
-	var sums := {}
-	for t in Genome.TRAITS:
-		sums[t] = 0.0
-	if species.is_empty():
-		return sums
+	var genomes: Array[Genome] = []
 	for member in species:
-		for t in Genome.TRAITS:
-			sums[t] += member.genome.values[t]
-	for t in Genome.TRAITS:
-		sums[t] /= species.size()
-	return sums
+		genomes.append(member.genome)
+	return Genome.average(genomes)
+
+
+## A random living member to be the player's next body, or null if extinct.
+func pick_parent() -> SpeciesCell:
+	if species.is_empty():
+		return null
+	return species[rng.randi() % species.size()]
+
+
+## Restart the species from one genome after an extinction.
+func reseed(founder: Genome) -> void:
+	for _i in START_POPULATION:
+		spawn_member(founder.mutated(rng), _random_point(4.0, 20.0), 6.0)
 
 
 func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:
@@ -144,6 +151,7 @@ func _random_point(min_dist: float, max_dist: float) -> Vector2:
 	return Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(min_dist, max_dist)
 
 
-func _on_member_died(org: Organism, _cause: String) -> void:
+func _on_member_died(org: Organism, cause: String) -> void:
 	species.erase(org as SpeciesCell)
+	member_died.emit(cause)
 	species_changed.emit()
