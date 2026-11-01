@@ -29,6 +29,7 @@ func _ready() -> void:
 	_generation.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_generation.offset_left = -360.0
 	_generation.offset_right = -24.0
+	_generation.offset_top = 34.0
 	_generation.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 	_hint = _center_label(-90.0, 28)
