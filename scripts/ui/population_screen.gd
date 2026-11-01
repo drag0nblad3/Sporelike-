@@ -1,0 +1,107 @@
+class_name PopulationScreen
+extends Control
+## Shown between generations while the game is paused: how the species
+## changed, what killed it, and three mutations the player can encourage.
+
+signal chosen(choice: MutationChoice)
+
+const BAR_WIDTH := 260.0
+const UP := Color(0.5, 1.0, 0.55)
+const DOWN := Color(1.0, 0.55, 0.45)
+
+var _box: VBoxContainer
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	visible = false
+
+	var shade := ColorRect.new()
+	shade.color = Color(0.0, 0.03, 0.06, 0.85)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(shade)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+	_box = VBoxContainer.new()
+	_box.add_theme_constant_override("separation", 6)
+	center.add_child(_box)
+
+
+func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
+	for child in _box.get_children():
+		child.queue_free()
+
+	var title := "Generation %d complete" % stats.number
+	if stats.ended_by == "eaten":
+		title = "You were eaten. Generation %d ends" % stats.number
+	elif stats.ended_by == "starved":
+		title = "You starved. Generation %d ends" % stats.number
+	_add_label(title, 34)
+	_add_label("Population %d to %d   births %d   eaten %d   starved %d" % [
+		stats.start_population, stats.end_population, stats.births,
+		stats.deaths["eaten"], stats.deaths["starved"]], 22)
+
+	for t in Genome.TRAITS:
+		_add_trait_row(t, stats.end_averages.get(t, 0.0), stats.change(t))
+
+	_add_label("You ate %d food: your choice counts x%.1f" % [
+		stats.food_eaten, stats.influence()], 22)
+	_add_label("Encourage a mutation in your species:", 24)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_box.add_child(row)
+	for c in choices:
+		var button := Button.new()
+		button.text = c.label()
+		button.custom_minimum_size = Vector2(250, 80)
+		button.add_theme_font_size_override("font_size", 26)
+		button.pressed.connect(func() -> void: _pick(c))
+		row.add_child(button)
+	visible = true
+
+
+func _pick(choice: MutationChoice) -> void:
+	visible = false
+	chosen.emit(choice)
+
+
+func _add_trait_row(trait_name: String, value: float, change: float) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	_box.add_child(row)
+
+	var name_label := _make_label(trait_name.capitalize(), 22)
+	name_label.custom_minimum_size = Vector2(110, 0)
+	row.add_child(name_label)
+
+	var track := ColorRect.new()
+	track.color = Color(1, 1, 1, 0.12)
+	track.custom_minimum_size = Vector2(BAR_WIDTH, 22)
+	row.add_child(track)
+	var fill := ColorRect.new()
+	fill.color = Color(0.45, 0.85, 1.0)
+	fill.size = Vector2(BAR_WIDTH * clampf(value, 0.0, 1.0), 22)
+	track.add_child(fill)
+
+	var delta_label := _make_label("%+.2f" % change, 22)
+	if absf(change) >= 0.005:
+		delta_label.modulate = UP if change > 0.0 else DOWN
+	row.add_child(delta_label)
+
+
+func _add_label(text: String, size: int) -> void:
+	var label := _make_label(text, size)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_box.add_child(label)
+
+
+func _make_label(text: String, size: int) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", size)
+	return label

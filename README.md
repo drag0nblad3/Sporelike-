@@ -2,7 +2,7 @@
 
 An evolution game for Android and Windows, built with [Godot 4](https://godotengine.org/). You guide a species from a single cell upward by playing individual organisms and steering the population.
 
-Current state: **evolution loop**. A population of cells eats, reproduces with small mutations and gets hunted by predators. You play one of them.
+Current state: **generations**. A population of cells eats, reproduces with small mutations and gets hunted. You play one of them; between 90-second generations you see how the species changed, pick a mutation to encourage, and are reborn as one of your descendants.
 
 ## Playtest on Android
 
@@ -27,7 +27,8 @@ The `ci/debug.keystore` file is a debug-only signing key with the standard publi
 
 | Path | What it is |
 | --- | --- |
-| `scripts/main.gd` | Wires the arena, ecosystem, player, camera and HUD together |
+| `scripts/main.gd` | Wires everything together and runs the generation loop |
+| `scripts/player_director.gd` | The player's current body: spawn, steering, camera, death |
 | `scripts/core/` | `Genome` (eight heritable traits and mutation) and `FoodKind` (the four food types and their zones) |
 | `scripts/creatures/` | `Organism` base class, its visuals, the player, AI species members, predators |
 | `scripts/world/` | Arena zones, food items and field, and the ecosystem that runs eating, hunting and births |

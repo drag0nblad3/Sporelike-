@@ -75,14 +75,20 @@ jobs:
       - name: Import project
         run: godot --headless --path . --import
 
-      - name: Smoke test (run the game headless for a few seconds)
+      - name: Smoke test (15 game-seconds headless, several short generations)
         run: |
-          godot --headless --path . --quit-after 300 2>&1 | tee /tmp/run.log
+          godot --headless --path . --fixed-fps 60 --quit-after 900 -- --smoke 2>&1 | tee /tmp/run.log
           # Ignore Godot's shutdown-only leak report: classes that reference
           # each other (Ecosystem <-> SpeciesCell) are freed after it prints.
           if grep -E "SCRIPT ERROR|Parse Error|^ERROR" /tmp/run.log \
               | grep -v "resources still in use at exit"; then
             echo "::error::The game logged errors while running. See the lines above."
+            exit 1
+          fi
+          # The run must get through several generations and mutation picks.
+          GENS=$(grep -c "smoke: generation" /tmp/run.log || true)
+          if [ "${GENS}" -lt 3 ]; then
+            echo "::error::Expected at least 3 generations in the smoke test, saw ${GENS}."
             exit 1
           fi
 

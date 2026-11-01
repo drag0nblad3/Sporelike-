@@ -13,4 +13,4 @@ An evolution game in Godot 4.5 (GDScript), built for Android first and Windows s
 ## Checking changes
 
 - No Godot binary is available in the Claude environment. Run `gdparse` and `gdlint` from `pip install "gdtoolkit==4.*"` for syntax, then rely on CI.
-- CI (`.github/workflows/build.yml`) runs the game headless for 300 frames and fails on any `SCRIPT ERROR`, then exports the APK and Windows build. Merges to `main` replace the `playtest` release.
+- CI (`.github/workflows/build.yml`) runs the game headless for 15 game-seconds with `-- --smoke` (2-second generations, mutations auto-picked) and fails on any `SCRIPT ERROR`, then exports the APK and Windows build. Merges to `main` replace the `playtest` release.
