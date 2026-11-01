@@ -38,11 +38,13 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if is_instance_valid(player) and player.alive:
-		_feed(player)
-	for member in species:
-		_feed(member)
-	_hunt()
+	var prey := prey_list()
+	var movers: Array[Vector2] = []
+	for org in prey:
+		_feed(org)
+		movers.append(org.flat_pos())
+	food.startle_near(movers)
+	_hunt(prey)
 	_reproduce()
 
 
@@ -55,20 +57,6 @@ func nearest_predator(pos: Vector2, max_range: float) -> Predator:
 		if d < best_d:
 			best_d = d
 			best = p
-	return best
-
-
-## Closest organism this predator can sense and swallow, or null.
-func nearest_prey_for(hunter: Predator) -> Organism:
-	var best: Organism = null
-	var best_d := hunter.genome.sense_range()
-	for prey in _all_prey():
-		if not hunter.can_swallow(prey):
-			continue
-		var d := hunter.flat_pos().distance_to(prey.flat_pos())
-		if d < best_d:
-			best_d = d
-			best = prey
 	return best
 
 
@@ -111,25 +99,22 @@ func _spawn_predator(at: Vector2) -> void:
 func _feed(org: Organism) -> void:
 	if not org.alive:
 		return
-	var eaten := food.consume_near(org.flat_pos(), org.radius() + FoodField.FOOD_RADIUS)
-	if eaten > 0:
-		org.eat(eaten * FoodField.ENERGY_PER_FOOD)
+	var gained := food.consume_near(org)
+	if gained > 0.0:
+		org.eat(gained)
 
 
-func _hunt() -> void:
+func _hunt(targets: Array[Organism]) -> void:
 	for hunter in predators:
 		if hunter.cooldown > 0.0:
 			continue
-		for prey in _all_prey():
-			if not hunter.can_swallow(prey):
+		for prey in targets:
+			if not prey.alive or not hunter.wants(prey):
 				continue
 			var reach := hunter.radius() + prey.radius() * 0.5
-			if hunter.flat_pos().distance_to(prey.flat_pos()) > reach:
-				continue
-			hunter.cooldown = Predator.BITE_COOLDOWN
-			if rng.randf() >= prey.genome.armor():
-				prey.die("eaten")
-			break
+			if hunter.flat_pos().distance_to(prey.flat_pos()) <= reach:
+				hunter.try_bite(prey, rng)
+				break
 
 
 func _reproduce() -> void:
@@ -144,7 +129,8 @@ func _reproduce() -> void:
 			births += 1
 
 
-func _all_prey() -> Array[Organism]:
+## Every living organism a predator might hunt, the player included.
+func prey_list() -> Array[Organism]:
 	var list: Array[Organism] = []
 	for member in species:
 		if member.alive:

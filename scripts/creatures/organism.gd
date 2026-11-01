@@ -90,7 +90,7 @@ func _move(delta: float) -> void:
 	var dir := Vector3(move_input.x, 0.0, move_input.y)
 	if dir.length() > 1.0:
 		dir = dir.normalized()
-	velocity += dir * top_speed * 2.0 * delta
+	velocity += dir * genome.acceleration() * delta
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
@@ -105,4 +105,4 @@ func _move(delta: float) -> void:
 
 	if velocity.length() > 0.1:
 		var target := atan2(velocity.x, velocity.z)
-		rotation.y = lerp_angle(rotation.y, target, minf(8.0 * delta, 1.0))
+		rotation.y = lerp_angle(rotation.y, target, minf(genome.turn_rate() * delta, 1.0))
