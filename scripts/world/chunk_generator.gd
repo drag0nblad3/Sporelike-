@@ -9,8 +9,11 @@ extends RefCounted
 ## fringing meadows.
 
 const SIZE := 40.0
-const MIN_PATCHES := 1
-const MAX_PATCHES := 3
+const MIN_PATCHES := 3
+const MAX_PATCHES := 5
+## Placement attempts per chunk; a spot that overlaps an earlier patch is
+## skipped, so crowded chunks end up with fewer than the target.
+const TRIES := 12
 ## Chance a patch is the region's own kind rather than any kind.
 const REGION_BIAS := 0.7
 ## Kind -> [companion kind, chance]. Companions sit against the patch's edge.
@@ -47,7 +50,9 @@ func patches_for(coord: Vector2i) -> Array[FoodPatch]:
 		# The species always starts on an algae meadow at the center.
 		list.append(FoodPatch.make(_by_id["algae"], Vector2.ZERO, 10.0, coord, rng))
 	var n := rng.randi_range(MIN_PATCHES, MAX_PATCHES)
-	for _i in n:
+	for _i in TRIES:
+		if list.size() >= n:
+			break
 		var kind := _pick_kind(origin + Vector2(SIZE, SIZE) * 0.5, rng)
 		var r := rng.randf_range(kind.patch_min, kind.patch_max)
 		var at := origin + Vector2(rng.randf_range(r, SIZE - r), rng.randf_range(r, SIZE - r))

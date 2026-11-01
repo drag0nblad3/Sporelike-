@@ -30,28 +30,28 @@ var size := 0.22
 
 static func all() -> Array[FoodKind]:
 	# Algae: big sunlit meadows. Plentiful, easy, low value.
-	var algae := _make("algae", Color(0.45, 1.0, 0.4), 2.5, true, 0.075, 0.85)
+	var algae := _make("algae", Color(0.45, 1.0, 0.4), 2.5, true, 0.05, 0.85)
 	algae.hardness_max = 0.3
-	_patches(algae, 6.0, 11.0, Color(0.12, 0.38, 0.3))
+	_patches(algae, 7.0, 12.0, Color(0.12, 0.38, 0.3))
 
 	# Plankton: open-water clouds. Drifts and darts away; rich if caught.
-	var plankton := _make("plankton", Color(1.0, 0.9, 0.3), 3.5, false, 0.055, 1.75)
+	var plankton := _make("plankton", Color(1.0, 0.9, 0.3), 3.5, false, 0.04, 1.75)
 	plankton.drift_speed = 1.2
 	plankton.flee_speed = 5.5
 	plankton.hardness_max = 0.1
-	_patches(plankton, 6.0, 10.0, Color(0.14, 0.34, 0.52))
+	_patches(plankton, 7.0, 11.0, Color(0.14, 0.34, 0.52))
 
 	# Shells: beds around warm vents. Very rich, needs a strong jaw.
-	var shells := _make("shells", Color(0.75, 0.45, 1.0), 5.0, false, 0.2, 1.8)
+	var shells := _make("shells", Color(0.75, 0.45, 1.0), 5.0, false, 0.14, 1.8)
 	shells.hardness_min = 0.3
 	shells.hardness_max = 0.7
 	shells.size = 0.3
-	_patches(shells, 3.0, 5.0, Color(0.45, 0.18, 0.08), 0.6)
+	_patches(shells, 3.5, 6.0, Color(0.45, 0.18, 0.08), 0.6)
 
 	# Motes: faint spores in dark trenches. Only keen senses find them.
-	var motes := _make("motes", Color(0.4, 0.75, 1.0, 0.6), 3.0, true, 0.12, 1.2)
+	var motes := _make("motes", Color(0.4, 0.75, 1.0, 0.6), 3.0, true, 0.08, 1.2)
 	motes.visibility = 0.35
-	_patches(motes, 4.0, 7.0, Color(0.02, 0.06, 0.12))
+	_patches(motes, 5.0, 8.0, Color(0.02, 0.06, 0.12))
 
 	var list: Array[FoodKind] = [algae, plankton, shells, motes]
 	return list
