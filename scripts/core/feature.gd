@@ -2,7 +2,9 @@ class_name Feature
 extends RefCounted
 ## Organelles: branching upgrades that add a new capability with a new visible
 ## part (drawn by OrganelleParts), grown once a trait is developed enough
-## (or, for storage, at any time). Each has a few levels.
+## (or, for storage, at any time). Chloroplasts and Vent symbionts unlock
+## from time spent in sunlit meadows or by vents ("sun" and "vent" in the
+## averages, see Habits.with_habits). Each has a few levels.
 ## Genome reads the levels; this file says what exists and when it unlocks.
 
 ## Extra reach per Sticky coat level at which darting food sticks.
@@ -11,14 +13,21 @@ const STICKY_REACH := 1.2
 ## id -> [label, effect text, unlocking trait ("" = always), threshold, max level]
 const ALL := {
 	"grabbing_cilia": ["Grabbing cilia", "Cilia snatch food that is very close", "agility", 0.55, 2],
-	"tail_bud": ["Tail bud", "Grow another tail: faster, costs more energy", "speed", 0.6, 2],
-	"fat_store": ["Fat store", "Store extra food past full", "", 0.0, 3],
-	"gut_lining": ["Gut lining", "Digest more of every food", "", 0.0, 3],
-	"eye_cluster": ["Eye cluster", "Spot food from farther away", "sense", 0.6, 2],
-	"jet": ["Jet boost", "Tap Jet for a quick burst of speed", "speed", 0.5, 2],
-	"sticky_coat": ["Sticky coat", "Darting food that comes close gets stuck", "armor", 0.3, 2],
-	"food_scent": ["Scent trail", "An arrow points to the nearest food you can eat, even hidden",
+	"tail_bud": ["Second flagellum", "Grow another whip-like flagellum: faster, costs more energy",
+		"speed", 0.6, 2],
+	"fat_store": ["Lipid droplets", "Store extra food past full as oil droplets", "", 0.0, 3],
+	"gut_lining": ["Digestive vacuoles", "Digest more of every food", "", 0.0, 3],
+	"eye_cluster": ["Eyespot cluster", "Spot food from farther away", "sense", 0.6, 2],
+	"jet": ["Contractile jet", "Tap Jet: a vacuole squirts water for a quick burst", "speed", 0.5, 2],
+	"sticky_coat": ["Mucus coat", "Darting food that comes close gets stuck", "armor", 0.3, 2],
+	"food_scent": ["Chemoreceptors",
+		"Taste the water: an arrow points to the nearest food you can eat, even hidden",
 		"sense", 0.65, 1],
+	"chloroplasts": ["Chloroplasts", "Photosynthesis: make energy while over sunlit algae meadows",
+		"sun", 0.25, 3],
+	"vent_symbionts": ["Vent symbionts",
+		"Chemosynthesis: bacteria inside you make energy from vent chemicals over shell beds",
+		"vent", 0.25, 2],
 }
 
 

@@ -25,7 +25,7 @@ func build(genome: Genome, tint: Color) -> void:
 	OrganelleParts.add_all(self, _body, genome)
 	add_child(VisualParts.eye(lerpf(0.12, 0.3, genome.value_of("sense"))))
 	if genome.value_of("jaw") > 0.25:
-		add_child(VisualParts.jaws(genome.value_of("jaw")))
+		add_child(VisualParts.mouth(genome.value_of("jaw")))
 	# The main tail, plus a bud tail on alternating sides per tail_bud level.
 	var length := lerpf(0.6, 1.8, genome.value_of("speed"))
 	for i in 1 + genome.feature("tail_bud"):

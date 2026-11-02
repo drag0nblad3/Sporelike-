@@ -16,6 +16,8 @@ const COLORS := {
 	"food_scent": Color(0.4, 0.95, 1.0),
 	"toxin": Color(0.75, 0.3, 1.0),
 	"efficiency": Color(1.0, 0.6, 0.35),
+	"chloroplasts": EnergyOrganelles.CHLOROPLAST,
+	"vent_symbionts": EnergyOrganelles.SYMBIONT,
 }
 
 
@@ -31,6 +33,7 @@ static func add_all(root: Node3D, body: Node3D, genome: Genome) -> void:
 	_add(body, fat_drops(genome.feature("fat_store")))
 	_add(body, vesicles(roundi(genome.value_of("toxin") * 8.0)))
 	_add(body, mitochondria(roundi(genome.efficiency * 6.0)))
+	EnergyOrganelles.add_all(body, genome)
 
 
 static func _add(parent: Node3D, part: Node3D) -> void:

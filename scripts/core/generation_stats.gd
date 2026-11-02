@@ -23,6 +23,8 @@ var energy_needed := 1.0
 var progress_text := ""
 ## Filled in by Game when hard times made the species more efficient.
 var adapt_text := ""
+## Filled in by EvolutionRound: how the player's habits nudged the species.
+var habit_text := ""
 ## Filled in by Game: how the hunters and the rival species fared.
 var hunter_text := ""
 var rival_text := ""

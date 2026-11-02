@@ -72,6 +72,7 @@ func _ready() -> void:
 	director.hud = hud
 	director.died.connect(_on_player_died)
 	director.ate.connect(cycle.record_food)
+	director.made_energy.connect(cycle.record_energy)
 	hud.jet_pressed.connect(director.boost)
 	add_child(director)
 
@@ -152,6 +153,7 @@ func _begin_generation() -> void:
 ## and pulls the camera back a little more as the species progresses.
 func _start_cycle() -> void:
 	cycle.begin()
+	director.tracker.reset(cycle.length)
 	StatSheet.shared = director.genome
 	cycle.stats.energy_needed = director.genome.upkeep() * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
