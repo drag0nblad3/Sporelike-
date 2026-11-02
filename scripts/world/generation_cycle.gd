@@ -58,6 +58,12 @@ func record_food(energy: float) -> void:
 		stats.energy_gained += energy
 
 
+## Energy made without eating counts toward Fed, but not as a meal.
+func record_energy(energy: float) -> void:
+	if running:
+		stats.energy_gained += energy
+
+
 func apply(choice: MutationChoice) -> void:
 	for member in ecosystem.species:
 		choice.apply_to(member.genome, stats.influence())

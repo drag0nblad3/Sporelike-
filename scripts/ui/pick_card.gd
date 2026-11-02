@@ -32,7 +32,15 @@ func _init(title: String, effect: String) -> void:
 	column.add_child(rule)
 	for line in effect.split("\n"):
 		var tint := UiTheme.COST if line.begins_with("Energy use") else UiTheme.INK
+		if line.begins_with(MutationChoice.REASON_PREFIX):
+			tint = UiTheme.GOLD
 		column.add_child(_line(line, 20, tint))
+
+
+## Puts a drawing of the pick (UpgradeIcon) above the name.
+func add_icon(icon: Control) -> void:
+	_column.add_child(icon)
+	_column.move_child(icon, 0)
 
 
 ## The button grows to fit the text it holds (a Button ignores its children).

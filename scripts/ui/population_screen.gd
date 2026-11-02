@@ -61,7 +61,7 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 	_add_label("your choice counts x%.1f" % stats.influence(), 22)
 	if stats.progress_text != "":
 		_add_label(stats.progress_text, 22)
-	for line in [stats.adapt_text, stats.hunter_text, stats.rival_text]:
+	for line in [stats.habit_text, stats.adapt_text, stats.hunter_text, stats.rival_text]:
 		if line != "":
 			_add_label(line, 22)
 	var ask := _add_label(heading, 26)
@@ -73,6 +73,7 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 	_box.add_child(row)
 	for c in choices:
 		var button := PickCard.new(c.label(), c.effect(you, stats.influence()))
+		button.add_icon(UpgradeIcon.make(c))
 		button.pressed.connect(func() -> void: _pick(c))
 		row.add_child(button)
 	visible = true
@@ -108,7 +109,7 @@ func _add_trait_row(trait_name: String, value: float, change: float, detail: Str
 	row.add_theme_constant_override("separation", 12)
 	_box.add_child(row)
 
-	var name_label := _make_label(trait_name.capitalize(), 22)
+	var name_label := _make_label(TraitNames.of(trait_name), 22)
 	name_label.custom_minimum_size = Vector2(110, 0)
 	row.add_child(name_label)
 

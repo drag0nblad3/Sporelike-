@@ -149,6 +149,7 @@ func _feed(org: Organism, delta: float) -> void:
 	var gained := food.consume_near(org, delta)
 	if gained > 0.0:
 		org.eat(gained)
+	EnergySources.feed(org, food.patches, delta)
 
 
 func _hunt(targets: Array[Organism]) -> void:
