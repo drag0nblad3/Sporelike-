@@ -152,6 +152,7 @@ func _begin_generation() -> void:
 ## and pulls the camera back a little more as the species progresses.
 func _start_cycle() -> void:
 	cycle.begin()
+	StatSheet.shared = director.genome
 	cycle.stats.energy_needed = director.genome.upkeep() * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
 
