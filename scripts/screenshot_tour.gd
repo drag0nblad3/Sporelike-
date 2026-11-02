@@ -47,7 +47,7 @@ func _run() -> void:
 		return null))
 	game.camera.zoom = 4.0
 	await _visit("teaser", _find(_teaser.bind(TeaserPlant)))
-	await _visit("colony", _find(_teaser.bind(TeaserColony)))
+	await _visit("giant_colony", _find(_teaser.bind(TeaserColony)))
 	game.camera.zoom = 1.0
 	await get_tree().create_timer(1.0).timeout
 	game.hud.pause_menu.open()
@@ -55,8 +55,9 @@ func _run() -> void:
 	game.hud.pause_menu.close()
 	game.cycle.finish("time")
 	await _shoot("generation")
-	game.visible = false
-	game.hud.visible = false
+	game.queue_free()
+	await get_tree().process_frame
+	await _shoot_colony_lab()
 	title.open(true)
 	await _shoot("title")
 	print("shot: done")
@@ -92,6 +93,27 @@ func _visit(shot_name: String, at: Vector2) -> void:
 	game.director.player.position = Vector3(at.x, 0.0, at.y)
 	await get_tree().create_timer(1.5).timeout
 	await _shoot(shot_name)
+
+
+## The Stage 2 preview: the symmetry choice, then two kinds of colony
+## swimming among seaweed.
+func _shoot_colony_lab() -> void:
+	var lab := ColonyLab.new()
+	lab.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_parent().add_child(lab)
+	await _shoot("symmetry")
+	lab.start(Symmetry.BILATERAL)
+	for role in ["flagellum", "flagellum", "eye", "plate", "gut"]:
+		lab.colony.grow(role)
+	lab.autopilot = Vector2(0.5, -1.0)
+	await get_tree().create_timer(2.5).timeout
+	await _shoot("colony")
+	lab.start(Symmetry.RADIAL)
+	lab.colony.grow("flagellum")
+	lab.autopilot = Vector2(1.0, 0.2)
+	await get_tree().create_timer(2.5).timeout
+	await _shoot("colony_radial")
+	lab.queue_free()
 
 
 func _shoot(shot_name: String) -> void:
