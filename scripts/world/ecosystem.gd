@@ -23,6 +23,8 @@ var roster := SpeciesRoster.new()
 ## Members to restore from a save as [Genome, Vector2, energy]; set before
 ## the ecosystem enters the tree. Empty means start fresh from the founder.
 var saved_members: Array = []
+## Speed multiplier for hunters and food; see Pace.
+var others_pace := 1.0
 
 var _founder: Genome
 
@@ -84,6 +86,10 @@ func start_roster() -> void:
 	if is_instance_valid(player):
 		genomes.append(player.genome)
 	roster.reset(genomes)
+	others_pace = Pace.others(float(roster.averages().get("speed", 0.0)))
+	FoodItem.pace = others_pace
+	for hunter in predators:
+		hunter.speed_scale = others_pace
 
 
 ## The player's next body: a random awake member near the player if any,
@@ -122,6 +128,7 @@ func _spawn_predator(at: Vector2) -> void:
 	var hunter := Predator.new()
 	hunter.setup(Predator.make_genome(), 1.0)
 	hunter.ecosystem = self
+	hunter.speed_scale = others_pace
 	hunter.position = Vector3(at.x, 0.0, at.y)
 	add_child(hunter)
 	predators.append(hunter)

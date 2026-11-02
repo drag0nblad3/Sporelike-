@@ -93,7 +93,7 @@ func _process(_delta: float) -> void:
 	if director.is_alive():
 		ecosystem.focus = director.player.flat_pos()
 	streamer.update(ecosystem.focus)
-	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.food_eaten)
+	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.fed_ratio())
 
 
 ## The endless sea floor: chunks load around the player and bring their
@@ -119,16 +119,24 @@ func _resume() -> void:
 	director.spawn(you_genome, you_at)
 	director.player.energy = you[2]
 	cycle.number = int(_save.get("generation", 1)) - 1
-	cycle.begin()
+	_start_cycle()
 	cycle.time_left = minf(float(_save.get("time_left", cycle.length)), cycle.length)
 	saver.save_now()
 	_announce()
 
 
 func _begin_generation() -> void:
-	cycle.begin()
+	_start_cycle()
 	saver.save_now()
 	_announce()
+
+
+## Starts the generation's stats against the current body's running cost,
+## and pulls the camera back a little more as the species progresses.
+func _start_cycle() -> void:
+	cycle.begin()
+	cycle.stats.energy_needed = director.genome.upkeep() * cycle.length
+	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
 
 
 func _announce() -> void:
@@ -155,7 +163,7 @@ func _on_generation_ended(stats: GenerationStats) -> void:
 		genomes.append(member.genome)
 	stats.adapt_text = Hardship.adapt(stats, genomes)
 	var choices := MutationChoice.roll(rng, 3, ecosystem.trait_averages(), director.genome)
-	screen.open(stats, choices)
+	screen.open(stats, choices, director.genome)
 	if smoke_test:
 		screen.call_deferred("_pick", choices[0])
 

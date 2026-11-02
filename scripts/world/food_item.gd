@@ -7,6 +7,9 @@ extends MeshInstance3D
 
 const TIERS := 3
 
+## Shared speed multiplier for all food movement; see Pace.
+static var pace := 1.0
+
 var kind: FoodKind
 ## 0 = easiest piece of its kind, 1 = hardest and most valuable.
 var grade := 0.0
@@ -96,7 +99,7 @@ func _process(delta: float) -> void:
 		_drift_dir = Vector2.from_angle(randf() * TAU)
 	velocity = velocity.move_toward(_drift_dir * drift_speed, delta * 4.0)
 
-	var p := flat_pos() + velocity * delta
+	var p := flat_pos() + velocity * delta * pace
 	var held := home.keep_inside(p)
 	if held != p:
 		_drift_dir = (home.center - held).normalized()

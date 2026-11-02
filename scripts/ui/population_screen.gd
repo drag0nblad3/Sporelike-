@@ -29,7 +29,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_fit)
 
 
-func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
+func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome) -> void:
 	for child in _box.get_children():
 		child.queue_free()
 
@@ -43,11 +43,14 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 		stats.start_population, stats.end_population, stats.births,
 		stats.deaths["eaten"], stats.deaths["starved"]], 22)
 
+	var typical := StatSheet.typical(stats.end_averages)
 	for t in Genome.TRAITS:
-		_add_trait_row(t, stats.end_averages.get(t, 0.0), stats.change(t))
+		_add_trait_row(t, stats.end_averages.get(t, 0.0), stats.change(t),
+			StatSheet.trait_text(t, typical))
 
-	_add_label("You ate %d food: your choice counts x%.1f" % [
-		stats.food_eaten, stats.influence()], 22)
+	_add_label("You gathered %d energy, %d%% of what your body burns in a generation:" % [
+		roundi(stats.energy_gained), roundi(stats.fed_ratio() * 100.0)], 22)
+	_add_label("your choice counts x%.1f" % stats.influence(), 22)
 	if stats.progress_text != "":
 		_add_label(stats.progress_text, 22)
 	if stats.adapt_text != "":
@@ -60,7 +63,7 @@ func open(stats: GenerationStats, choices: Array[MutationChoice]) -> void:
 	_box.add_child(row)
 	for c in choices:
 		var button := Button.new()
-		button.text = "%s\n%s" % [c.label(), c.effect()]
+		button.text = "%s\n%s" % [c.label(), c.effect(you, stats.influence())]
 		button.custom_minimum_size = Vector2(300, 110)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", 22)
@@ -94,7 +97,7 @@ func _pick(choice: MutationChoice) -> void:
 	chosen.emit(choice)
 
 
-func _add_trait_row(trait_name: String, value: float, change: float) -> void:
+func _add_trait_row(trait_name: String, value: float, change: float, detail: String) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	_box.add_child(row)
@@ -115,7 +118,11 @@ func _add_trait_row(trait_name: String, value: float, change: float) -> void:
 	var delta_label := _make_label("%+.2f" % change, 22)
 	if absf(change) >= 0.005:
 		delta_label.modulate = UP if change > 0.0 else DOWN
+	delta_label.custom_minimum_size = Vector2(70, 0)
 	row.add_child(delta_label)
+	var detail_label := _make_label(detail, 22)
+	detail_label.modulate = Color(1, 1, 1, 0.75)
+	row.add_child(detail_label)
 
 
 func _add_label(text: String, size: int) -> void:

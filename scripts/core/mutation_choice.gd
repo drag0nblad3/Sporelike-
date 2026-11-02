@@ -14,17 +14,6 @@ const LABELS := {
 	"diet": ["Eat more meat", "Eat more plants"],
 	"jaw": ["Stronger jaw", "Weaker jaw"],
 }
-## What each nudge does, for the button's second line.
-const EFFECTS := {
-	"size": ["Longer reach, chews faster, turns slower", "Turns faster, burns less"],
-	"speed": ["Swims faster", "Burns less energy"],
-	"agility": ["Speeds up and turns faster", "Burns less energy"],
-	"sense": ["Notices food and hunters farther away", "Burns less energy"],
-	"armor": ["Deflects more bites, a bit slower", "Faster, burns less"],
-	"toxin": ["Stings hunters that bite", "Burns less energy"],
-	"diet": ["More energy from meat, less from plants", "More from plants, less from meat"],
-	"jaw": ["Cracks tougher food", "Burns less energy"],
-}
 ## Chance one of the choices is a branching feature, when any is available.
 const FEATURE_CHANCE := 0.6
 
@@ -41,11 +30,18 @@ func label() -> String:
 	return pair[0] if direction > 0.0 else pair[1]
 
 
-func effect() -> String:
+## What this choice would do to a typical member, in numbers: every stat
+## that changes (gains and costs alike), after a short description for
+## branching features.
+func effect(template: Genome, influence: float) -> String:
+	var after := template.copy()
+	apply_to(after, influence)
+	var lines := StatSheet.changes(template, after)
 	if feature_id != "":
-		return Feature.effect(feature_id)
-	var pair: Array = EFFECTS[trait_name]
-	return pair[0] if direction > 0.0 else pair[1]
+		lines.insert(0, Feature.effect(feature_id))
+	if lines.is_empty():
+		lines.append("No noticeable change")
+	return "\n".join(lines)
 
 
 func apply_to(genome: Genome, influence: float) -> void:

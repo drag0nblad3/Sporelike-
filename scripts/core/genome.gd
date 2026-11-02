@@ -100,7 +100,9 @@ func radius() -> float:
 
 ## Armor plates and a twitchy, agile body both cost top speed.
 func max_speed() -> float:
-	return lerpf(3.3, 8.5, value_of("speed")) * lerpf(1.0, 0.7, value_of("armor")) \
+	# Each step of speed adds a little less than the one before (see Pace).
+	var s := value_of("speed")
+	return (3.3 + 5.6 * s / (1.0 + 0.3 * s)) * lerpf(1.0, 0.7, value_of("armor")) \
 		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.12 * feature("tail_bud"))
 
 
