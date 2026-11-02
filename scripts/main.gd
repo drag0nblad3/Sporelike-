@@ -7,6 +7,7 @@ var smoke_test := "--smoke" in OS.get_cmdline_user_args()
 
 var _title: TitleScreen
 var _game: Game
+var _lab: ColonyLab
 var _smoke_reloaded := false
 
 
@@ -14,6 +15,7 @@ func _ready() -> void:
 	_title = TitleScreen.new()
 	_title.new_game.connect(_on_new_game)
 	_title.continue_game.connect(_on_continue)
+	_title.lab_requested.connect(_open_lab)
 	add_child(_title)
 	if smoke_test:
 		SaveGame.delete()
@@ -51,6 +53,22 @@ func _start(save: Dictionary) -> void:
 	add_child(_game)
 
 
+## The Stage 2 preview: a sandbox for the multicellular stage's colonies.
+func _open_lab() -> void:
+	_close_game()
+	_title.visible = false
+	_lab = ColonyLab.new()
+	_lab.back_requested.connect(_close_lab)
+	add_child(_lab)
+
+
+func _close_lab() -> void:
+	if is_instance_valid(_lab):
+		_lab.queue_free()
+	_lab = null
+	_title.open(SaveGame.exists())
+
+
 func _on_quit_to_title() -> void:
 	_close_game()
 	_title.open(SaveGame.exists())
@@ -85,3 +103,4 @@ func _check_glossary() -> void:
 	menu.save_cell_requested.emit()
 	print("smoke: saved cells %d" % OrganismCollection.entries().size())
 	menu.close()
+	ColonyCheck.run(self)
