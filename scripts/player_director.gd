@@ -1,10 +1,13 @@
 class_name PlayerDirector
 extends Node
 ## Owns the player's current body: spawning it, steering it from touch or
-## keys, following it with the camera, and reporting its meals and death.
+## keys, following it with the camera, and reporting its meals, habits and
+## death.
 
 signal died(cause: String)
 signal ate(energy: float)
+## Energy the body made without eating (photosynthesis, chemosynthesis).
+signal made_energy(energy: float)
 
 var ecosystem: Ecosystem
 var camera: CameraRig
@@ -12,12 +15,17 @@ var hud: Hud
 var player: PlayerCell
 var genome := Genome.new()
 
+## Records what the player does each generation (see Habits).
+var tracker := HabitTracker.new()
+
 var _has_moved := false
 var _scent := ScentArrow.new()
 
 
 func _ready() -> void:
 	add_child(_scent)
+	tracker.ecosystem = ecosystem
+	add_child(tracker)
 
 
 func is_alive() -> bool:
@@ -31,8 +39,10 @@ func spawn(g: Genome, at: Vector2) -> void:
 	player.position = Vector3(at.x, 0.0, at.y)
 	player.died.connect(_on_player_died)
 	player.ate.connect(_on_player_ate)
+	player.absorbed.connect(func(amount: float) -> void: made_energy.emit(amount))
 	add_child(player)
 	ecosystem.player = player
+	tracker.player = player
 	camera.snap_to(player.position)
 
 

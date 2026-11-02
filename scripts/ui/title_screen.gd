@@ -23,20 +23,23 @@ func _ready() -> void:
 	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	column.grow_vertical = Control.GROW_DIRECTION_BOTH
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 20)
+	column.add_theme_constant_override("separation", 22)
+	column.theme = UiTheme.shared()
 	add_child(column)
 
 	var title := Label.new()
 	title.text = "Sporelike"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 72)
-	title.add_theme_color_override("font_color", Color(0.55, 0.95, 0.85))
+	title.add_theme_color_override("font_color", UiTheme.ACCENT)
+	UiTheme.outline(title, 80)
 	column.add_child(title)
 
 	var tagline := Label.new()
 	tagline.text = "Guide a species from a single cell upward."
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	tagline.add_theme_font_size_override("font_size", 24)
+	tagline.add_theme_font_size_override("font_size", 26)
+	tagline.add_theme_color_override("font_color", UiTheme.DIM)
 	column.add_child(tagline)
 
 	_continue = _button("Continue", func() -> void: continue_game.emit())
@@ -65,7 +68,7 @@ func _on_new_pressed() -> void:
 func _button(label: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = label
-	button.custom_minimum_size = Vector2(360, 84)
+	button.custom_minimum_size = Vector2(380, 90)
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.add_theme_font_size_override("font_size", 32)
 	button.pressed.connect(action)

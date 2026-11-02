@@ -20,16 +20,12 @@ func build(genome: Genome, tint: Color) -> void:
 	_body.add_child(nucleus)
 
 	add_child(VisualParts.spikes(int(round(genome.value_of("armor") * 10.0)), tint))
-	var hairs := int(round(genome.value_of("agility") * 16.0)) + 8 * genome.feature("grabbing_cilia")
-	add_child(VisualParts.cilia(hairs, tint))
-	# Fat store: golden droplets inside the body, one per level.
-	for i in genome.feature("fat_store"):
-		var drop := VisualParts.sphere(0.18, Color(1.0, 0.8, 0.3), 0.5)
-		drop.position = Vector3(-0.25 + 0.2 * i, 0.15, 0.25 - 0.1 * i)
-		_body.add_child(drop)
+	add_child(VisualParts.cilia(int(round(genome.value_of("agility") * 16.0)), tint))
+	# Organelles and inner parts, each with its own look (see OrganelleParts).
+	OrganelleParts.add_all(self, _body, genome)
 	add_child(VisualParts.eye(lerpf(0.12, 0.3, genome.value_of("sense"))))
 	if genome.value_of("jaw") > 0.25:
-		add_child(VisualParts.jaws(genome.value_of("jaw")))
+		add_child(VisualParts.mouth(genome.value_of("jaw")))
 	# The main tail, plus a bud tail on alternating sides per tail_bud level.
 	var length := lerpf(0.6, 1.8, genome.value_of("speed"))
 	for i in 1 + genome.feature("tail_bud"):
