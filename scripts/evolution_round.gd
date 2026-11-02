@@ -17,7 +17,8 @@ var smoke_test := false
 var _stats: GenerationStats
 var _total := 1
 var _offered := 0
-## The player's genome with this round's picks applied, for previews.
+## A typical member of the species with this round's picks applied, for
+## the numbers on the pick cards.
 var _preview: Genome
 
 
@@ -35,7 +36,10 @@ func start(stats: GenerationStats) -> void:
 	stats.adapt_text = Hardship.adapt(stats, genomes)
 	stats.hunter_text = ecosystem.hunters.end_generation(ecosystem.predators.size(), rng)
 	stats.rival_text = ecosystem.rivals.end_generation(director.genome)
-	_preview = director.genome.copy()
+	# Preview picks on the same typical member the screen describes, not on
+	# the player's own body, whose traits differ from the species average.
+	StatSheet.shared = director.genome
+	_preview = StatSheet.typical(stats.end_averages)
 	_total = 1 + stats.bonus_sets()
 	_offered = 0
 	_offer()

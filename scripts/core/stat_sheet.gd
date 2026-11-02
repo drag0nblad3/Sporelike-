@@ -30,11 +30,21 @@ const TRAIT_ROW := {
 }
 
 
-## A genome with these average trait values, to describe a whole species.
+## The player's current body, whose upgrades (organelles, gut, efficiency)
+## the whole species shares. Game sets it each generation.
+static var shared: Genome
+
+
+## A genome with these average trait values plus the species' shared
+## upgrades, to describe a whole species. Readouts and upgrade cards both
+## use it, so their numbers match.
 static func typical(averages: Dictionary) -> Genome:
 	var g := Genome.new()
 	for t in Genome.TRAITS:
 		g.values[t] = float(averages.get(t, g.values[t]))
+	if shared:
+		g.features = shared.features.duplicate()
+		g.efficiency = shared.efficiency
 	return g
 
 
