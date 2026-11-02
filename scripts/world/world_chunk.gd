@@ -1,17 +1,23 @@
 class_name WorldChunk
 extends Node3D
-## One loaded square of sea floor: its tinted ground tile and the floor
-## blobs under its food patches. The food itself lives in FoodField.
+## One loaded square of sea floor: its tinted ground tile, the floor blobs
+## under its food patches, the currents that start here and any giant
+## teaser of the next stage. The food itself lives in FoodField.
 
 const BASE_COLOR := Color(0.05, 0.2, 0.25)
 
 var coord := Vector2i.ZERO
 var patches: Array[FoodPatch] = []
+var streams: Array[CurrentStream] = []
+var teaser: Node3D
 
 
-func setup(at: Vector2i, chunk_patches: Array[FoodPatch]) -> void:
+func setup(at: Vector2i, chunk_patches: Array[FoodPatch],
+		chunk_streams: Array[CurrentStream], chunk_teaser: Node3D) -> void:
 	coord = at
 	patches = chunk_patches
+	streams = chunk_streams
+	teaser = chunk_teaser
 
 
 func _ready() -> void:
@@ -31,6 +37,10 @@ func _ready() -> void:
 		y += 0.012
 		if not patch.hidden:
 			_disc(patch, y)
+	for stream in streams:
+		add_child(CurrentView.new(stream))
+	if teaser:
+		add_child(teaser)
 
 
 ## A flat blob following the patch's outline, as a triangle fan.

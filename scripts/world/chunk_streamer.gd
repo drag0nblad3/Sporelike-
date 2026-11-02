@@ -12,11 +12,19 @@ const LOAD_RADIUS := 1
 const UNLOAD_RADIUS := 2
 
 var generator: ChunkGenerator
+var currents: CurrentField
 var _chunks := {}
 
 
 func _init(world_seed: int) -> void:
 	generator = ChunkGenerator.new(world_seed)
+	currents = CurrentField.new(world_seed)
+	CurrentField.active = currents
+
+
+func _exit_tree() -> void:
+	if CurrentField.active == currents:
+		CurrentField.active = null
 
 
 func update(focus: Vector2) -> void:
@@ -39,7 +47,8 @@ func is_loaded(p: Vector2) -> bool:
 
 func _load(coord: Vector2i) -> void:
 	var chunk := WorldChunk.new()
-	chunk.setup(coord, generator.patches_for(coord))
+	chunk.setup(coord, generator.patches_for(coord), currents.streams_for(coord),
+		TeaserPlacer.build(generator.world_seed, coord))
 	add_child(chunk)
 	_chunks[coord] = chunk
 	chunk_loaded.emit(chunk)

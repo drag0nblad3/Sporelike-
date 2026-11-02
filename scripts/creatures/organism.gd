@@ -134,6 +134,10 @@ func _move(delta: float) -> void:
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
+	# Water currents carry everything along on top of its own swimming.
+	if CurrentField.active:
+		var flow := CurrentField.active.flow_at(Vector2(position.x, position.z))
+		position += Vector3(flow.x, 0.0, flow.y) * delta
 
 	if velocity.length() > 0.1:
 		var target := atan2(velocity.x, velocity.z)
