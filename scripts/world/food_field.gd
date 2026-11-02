@@ -117,6 +117,7 @@ func consume_near(org: Organism, delta: float) -> float:
 			continue
 		gained += org.genome.digest(item.energy, item.kind.is_plant)
 		item.home.count -= 1
+		SwallowedFood.show_in(org, item)
 		item.queue_free()
 	return gained
 
