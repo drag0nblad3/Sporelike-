@@ -46,7 +46,8 @@ func spawn(g: Genome, at: Vector2, start_energy: float) -> RivalCell:
 
 
 func _physics_process(_delta: float) -> void:
-	for parent in members.duplicate():
+	for item in members.duplicate():
+		var parent := item as RivalCell
 		if members.size() >= MAX_POPULATION:
 			return
 		if parent.alive and not parent.dormant and parent.energy >= Ecosystem.REPRODUCE_AT:
