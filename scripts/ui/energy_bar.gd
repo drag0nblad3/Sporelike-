@@ -4,7 +4,7 @@ extends Control
 ## energy burns. Food stored past full (fat store upgrade) shows as a gold
 ## bar laid over it, filling its own capacity from the left.
 
-const HEIGHT := 22.0
+const HEIGHT := 28.0
 const TRACK := Color(1, 1, 1, 0.12)
 const FULL := Color(0.4, 0.9, 0.5)
 const LOW := Color(0.95, 0.3, 0.25)
@@ -20,14 +20,14 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	offset_left = 16.0
 	offset_right = -16.0
-	offset_top = 6.0
-	offset_bottom = 6.0 + HEIGHT
+	offset_top = 8.0
+	offset_bottom = 8.0 + HEIGHT
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label = Label.new()
 	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.add_theme_font_size_override("font_size", 16)
+	_label.add_theme_font_size_override("font_size", 20)
 	_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_label.add_theme_constant_override("outline_size", 5)
 	add_child(_label)

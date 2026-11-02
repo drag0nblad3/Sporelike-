@@ -18,7 +18,9 @@ const CHEW_MARGIN := 0.2
 const GUT_START := 0.8
 const GUT_PER_LEVEL := 0.1
 
-## diet: 0 = eats plants well, 1 = eats animals well. jaw cracks shells.
+## diet: 0 = eats plant food well, 1 = eats prey well. jaw is the strength
+## of the cytostome (cell mouth) that cracks shells; ids keep old names so
+## saves still load.
 var values := {
 	"size": 0.3, "speed": 0.5, "agility": 0.3, "sense": 0.4,
 	"armor": 0.0, "toxin": 0.0, "diet": 0.3, "jaw": 0.1,
@@ -109,7 +111,8 @@ func max_speed() -> float:
 	# Each step of speed adds a little less than the one before (see Pace).
 	var s := value_of("speed")
 	return (3.3 + 5.6 * s / (1.0 + 0.3 * s)) * lerpf(1.0, 0.7, value_of("armor")) \
-		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.2 * feature("tail_bud"))
+		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.2 * feature("tail_bud")) \
+		* (1.0 - 0.04 * (feature("chloroplasts") + feature("vent_symbionts")))
 
 
 ## How hard the cell can push: high agility means quick starts and turns.
@@ -144,11 +147,12 @@ func upkeep() -> float:
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
-		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining")
+		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining") \
+		+ 0.03 * feature("chloroplasts") + 0.03 * feature("vent_symbionts")
 	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency)
 
 
-## Whether the jaw is strong enough for food of this hardness.
+## Whether the cell mouth is strong enough for food of this hardness.
 func can_crack(hardness: float) -> bool:
 	return value_of("jaw") >= hardness
 

@@ -2,7 +2,7 @@ class_name VisualParts
 extends RefCounted
 ## Builders for the body parts that show an organism's traits: spikes for
 ## armor, a tail for speed, cilia for agility, an eye for sense, mandibles
-## for jaw. Each returns a node to add to the organism's visual.
+## for the cell mouth. Each returns a node to add to the organism's visual.
 
 
 static func spikes(count: int, tint: Color) -> Node3D:
@@ -51,15 +51,24 @@ static func eye(size: float) -> MeshInstance3D:
 	return e
 
 
-## Two inward-curving mandibles at the front; bigger for a stronger jaw.
-static func jaws(strength: float) -> Node3D:
+## The cytostome (cell mouth) at the front: a dark opening ringed by stiff
+## rods that crush food. A stronger mouth has a wider opening and more,
+## longer rods.
+static func mouth(strength: float) -> Node3D:
 	var root := Node3D.new()
-	var length := lerpf(0.2, 0.6, strength)
-	for side in [-1.0, 1.0]:
-		var m := cone(0.08, length, Color(0.9, 0.85, 0.7))
-		m.position = Vector3(0.3 * side, 0.0, 1.0)
-		m.rotation = Vector3(PI / 2.0, -0.4 * side, 0.0)
-		root.add_child(m)
+	var hole := sphere(lerpf(0.14, 0.26, strength), Color(0.08, 0.04, 0.06), 0.0)
+	hole.scale = Vector3(1.0, 0.45, 0.6)
+	hole.position = Vector3(0.0, 0.1, 0.95)
+	root.add_child(hole)
+	var rods := 4 + roundi(strength * 6.0)
+	var length := lerpf(0.18, 0.4, strength)
+	for i in rods:
+		var angle := lerpf(-0.9, 0.9, float(i) / maxf(rods - 1, 1))
+		var rod := cone(0.035, length, Color(0.95, 0.9, 0.75))
+		rod.position = Vector3(sin(angle) * 0.35, 0.1, 0.9 + cos(angle) * 0.05)
+		# Rods point inward toward the opening, like a funnel.
+		rod.rotation = Vector3(-PI / 2.0, angle * 0.6, 0.0)
+		root.add_child(rod)
 	return root
 
 

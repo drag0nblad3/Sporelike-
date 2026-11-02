@@ -2,14 +2,17 @@ class_name Predator
 extends Organism
 ## A large hunter. Chases prey it can sense and swallow. Armor can deflect a
 ## bite; toxin stings it, stuns it, and teaches it to avoid prey at least
-## that toxic from then on. Never starves (for now).
+## that toxic from then on. Never starves; instead the whole HunterLineage
+## evolves when hunters go hungry.
 
 const BITE_COOLDOWN := 2.5
 const STUNG_COOLDOWN := 6.0
-## Prey must be smaller than this share of the hunter's radius to swallow.
-const SWALLOW_RATIO := 0.85
+## Prey must be smaller than this share of the hunter's radius to swallow,
+## before any Wide maw upgrades.
+const SWALLOW_RATIO := HunterLineage.BASE_SWALLOW
 
 var ecosystem: Ecosystem
+var lineage := HunterLineage.new()
 var cooldown := 0.0
 ## Prey with toxin at or above this is left alone. Lowered by bad experiences.
 var avoid_toxin := 1.0
@@ -35,17 +38,19 @@ func tint() -> Color:
 
 
 func wants(prey: Organism) -> bool:
-	return prey.radius() < radius() * SWALLOW_RATIO and prey.genome.value_of("toxin") < avoid_toxin
+	return prey.radius() < radius() * lineage.swallow_ratio() \
+		and prey.genome.value_of("toxin") < avoid_toxin
 
 
 func try_bite(prey: Organism, rng: RandomNumberGenerator) -> void:
 	cooldown = BITE_COOLDOWN
 	if rng.randf() < prey.genome.armor():
 		return
-	if rng.randf() < prey.genome.toxin():
+	if rng.randf() < prey.genome.toxin() * lineage.sting_factor():
 		cooldown = STUNG_COOLDOWN
 		avoid_toxin = minf(avoid_toxin, prey.genome.value_of("toxin") - 0.05)
 		return
+	lineage.meals += 1
 	prey.die("eaten")
 
 
@@ -63,7 +68,7 @@ func think(delta: float) -> void:
 
 func _nearest_prey() -> Organism:
 	var best: Organism = null
-	var best_d := genome.sense_range()
+	var best_d := genome.sense_range() * lineage.sight_factor()
 	for prey in ecosystem.prey_list():
 		if not wants(prey):
 			continue

@@ -21,7 +21,11 @@ func _run() -> void:
 	# Show off the branching upgrades and the stored-food bar.
 	var g := game.director.genome.copy()
 	g.features = {"tail_bud": 1, "grabbing_cilia": 1, "fat_store": 2, "jet": 1,
-		"food_scent": 1}
+		"food_scent": 1, "eye_cluster": 1, "sticky_coat": 1, "gut_lining": 1,
+		"chloroplasts": 2, "vent_symbionts": 1}
+	g.values["toxin"] = 0.5
+	g.values["jaw"] = 0.6
+	g.efficiency = 0.5
 	game.director.retire()
 	game.director.spawn(g, Vector2.ZERO)
 	game.director.player.energy = 17.0

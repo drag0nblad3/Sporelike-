@@ -5,6 +5,8 @@ extends Node3D
 
 signal died(organism: Organism, cause: String)
 signal ate(amount: float)
+## Energy made without eating (photosynthesis, chemosynthesis).
+signal absorbed(amount: float)
 
 
 var genome: Genome
@@ -22,6 +24,10 @@ var speed_scale := 1.0
 ## Seconds left on a jet boost, and until the next one is ready.
 var boost_time := 0.0
 var boost_cooldown := 0.0
+## Energy per second this cell is making from light or vents, rechecked by
+## EnergySources every ambient_timer seconds.
+var ambient_rate := 0.0
+var ambient_timer := 0.0
 
 var _wander_dir := Vector2.ZERO
 var _wander_timer := 0.0
@@ -77,6 +83,11 @@ func try_boost() -> bool:
 func eat(amount: float) -> void:
 	energy = minf(energy + amount, genome.max_energy())
 	ate.emit(amount)
+
+
+func absorb(amount: float) -> void:
+	energy = minf(energy + amount, genome.max_energy())
+	absorbed.emit(amount)
 
 
 func die(cause: String) -> void:

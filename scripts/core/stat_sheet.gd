@@ -16,10 +16,12 @@ const ROWS := {
 	"chew": ["Chewing speed", "%d%%"],
 	"armor": ["Blocks bites", "%d%%"],
 	"toxin": ["Stings hunters", "%d%%"],
-	"plants": ["From plants", "%d%%"],
-	"meat": ["From meat", "%d%%"],
-	"jaw": ["Bite force", "%d µN"],
-	"store": ["Stomach", "%d energy"],
+	"plants": ["From plant food", "%d%%"],
+	"meat": ["From prey", "%d%%"],
+	"jaw": ["Mouth force", "%d µN"],
+	"store": ["Energy store", "%d energy"],
+	"sun": ["Sunlight energy", "%.1f/min"],
+	"vent": ["Vent energy", "%.1f/min"],
 	"others": ["Hunters & food speed", "%d%%"],
 	"upkeep": ["Energy use", "%.1f/min"],
 }
@@ -30,11 +32,21 @@ const TRAIT_ROW := {
 }
 
 
-## A genome with these average trait values, to describe a whole species.
+## The player's current body, whose upgrades (organelles, gut, efficiency)
+## the whole species shares. Game sets it each generation.
+static var shared: Genome
+
+
+## A genome with these average trait values plus the species' shared
+## upgrades, to describe a whole species. Readouts and upgrade cards both
+## use it, so their numbers match.
 static func typical(averages: Dictionary) -> Genome:
 	var g := Genome.new()
 	for t in Genome.TRAITS:
 		g.values[t] = float(averages.get(t, g.values[t]))
+	if shared:
+		g.features = shared.features.duplicate()
+		g.efficiency = shared.efficiency
 	return g
 
 
@@ -54,6 +66,8 @@ static func measure(g: Genome) -> Dictionary:
 		"meat": g.digest(1.0, false) * 100.0,
 		"jaw": g.value_of("jaw") * 100.0,
 		"store": g.max_energy(),
+		"sun": EnergySources.sun_rate(g) * 60.0,
+		"vent": EnergySources.vent_rate(g) * 60.0,
 		"others": Pace.others(g.value_of("speed")) * 100.0,
 		"upkeep": g.upkeep() * 60.0,
 	}

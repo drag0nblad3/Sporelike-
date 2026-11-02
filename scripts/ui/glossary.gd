@@ -16,18 +16,21 @@ speeds in µm per second, and energy is the same energy shown on the bar.
 [b]Size[/b]: a bigger body with a longer reach that chews faster, but slower \
 to turn and costlier to run. Grow big enough and hunters can no longer \
 swallow you.
-[b]Speed[/b]: top swimming speed. Catches darting food and outruns hunters. \
+[b]Speed[/b]: top swimming speed, from a longer flagellum (the whip-like \
+tail). Catches darting food and outruns hunters. \
 Each step adds a little less than the last, but as your species gets faster \
 the hunters and darting food around it slow down very slightly.
-[b]Agility[/b]: how fast you speed up and turn.
-[b]Sense[/b]: how far away you notice food and hunters.
-[b]Armor[/b]: spikes that can deflect a hunter's bite.
-[b]Toxin[/b]: poison that stings a hunter that bites you. Stung hunters back \
-off for a while and learn to avoid toxic prey.
-[b]Diet[/b]: 0 digests plants best, 1 digests meat best. In between gets less from both.
-[b]Jaw[/b]: bite strength. Food a little harder than your jaw can still be \
+[b]Agility[/b]: how fast you speed up and turn, from more cilia (tiny beating hairs).
+[b]Sense[/b]: how far away you notice food and hunters, from a bigger eyespot.
+[b]Spines[/b]: silica spines that can deflect a hunter's bite.
+[b]Toxin[/b]: toxicysts, tiny darts that sting a hunter that bites you. Stung \
+hunters back off for a while and learn to avoid toxic prey.
+[b]Diet[/b]: 0 digests plant food (algae, motes) best, 1 digests prey \
+(plankton, shells) best. In between gets less from both.
+[b]Mouth[/b]: the strength of your cytostome, the cell mouth, ringed with \
+stiff rods that crush food. Food a little harder than your mouth can still be \
 chewed through: stay on top of it while it shakes until it breaks open. Bigger \
-bodies chew faster. Food far harder than your jaw cannot be eaten.
+cells chew faster. Food far harder than your mouth cannot be eaten.
 
 [font_size=28][b]Food[/b][/font_size]
 The sea goes on forever in every direction, and food covers most of the \
@@ -37,10 +40,10 @@ from algae meadows to open water to dark trenches, with vents in the trenches.
 extra-rich food that is very hard to sense.
 [b]Algae[/b] (green, plant): teal meadows, one where your species starts. \
 Easy, low value.
-[b]Plankton[/b] (yellow, meat): clouds over blue open water, often at a \
+[b]Plankton[/b] (yellow, prey): clouds over blue open water, often at a \
 meadow's edge. Drifts and darts away when you come close. Rich if caught.
-[b]Shells[/b] (purple, meat): beds on glowing orange vents, often beside \
-trenches. Very rich, but need a strong jaw.
+[b]Shells[/b] (purple, prey): beds on glowing orange vents, often beside \
+trenches. Very rich, but need a strong mouth.
 [b]Motes[/b] (faint blue, plant): dark trenches. Hard to see, so they need keen sense.
 
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
@@ -50,7 +53,21 @@ soft: easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predators that chase the nearest prey they want. \
-Armor and toxin both make them think twice.
+Spines and toxin both make them think twice. Hunters never starve, but after \
+a generation where they caught less than one prey each, they may evolve one \
+of their own upgrades: [b]Lunge flagella[/b] (+10% speed), [b]Chemosensors[/b] \
+(+20% sight), [b]Thick membrane[/b] (stung 30% less often) or [b]Wide gullet[/b] \
+(swallows prey 8% bigger). Each goes up to level 3.
+
+[font_size=28][b]Rival species[/b][/font_size]
+Three other species share the sea: [b]Amber[/b] (orange), [b]Violet[/b] and \
+[b]Lime[/b] (yellow-green). They start with random traits a little weaker overall \
+than yours, compete with you for food, and feed the hunters too. Each \
+generation they evolve a little, mostly sharpening what they are already \
+good at, but more slowly than you. If one dies out, a new one arrives.
+[b]Saving cells[/b]: "Save this cell" in this menu keeps your current cell \
+in a collection that lasts across games. New rival species are sometimes \
+founded from a saved cell, toned down a little so they stay weaker than you.
 
 [font_size=28][b]Generations[/b][/font_size]
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
@@ -74,27 +91,45 @@ Picks only ever add; diet is the one trait you can push either way. \
 (12.5% less per pick at x1, up to 50% less).
 [b]Upgrades[/b]: each button lists every number it changes for a cell like \
 you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
-unlocks new body parts that can appear as choices:
+unlocks [b]organelles[/b]: new capabilities that grow a new visible part on \
+your cell, each with its own shape and colour (the pick card shows a drawing):
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
-  [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
-  [b]Eye cluster[/b] (from high sense): spot food from farther away.
-  [b]Jet boost[/b] (from speed): tap the Jet button for a quick burst. Cells \
-of your species jet away from hunters on their own.
-  [b]Sticky coat[/b] (from armor): darting food that comes close gets stuck.
-  [b]Scent trail[/b] (from very high sense): an arrow by your cell points to \
+  [b]Second flagellum[/b] (from high speed): another whip-like tail; faster, but costs more.
+  [b]Eyespot cluster[/b] (from high sense): spot food from farther away.
+  [b]Contractile jet[/b] (from speed): tap the Jet button and a vacuole \
+squirts water for a quick burst. Cells of your species jet away from hunters \
+on their own.
+  [b]Mucus coat[/b] (from spines): darting food that comes close gets stuck.
+  [b]Chemoreceptors[/b] (from very high sense): you taste the water, and an \
+arrow by your cell points to \
 the nearest food your body can eat well, even in hidden fields. Cells of your \
 species follow the scent too.
-  [b]Gut lining[/b] (any time): a new species digests only 80% of what its \
+  [b]Chloroplasts[/b] (after time in sunlit algae meadows): photosynthesis. \
+Make energy while over algae, without eating. A little slower and costlier to run.
+  [b]Vent symbionts[/b] (after time by the vents): chemosynthesis. Bacteria \
+living inside you make energy from vent chemicals while over shell beds.
+  [b]Digestive vacuoles[/b] (any time): a new species digests only 80% of what its \
 diet allows; each level adds 10%, up to 110%.
-  [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
+  [b]Lipid droplets[/b] (any time): keep eating past full. Stored food shows as a \
 gold bar over the energy bar and is burned once the stomach runs low.
+[b]Habits[/b]: what you do in a generation shapes your species a little \
+and steers which upgrades are offered. Sprinting builds speed, sharp turns \
+and catching darting food build agility, dodging hunters builds spines and \
+toxin, chewing tough food builds the mouth, finding faint food builds sense, \
+eating well builds size, and what you eat tilts diet. Time in sunlit meadows \
+or by vents unlocks the energy-making organelles. Picks that suit your \
+habits say so in gold on their card.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \
 starved), your species adapts to burn less energy, so the game keeps going.
+[b]Bonus picks[/b]: gather twice the energy your body needs (Fed 200%) \
+and you get a second set of three picks; 400% gives a third set, 800% a \
+fourth.
 [b]Influence[/b]: the better you fed yourself (the Fed number), the \
 stronger your choice: from x0.5 up to x2.
 [b]Multicellular progress[/b]: thriving generations (a big population and \
 a good Fed score) move your species toward its next stage, where single \
-cells band together into one body. Your view also widens slowly as you progress.
+cells band together into one body. It is a long road: about 25 to 30 good \
+generations. Your view also widens slowly as you progress.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """

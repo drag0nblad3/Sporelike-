@@ -37,6 +37,8 @@ func save_now() -> void:
 		"world_seed": world_seed,
 		"player": you,
 		"species": members,
+		"rivals": ecosystem.rivals.to_save(),
+		"hunters": ecosystem.hunters.levels,
 	})
 
 
