@@ -111,8 +111,9 @@ func acceleration() -> float:
 	return max_speed() * lerpf(1.2, 4.5, value_of("agility"))
 
 
+## Agile cells turn fast; big bodies turn slower.
 func turn_rate() -> float:
-	return lerpf(4.0, 14.0, value_of("agility"))
+	return lerpf(4.0, 14.0, value_of("agility")) * lerpf(1.1, 0.7, value_of("size"))
 
 
 func sense_range() -> float:

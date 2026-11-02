@@ -77,5 +77,9 @@ static func roll(rng: RandomNumberGenerator, count: int, averages: Dictionary,
 		var c := MutationChoice.new()
 		c.trait_name = names[i]
 		c.direction = 1.0 if rng.randf() < 0.7 else -1.0
+		# Never offer a push past the end of the scale; flip it instead.
+		var value: float = template.values[c.trait_name]
+		if (c.direction > 0.0 and value >= 1.0) or (c.direction < 0.0 and value <= 0.0):
+			c.direction = -c.direction
 		picks.append(c)
 	return picks
