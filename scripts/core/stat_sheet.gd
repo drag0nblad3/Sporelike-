@@ -12,12 +12,15 @@ const ROWS := {
 	"accel": ["Pickup", "%d µm/s²"],
 	"sight": ["Sight", "%d µm"],
 	"grab": ["Grab reach", "%d µm"],
+	"sticky": ["Sticky reach", "%d µm"],
+	"chew": ["Chewing speed", "%d%%"],
 	"armor": ["Blocks bites", "%d%%"],
 	"toxin": ["Stings hunters", "%d%%"],
 	"plants": ["From plants", "%d%%"],
 	"meat": ["From meat", "%d%%"],
 	"jaw": ["Bite force", "%d µN"],
 	"store": ["Stomach", "%d energy"],
+	"others": ["Hunters & food speed", "%d%%"],
 	"upkeep": ["Energy use", "%.1f/min"],
 }
 ## Which row best describes each trait on its own.
@@ -43,12 +46,15 @@ static func measure(g: Genome) -> Dictionary:
 		"accel": g.acceleration() * MICRONS,
 		"sight": g.sense_range() * MICRONS,
 		"grab": g.grab_reach() * MICRONS,
+		"sticky": 0.8 * g.feature("sticky_coat") * MICRONS,
+		"chew": (0.7 + g.value_of("size")) * 100.0,
 		"armor": g.armor() * 100.0,
 		"toxin": g.toxin() * 100.0,
 		"plants": g.digest(1.0, true) * 100.0,
 		"meat": g.digest(1.0, false) * 100.0,
 		"jaw": g.value_of("jaw") * 100.0,
 		"store": g.max_energy(),
+		"others": Pace.others(g.value_of("speed")) * 100.0,
 		"upkeep": g.upkeep() * 60.0,
 	}
 
@@ -84,4 +90,14 @@ static func changes(before: Genome, after: Genome) -> PackedStringArray:
 		var old_num := old_text.trim_suffix(unit)
 		var new_num := new_text.trim_suffix(unit)
 		lines.append("%s %s → %s%s" % [label, old_num, new_num, unit])
+	var limit := hunter_limit()
+	if before.radius() < limit and after.radius() >= limit:
+		lines.append("Too big for hunters to swallow")
+	elif before.radius() >= limit and after.radius() < limit:
+		lines.append("Small enough for hunters to swallow")
 	return lines
+
+
+## Bodies at least this big are too large for hunters (see Predator.wants).
+static func hunter_limit() -> float:
+	return Predator.make_genome().radius() * Predator.SWALLOW_RATIO

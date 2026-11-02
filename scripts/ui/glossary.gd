@@ -13,7 +13,9 @@ to refill it. When it runs out you starve.
 speeds in µm per second, and energy is the same energy shown on the bar.
 
 [font_size=28][b]Traits[/b][/font_size] (0 to 1; higher is stronger but costs more upkeep)
-[b]Size[/b]: a bigger body with a longer reach, but slower to turn.
+[b]Size[/b]: a bigger body with a longer reach that chews faster, but slower \
+to turn and costlier to run. Grow big enough and hunters can no longer \
+swallow you.
 [b]Speed[/b]: top swimming speed. Catches darting food and outruns hunters. \
 Each step adds a little less than the last, but as your species gets faster \
 the hunters and darting food around it slow down very slightly.
