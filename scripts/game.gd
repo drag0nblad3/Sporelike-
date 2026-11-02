@@ -150,13 +150,14 @@ func _begin_generation() -> void:
 
 
 ## Starts the generation's stats against the current body's running cost,
-## and pulls the camera back a little more as the species progresses.
+## and pulls the camera back and makes food scarcer as the species progresses.
 func _start_cycle() -> void:
 	cycle.begin()
 	director.tracker.reset(cycle.length)
 	StatSheet.shared = director.genome
 	cycle.stats.energy_needed = director.genome.upkeep() * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
+	ecosystem.food.abundance = progress.food_abundance()
 
 
 func _announce() -> void:

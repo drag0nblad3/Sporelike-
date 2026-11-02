@@ -9,6 +9,9 @@ extends RefCounted
 ## generations.
 const GOAL := 300.0
 const MAX_PER_GENERATION := 15.0
+## How much scarcer food is by the end of the stage: patches regrow this
+## much less food, this much more slowly.
+const LATE_SCARCITY := 0.35
 
 var points := 0.0
 
@@ -25,6 +28,12 @@ func add_generation(stats: GenerationStats) -> float:
 
 func fraction() -> float:
 	return points / GOAL
+
+
+## 1 at the start of the stage, falling to 1 - LATE_SCARCITY at its end
+## (see FoodField.abundance), so competition for food grows.
+func food_abundance() -> float:
+	return 1.0 - LATE_SCARCITY * fraction()
 
 
 func is_ready() -> bool:

@@ -44,6 +44,21 @@ func add(habit: String, amount: float) -> void:
 	amounts[habit] = float(amounts.get(habit, 0.0)) + amount
 
 
+## Records one meal by a body with this genome: tough, faint or darting
+## food, and whether its energy came from plant food or prey.
+func note_meal(g: Genome, item: FoodItem, energy: float) -> void:
+	if item.hardness > g.value_of("jaw"):
+		add("tough", 1.0)
+	if item.visibility < 0.5:
+		add("faint", 1.0)
+	if item.flee_speed > 0.0:
+		add("darting", 1.0)
+	if item.kind.is_plant:
+		plant_energy += energy
+	else:
+		prey_energy += energy
+
+
 ## 0..1: how strongly the player showed this habit.
 func strength(habit: String) -> float:
 	if not KINDS.has(habit):
