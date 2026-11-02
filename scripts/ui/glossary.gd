@@ -62,6 +62,9 @@ Three other species share the sea: [b]Amber[/b] (orange), [b]Violet[/b] and \
 than yours, compete with you for food, and feed the hunters too. Each \
 generation they evolve a little, mostly sharpening what they are already \
 good at, but more slowly than you. If one dies out, a new one arrives.
+[b]Saving cells[/b]: "Save this cell" in this menu keeps your current cell \
+in a collection that lasts across games. New rival species are sometimes \
+founded from a saved cell, toned down a little so they stay weaker than you.
 
 [font_size=28][b]Generations[/b][/font_size]
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
@@ -108,7 +111,8 @@ fourth.
 stronger your choice: from x0.5 up to x2.
 [b]Multicellular progress[/b]: thriving generations (a big population and \
 a good Fed score) move your species toward its next stage, where single \
-cells band together into one body. Your view also widens slowly as you progress.
+cells band together into one body. It is a long road: about 25 to 30 good \
+generations. Your view also widens slowly as you progress.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """

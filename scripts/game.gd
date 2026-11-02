@@ -43,6 +43,7 @@ func _ready() -> void:
 	screen = PopulationScreen.new()
 	hud.add_child(screen)
 	hud.pause_menu.quit_requested.connect(_on_quit_requested)
+	hud.pause_menu.save_cell_requested.connect(_on_save_cell)
 
 	var founder := Genome.new()
 	ecosystem = Ecosystem.new()
@@ -193,6 +194,12 @@ func _on_round_finished(preview: Genome) -> void:
 	director.spawn(next_genome, at)
 	_begin_generation()
 	_refresh_species()
+
+
+func _on_save_cell() -> void:
+	var count := OrganismCollection.add(director.genome, "Gen %d cell" % cycle.number)
+	hud.pause_menu.show_note(
+		"Cell saved (%d in your collection). It may return as a rival species." % count)
 
 
 func _on_quit_requested() -> void:

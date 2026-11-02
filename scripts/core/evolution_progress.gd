@@ -5,7 +5,9 @@ extends RefCounted
 ## gathered plenty of energy for its body's cost earn points; reaching GOAL
 ## unlocks the next stage.
 
-const GOAL := 100.0
+## Points needed to finish the single-cell stage: about 25 to 30 good
+## generations.
+const GOAL := 300.0
 const MAX_PER_GENERATION := 15.0
 
 var points := 0.0

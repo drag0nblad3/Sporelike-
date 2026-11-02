@@ -82,4 +82,6 @@ func _check_glossary() -> void:
 	print("smoke: glossary height %d" % height)
 	if height < 200:
 		push_error("Glossary text is blank in the pause menu")
+	menu.save_cell_requested.emit()
+	print("smoke: saved cells %d" % OrganismCollection.entries().size())
 	menu.close()
