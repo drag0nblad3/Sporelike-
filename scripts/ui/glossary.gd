@@ -66,7 +66,9 @@ everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.
-[b]Mutation choice[/b]: pick a trait to push your whole species toward.
+[b]Mutation choice[/b]: pick a trait to push your whole species toward. \
+Each pick is a big step, and bigger still when it pushes a trait further the \
+way your species already leans, so repeated picks build a specialist.
 [b]Upgrades[/b]: each button lists every number it changes for a cell like \
 you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
 unlocks new body parts that can appear as choices:

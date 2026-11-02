@@ -46,7 +46,7 @@ static func measure(g: Genome) -> Dictionary:
 		"accel": g.acceleration() * MICRONS,
 		"sight": g.sense_range() * MICRONS,
 		"grab": g.grab_reach() * MICRONS,
-		"sticky": 0.8 * g.feature("sticky_coat") * MICRONS,
+		"sticky": Feature.STICKY_REACH * g.feature("sticky_coat") * MICRONS,
 		"chew": (0.7 + g.value_of("size")) * 100.0,
 		"armor": g.armor() * 100.0,
 		"toxin": g.toxin() * 100.0,

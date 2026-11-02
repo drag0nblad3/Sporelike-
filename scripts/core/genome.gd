@@ -78,7 +78,7 @@ func max_energy() -> float:
 
 ## Extra eating reach from grabbing cilia.
 func grab_reach() -> float:
-	return 0.5 * feature("grabbing_cilia")
+	return 0.8 * feature("grabbing_cilia")
 
 
 ## A child genome: each trait has a chance to drift a little up or down.
@@ -103,7 +103,7 @@ func max_speed() -> float:
 	# Each step of speed adds a little less than the one before (see Pace).
 	var s := value_of("speed")
 	return (3.3 + 5.6 * s / (1.0 + 0.3 * s)) * lerpf(1.0, 0.7, value_of("armor")) \
-		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.12 * feature("tail_bud"))
+		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.2 * feature("tail_bud"))
 
 
 ## How hard the cell can push: high agility means quick starts and turns.
@@ -116,7 +116,7 @@ func turn_rate() -> float:
 
 
 func sense_range() -> float:
-	return lerpf(3.0, 12.0, value_of("sense")) * (1.0 + 0.25 * feature("eye_cluster"))
+	return lerpf(3.0, 12.0, value_of("sense")) * (1.0 + 0.4 * feature("eye_cluster"))
 
 
 ## Chance (0..1) to survive a predator's bite.

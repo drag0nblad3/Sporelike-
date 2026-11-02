@@ -4,6 +4,9 @@ extends RefCounted
 ## developed enough (or, for storage, at any time). Each has a few levels.
 ## Genome reads the levels; this file says what exists and when it unlocks.
 
+## Extra reach per Sticky coat level at which darting food sticks.
+const STICKY_REACH := 1.2
+
 ## id -> [label, effect text, unlocking trait ("" = always), threshold, max level]
 const ALL := {
 	"grabbing_cilia": ["Grabbing cilia", "Cilia snatch food that is very close", "agility", 0.55, 2],

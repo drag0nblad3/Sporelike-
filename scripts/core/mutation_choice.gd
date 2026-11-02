@@ -3,7 +3,11 @@ extends RefCounted
 ## One upgrade the player can encourage across the whole species between
 ## generations: a nudge to a trait, or a new level of a branching Feature.
 
-const STEP := 0.05
+## Base trait change per pick at x1 influence.
+const STEP := 0.12
+## Pushing a trait further the way it already leans adds up to this much
+## more again, so picks drive the species toward a specialty.
+const SPECIALIZE := 1.0
 const LABELS := {
 	"size": ["Bigger body", "Smaller body"],
 	"speed": ["Longer tail", "Shorter tail"],
@@ -50,7 +54,9 @@ func apply_to(genome: Genome, influence: float) -> void:
 		genome.features[feature_id] = level
 		return
 	var value: float = genome.values[trait_name]
-	genome.values[trait_name] = clampf(value + STEP * influence * direction, 0.0, 1.0)
+	var lean := value if direction > 0.0 else 1.0 - value
+	var step := STEP * influence * (1.0 + SPECIALIZE * lean)
+	genome.values[trait_name] = clampf(value + step * direction, 0.0, 1.0)
 
 
 ## A few different choices: trait nudges (usually up), and sometimes one

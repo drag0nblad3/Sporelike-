@@ -71,7 +71,7 @@ func startle_near(movers: Array[Organism]) -> void:
 	for org in movers:
 		var t := org.flat_pos()
 		var sticky := org.genome.feature("sticky_coat")
-		var stick_reach := org.radius() + 0.8 * sticky
+		var stick_reach := org.radius() + Feature.STICKY_REACH * sticky
 		for item in _grid.near(t, STARTLE_RANGE):
 			if item.flee_speed <= 0.0:
 				continue
