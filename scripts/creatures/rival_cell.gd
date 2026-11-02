@@ -4,6 +4,8 @@ extends SpeciesCell
 ## species' colour and belongs to its RivalSpecies.
 
 var colour := Color.WHITE
+## Name of its RivalSpecies, for NicheLedger.
+var group_name := ""
 
 
 func tint() -> Color:

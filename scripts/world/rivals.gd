@@ -4,7 +4,8 @@ extends Node
 ## a little weaker overall than the player's species, evolves them between
 ## generations, and replaces any that die out with a new arrival. Some new
 ## rivals descend from cells the player saved (OrganismCollection), toned
-## down to the same strength limit.
+## down to the same strength limit. A NicheLedger tracks who eats what, so
+## each rival can drift toward food the others leave alone.
 
 const COUNT := 3
 const NAMES := ["Amber", "Violet", "Lime"]
@@ -13,15 +14,19 @@ const HUES := [0.08, 0.78, 0.24]
 const STRENGTH := 0.85
 ## Chance a new rival is founded from a saved cell, when any are saved.
 const FROM_SAVED := 0.5
+## An evolving rival is scaled back if it passes this share of the player.
+const MAX_STRENGTH := 0.9
 
 var ecosystem: Ecosystem
 var groups: Array[RivalSpecies] = []
+var ledger := NicheLedger.new()
 ## How the last new template came about, for the population screen.
 var _last_origin := ""
 
 
 ## Founds every rival, from saved templates where there are any.
 func start(player: Genome, saved: Array) -> void:
+	ecosystem.food.eaten.connect(ledger.record)
 	for i in COUNT:
 		var genome := _new_template(player)
 		if i < saved.size():
@@ -49,9 +54,12 @@ func end_generation(player: Genome) -> String:
 			groups[i] = _make(i, genome)
 			parts.append("%s died out, a new %s arrived%s" % [NAMES[i], NAMES[i], _last_origin])
 		else:
-			group.evolve(ecosystem.rng)
-			parts.append("%s %d" % [NAMES[i], group.members.size()])
-	return "Rival species: " + ", ".join(parts)
+			var key := group.species_name
+			group.evolve(ecosystem.rng, ledger.habits_for(key), ledger.crowding(key))
+			_hold_back(group, player)
+			parts.append("%s %d, %s" % [NAMES[i], group.members.size(), group.niche_words()])
+	ledger.reset()
+	return "Rival species: " + "\n".join(parts)
 
 
 func to_save() -> Array:
@@ -99,15 +107,35 @@ func _new_template(player: Genome) -> Genome:
 ## Scales the non-diet traits to STRENGTH times the player's total; a saved
 ## cell is only ever scaled down, never up.
 func _cap_strength(g: Genome, player: Genome, allow_up: bool) -> void:
+	var factor := _factor(g, player, STRENGTH)
+	if factor >= 1.0 and not allow_up:
+		return
+	_scale(g, factor)
+
+
+## Keeps an evolved rival below MAX_STRENGTH times the player's species.
+func _hold_back(group: RivalSpecies, player: Genome) -> void:
+	var factor := _factor(group.template, player, MAX_STRENGTH)
+	if factor >= 1.0:
+		return
+	_scale(group.template, factor)
+	for cell in group.members:
+		_scale(cell.genome, factor)
+
+
+## What to multiply g's non-diet traits by for their total to be `share`
+## of the player's.
+func _factor(g: Genome, player: Genome, share: float) -> float:
 	var total := 0.0
 	var target := 0.0
 	for t in Genome.TRAITS:
 		if t != "diet":
 			total += g.value_of(t)
 			target += player.value_of(t)
-	target *= STRENGTH
-	if total <= target and not allow_up:
-		return
+	return target * share / maxf(total, 0.01)
+
+
+func _scale(g: Genome, factor: float) -> void:
 	for t in Genome.TRAITS:
 		if t != "diet":
-			g.values[t] = clampf(g.value_of(t) * target / maxf(total, 0.01), 0.0, 1.0)
+			g.values[t] = clampf(g.value_of(t) * factor, 0.0, 1.0)

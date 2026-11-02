@@ -55,15 +55,5 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_eaten(org: Organism, item: FoodItem, energy: float) -> void:
-	if org != player:
-		return
-	if item.hardness > org.genome.value_of("jaw"):
-		habits.add("tough", 1.0)
-	if item.visibility < 0.5:
-		habits.add("faint", 1.0)
-	if item.flee_speed > 0.0:
-		habits.add("darting", 1.0)
-	if item.kind.is_plant:
-		habits.plant_energy += energy
-	else:
-		habits.prey_energy += energy
+	if org == player:
+		habits.note_meal(org.genome, item, energy)

@@ -14,6 +14,9 @@ const MAX_REACH := 3.5
 
 var rng: RandomNumberGenerator
 var patches: Array[FoodPatch] = []
+## 0..1: share of each patch's full stock that grows back, and how fast it
+## regrows. Falls as the stage goes on (EvolutionProgress.food_abundance).
+var abundance := 1.0
 
 var _meshes := {}
 var _materials := {}
@@ -34,11 +37,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	for patch in patches:
-		if patch.count >= patch.target:
+		if patch.count >= _stock(patch):
 			continue
 		patch.regrow_timer -= delta
 		if patch.regrow_timer <= 0.0:
-			patch.regrow_timer = patch.kind.regrow_interval
+			patch.regrow_timer = patch.kind.regrow_interval / maxf(abundance, 0.1)
 			_spawn(patch)
 
 
@@ -46,7 +49,7 @@ func _process(delta: float) -> void:
 func add_patches(new_patches: Array[FoodPatch]) -> void:
 	for patch in new_patches:
 		patches.append(patch)
-		for _i in patch.target - patch.count:
+		for _i in _stock(patch) - patch.count:
 			_spawn(patch)
 	refresh()
 
@@ -86,7 +89,8 @@ func startle_near(movers: Array[Organism]) -> void:
 
 
 ## The most worthwhile food this organism can notice and digest, or null.
-func best_for(org: Organism) -> FoodItem:
+## appeal (food kind id -> multiplier, see ForageStyle) favours its niche.
+func best_for(org: Organism, appeal: Dictionary = {}) -> FoodItem:
 	var best: FoodItem = null
 	var best_score := 0.0
 	var me := org.flat_pos()
@@ -97,7 +101,8 @@ func best_for(org: Organism) -> FoodItem:
 		var d := me.distance_to(item.flat_pos())
 		if d > org.genome.notice_range(item.visibility):
 			continue
-		var score := org.genome.digest(item.energy, item.kind.is_plant) / (d + 1.0 + crack)
+		var score := org.genome.digest(item.energy, item.kind.is_plant) / (d + 1.0 + crack) \
+			* float(appeal.get(item.kind.id, 1.0))
 		if score > best_score:
 			best_score = score
 			best = item
@@ -125,6 +130,11 @@ func consume_near(org: Organism, delta: float) -> float:
 		SwallowedFood.show_in(org, item)
 		item.queue_free()
 	return gained
+
+
+## Pieces this patch grows back to at the current abundance.
+func _stock(patch: FoodPatch) -> int:
+	return maxi(roundi(patch.target * abundance), 2)
 
 
 func _spawn(patch: FoodPatch) -> void:
