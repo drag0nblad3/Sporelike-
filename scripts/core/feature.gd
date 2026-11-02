@@ -12,6 +12,7 @@ const ALL := {
 	"grabbing_cilia": ["Grabbing cilia", "Cilia snatch food that is very close", "agility", 0.55, 2],
 	"tail_bud": ["Tail bud", "Grow another tail: faster, costs more energy", "speed", 0.6, 2],
 	"fat_store": ["Fat store", "Store extra food past full", "", 0.0, 3],
+	"gut_lining": ["Gut lining", "Digest more of every food", "", 0.0, 3],
 	"eye_cluster": ["Eye cluster", "Spot food from farther away", "sense", 0.6, 2],
 	"jet": ["Jet boost", "Tap Jet for a quick burst of speed", "speed", 0.5, 2],
 	"sticky_coat": ["Sticky coat", "Darting food that comes close gets stuck", "armor", 0.3, 2],

@@ -8,16 +8,25 @@ const STEP := 0.12
 ## Pushing a trait further the way it already leans adds up to this much
 ## more again, so picks drive the species toward a specialty.
 const SPECIALIZE := 1.0
+## Traits that grow faster per pick than the rest.
+const FAST := {"armor": 1.6, "toxin": 1.6}
+## Picks only ever add. Diet is the one two-way trait: its second label is
+## the pick that moves it toward plants.
 const LABELS := {
-	"size": ["Bigger body", "Smaller body"],
-	"speed": ["Longer tail", "Shorter tail"],
-	"agility": ["More cilia", "Fewer cilia"],
-	"sense": ["Sharper eye", "Duller eye"],
-	"armor": ["Thicker armor", "Lighter armor"],
-	"toxin": ["More toxic", "Less toxic"],
+	"size": ["Bigger body"],
+	"speed": ["Longer tail"],
+	"agility": ["More cilia"],
+	"sense": ["Sharper eye"],
+	"armor": ["Thicker armor"],
+	"toxin": ["More toxic"],
 	"diet": ["Eat more meat", "Eat more plants"],
-	"jaw": ["Stronger jaw", "Weaker jaw"],
+	"jaw": ["Stronger jaw"],
+	"efficiency": ["Leaner metabolism"],
 }
+## The plain energy-saving pick: how much efficiency it adds at x1
+## influence, and how often it is one of the choices.
+const EFFICIENCY_STEP := 0.12
+const EFFICIENCY_CHANCE := 0.5
 ## Chance one of the choices is a branching feature, when any is available.
 const FEATURE_CHANCE := 0.6
 
@@ -53,14 +62,18 @@ func apply_to(genome: Genome, influence: float) -> void:
 		var level := mini(genome.feature(feature_id) + 1, Feature.max_level(feature_id))
 		genome.features[feature_id] = level
 		return
+	if trait_name == "efficiency":
+		genome.efficiency = minf(genome.efficiency + EFFICIENCY_STEP * influence, 1.0)
+		return
 	var value: float = genome.values[trait_name]
 	var lean := value if direction > 0.0 else 1.0 - value
-	var step := STEP * influence * (1.0 + SPECIALIZE * lean)
+	var step := STEP * influence * (1.0 + SPECIALIZE * lean) * float(FAST.get(trait_name, 1.0))
 	genome.values[trait_name] = clampf(value + step * direction, 0.0, 1.0)
 
 
-## A few different choices: trait nudges (usually up), and sometimes one
-## branching feature the species has unlocked.
+## A few different choices: trait increases (diet either way), and
+## sometimes one branching feature the species has unlocked. Traits already
+## at the top of their scale are not offered.
 static func roll(rng: RandomNumberGenerator, count: int, averages: Dictionary,
 		template: Genome) -> Array[MutationChoice]:
 	var names: Array = Genome.TRAITS.duplicate()
@@ -71,15 +84,21 @@ static func roll(rng: RandomNumberGenerator, count: int, averages: Dictionary,
 		var f := MutationChoice.new()
 		f.feature_id = unlocked[rng.randi() % unlocked.size()]
 		picks.append(f)
+	if template.efficiency < 1.0 and rng.randf() < EFFICIENCY_CHANCE:
+		var e := MutationChoice.new()
+		e.trait_name = "efficiency"
+		picks.append(e)
 	for i in names.size():
 		if picks.size() >= count:
 			break
 		var c := MutationChoice.new()
 		c.trait_name = names[i]
-		c.direction = 1.0 if rng.randf() < 0.7 else -1.0
-		# Never offer a push past the end of the scale; flip it instead.
 		var value: float = template.values[c.trait_name]
-		if (c.direction > 0.0 and value >= 1.0) or (c.direction < 0.0 and value <= 0.0):
-			c.direction = -c.direction
+		if c.trait_name == "diet":
+			c.direction = 1.0 if rng.randf() < 0.5 else -1.0
+			if (c.direction > 0.0 and value >= 1.0) or (c.direction < 0.0 and value <= 0.0):
+				c.direction = -c.direction
+		elif value >= 1.0:
+			continue
 		picks.append(c)
 	return picks

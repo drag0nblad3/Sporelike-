@@ -68,7 +68,9 @@ everyone in the species this generation, so deaths do not drag it down.
 changed and what killed it.
 [b]Mutation choice[/b]: pick a trait to push your whole species toward. \
 Each pick is a big step, and bigger still when it pushes a trait further the \
-way your species already leans, so repeated picks build a specialist.
+way your species already leans, so repeated picks build a specialist. \
+Picks only ever add; diet is the one trait you can push either way. \
+[b]Leaner metabolism[/b], offered often, simply burns less energy (up to 30% less).
 [b]Upgrades[/b]: each button lists every number it changes for a cell like \
 you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
 unlocks new body parts that can appear as choices:
@@ -81,6 +83,8 @@ of your species jet away from hunters on their own.
   [b]Scent trail[/b] (from very high sense): an arrow by your cell points to \
 the nearest food your body can eat well, even in hidden fields. Cells of your \
 species follow the scent too.
+  [b]Gut lining[/b] (any time): a new species digests only 80% of what its \
+diet allows; each level adds 10%, up to 110%.
   [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
 gold bar over the energy bar and is burned once the stomach runs low.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \

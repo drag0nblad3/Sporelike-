@@ -7,16 +7,19 @@ const TRAITS := ["size", "speed", "agility", "sense", "armor", "toxin", "diet", 
 const MUTATION_CHANCE := 0.4
 const MUTATION_STEP := 0.08
 ## Scales energy burned per second by every trait. Lower = slower starvation.
-const UPKEEP_RATE := 0.75
+const UPKEEP_RATE := 0.62
 const FULL_ENERGY := 12.0
 const STORE_PER_LEVEL := 5.0
 ## How far food hardness can exceed the jaw and still be chewed through.
 const CHEW_MARGIN := 0.2
+## Share of food energy a starting gut keeps, and what each Gut lining adds.
+const GUT_START := 0.8
+const GUT_PER_LEVEL := 0.1
 
 ## diet: 0 = eats plants well, 1 = eats animals well. jaw cracks shells.
 var values := {
 	"size": 0.3, "speed": 0.5, "agility": 0.3, "sense": 0.4,
-	"armor": 0.1, "toxin": 0.0, "diet": 0.3, "jaw": 0.1,
+	"armor": 0.0, "toxin": 0.0, "diet": 0.3, "jaw": 0.1,
 }
 ## Branching upgrades (see Feature): id -> level. Inherited unchanged.
 var features := {}
@@ -138,7 +141,7 @@ func upkeep() -> float:
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
-		+ 0.05 * feature("food_scent")
+		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining")
 	return cost * UPKEEP_RATE * lerpf(1.0, 0.7, efficiency)
 
 
@@ -163,7 +166,8 @@ func crack_time(hardness: float) -> float:
 func digest(energy: float, is_plant: bool) -> float:
 	var efficiency := lerpf(1.0, 0.3, value_of("diet")) if is_plant \
 		else lerpf(0.3, 1.0, value_of("diet"))
-	return energy * efficiency
+	# A young gut wastes some of everything; Gut lining levels fix that.
+	return energy * efficiency * (GUT_START + GUT_PER_LEVEL * feature("gut_lining"))
 
 
 ## How far away food this visible (0..1) can be noticed.
