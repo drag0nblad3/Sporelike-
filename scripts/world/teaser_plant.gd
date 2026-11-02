@@ -25,17 +25,17 @@ func _ready() -> void:
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = true
 	mat.emission = Color(0.08, 0.2, 0.06)
-	var count := _rng.randi_range(5, 8)
+	var count := _rng.randi_range(6, 9)
 	for i in count:
 		var pivot := Node3D.new()
 		pivot.rotation.y = TAU * i / count + _rng.randf_range(-0.3, 0.3)
 		add_child(pivot)
 		var leaf := MeshInstance3D.new()
-		leaf.mesh = _leaf(_rng.randf_range(10.0, 17.0), _rng.randf_range(2.0, 3.4))
+		leaf.mesh = _leaf(_rng.randf_range(28.0, 48.0), _rng.randf_range(5.0, 9.0))
 		leaf.material_override = mat
 		pivot.add_child(leaf)
 		_fronds.append(leaf)
-		_tilts.append(_rng.randf_range(0.2, 0.45))
+		_tilts.append(_rng.randf_range(0.05, 0.13))
 	_phase = _rng.randf() * TAU
 
 
@@ -43,7 +43,7 @@ func _process(delta: float) -> void:
 	_phase += delta
 	for i in _fronds.size():
 		# Lean up from the floor and sway, each frond a little out of step.
-		_fronds[i].rotation.x = -_tilts[i] - 0.08 * sin(_phase * 0.7 + i * 1.3)
+		_fronds[i].rotation.x = -_tilts[i] - 0.03 * sin(_phase * 0.5 + i * 1.3)
 
 
 ## A long tapered blade lying along +Z, wide in the middle.
@@ -51,7 +51,7 @@ static func _leaf(length: float, width: float) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_normal(Vector3.UP)
-	var steps := 6
+	var steps := 10
 	var prev_l := Vector3.ZERO
 	var prev_r := Vector3.ZERO
 	for s in range(1, steps + 1):

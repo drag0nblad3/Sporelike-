@@ -1,12 +1,13 @@
 class_name TeaserPlacer
 extends RefCounted
 ## Decides, from the world seed, which chunks hold a giant teaser of the
-## next stage (a ghostly sea plant or cell colony) and builds it. Roughly
-## one chunk in four has one; the starting chunk never does.
+## next stage (a ghostly sea plant or cell colony, many times the size of
+## a cell) and builds it. Roughly one chunk in six has one; the starting
+## chunk never does.
 
-const PLANT_CHANCE := 0.14
-const COLONY_CHANCE := 0.12
-const COLONY_HEIGHT := 2.2
+const PLANT_CHANCE := 0.09
+const COLONY_CHANCE := 0.08
+const COLONY_HEIGHT := 2.5
 
 
 ## The teaser for this chunk, or null.

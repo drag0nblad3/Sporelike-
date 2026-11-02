@@ -1,11 +1,12 @@
 class_name CurrentView
 extends Node3D
-## Makes one CurrentStream visible: a faint band on the sea floor plus pale
-## streaks that slide along it at the water's speed. Stronger currents get
-## more, longer and brighter streaks.
+## Makes one CurrentStream visible: a faint ribbon on the sea floor that
+## follows its curves, plus pale streaks that slide along it at the water's
+## speed. Stronger currents get more, longer and brighter streaks.
 
 const STREAK_Y := -0.55
-const BAND_Y := -1.3
+const RIBBON_Y := -1.3
+const LANE := Color(0.55, 0.85, 1.0)
 
 var stream: CurrentStream
 var _multimesh: MultiMesh
@@ -19,21 +20,38 @@ func _init(s: CurrentStream) -> void:
 
 func _ready() -> void:
 	var strength := stream.strength()
-	var dir := stream.direction()
-	rotation.y = atan2(dir.x, dir.y)
-	var mid := (stream.start + stream.finish) * 0.5
-	position = Vector3(mid.x, 0.0, mid.y)
-	_add_band(strength)
+	_add_ribbon(0.04 + 0.06 * strength)
 	_add_streaks(strength)
 
 
-func _add_band(strength: float) -> void:
-	var band := PlaneMesh.new()
-	band.size = Vector2(stream.width, stream.length())
+## A strip along the path, clear at both edges and the ends, tinted in the middle.
+func _add_ribbon(alpha: float) -> void:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_normal(Vector3.UP)
+	var half := stream.width * 0.5
+	var total := stream.length()
+	var cols: Array[float] = [-1.0, 0.0, 1.0]
+	for i in stream.points.size() - 1:
+		var rows: Array = []
+		for j in [i, i + 1]:
+			var along: float = stream.marks[j]
+			var p := stream.points[j]
+			var dir := stream.tangent_at(minf(along, total - 0.01))
+			var side := Vector2(-dir.y, dir.x)
+			var fade := smoothstep(0.0, 5.0, along) * smoothstep(0.0, 5.0, total - along)
+			var row: Array = []
+			for c in cols:
+				var at := p + side * half * c
+				row.append([Vector3(at.x, RIBBON_Y, at.y), (1.0 - absf(c)) * fade])
+			rows.append(row)
+		for c in 2:
+			_quad(st, rows[0][c], rows[0][c + 1], rows[1][c], rows[1][c + 1], alpha)
 	var mesh := MeshInstance3D.new()
-	mesh.mesh = band
-	mesh.position.y = BAND_Y
-	mesh.material_override = _material(Color(0.55, 0.85, 1.0, 0.035 + 0.05 * strength))
+	mesh.mesh = st.commit()
+	var mat := _material(Color(1, 1, 1))
+	mat.vertex_color_use_as_albedo = true
+	mesh.material_override = mat
 	add_child(mesh)
 
 
@@ -46,10 +64,10 @@ func _add_streaks(strength: float) -> void:
 	_multimesh.use_colors = true
 	_multimesh.mesh = quad
 	var area := stream.width * stream.length()
-	var count := clampi(roundi(area / (14.0 - 8.0 * strength)), 8, 90)
+	var count := clampi(roundi(area / (14.0 - 8.0 * strength)), 8, 110)
 	_multimesh.instance_count = count
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash([stream.start, stream.finish])
+	rng.seed = hash([stream.points[0], stream.length()])
 	for i in count:
 		_offsets.append(rng.randf() * stream.length())
 		_lanes.append(rng.randf_range(-0.42, 0.42) * stream.width)
@@ -66,19 +84,27 @@ func _process(delta: float) -> void:
 	_place(delta)
 
 
-## Slides every streak downstream and wraps it back to the start, fading
-## it in and out near the ends so it never pops.
+## Slides every streak downstream along the curve and wraps it back to the
+## start, fading it in and out near the ends so it never pops.
 func _place(delta: float) -> void:
 	var total := stream.length()
-	var half := total * 0.5
 	for i in _offsets.size():
 		var along := fmod(_offsets[i] + stream.speed * delta, total)
 		_offsets[i] = along
-		var at := Vector3(_lanes[i], STREAK_Y, along - half)
-		_multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, at))
-		var fade := smoothstep(0.0, 3.0, along) * smoothstep(0.0, 3.0, total - along)
+		var dir := stream.tangent_at(along)
+		var p := stream.position_at(along) + Vector2(-dir.y, dir.x) * _lanes[i]
+		var turn := Basis(Vector3.UP, atan2(dir.x, dir.y))
+		_multimesh.set_instance_transform(i, Transform3D(turn, Vector3(p.x, STREAK_Y, p.y)))
+		var fade := smoothstep(0.0, 4.0, along) * smoothstep(0.0, 4.0, total - along)
 		fade *= 1.0 - absf(_lanes[i]) / (stream.width * 0.5)
 		_multimesh.set_instance_color(i, Color(1, 1, 1, fade))
+
+
+func _quad(st: SurfaceTool, a: Array, b: Array, c: Array, d: Array, alpha: float) -> void:
+	for v in [a, b, c, b, d, c]:
+		var weight: float = v[1]
+		st.set_color(Color(LANE, alpha * weight))
+		st.add_vertex(v[0])
 
 
 static func _material(color: Color) -> StandardMaterial3D:

@@ -57,6 +57,5 @@ func _load(coord: Vector2i) -> void:
 func _unload(coord: Vector2i) -> void:
 	var chunk: WorldChunk = _chunks[coord]
 	_chunks.erase(coord)
-	currents.forget(coord)
 	chunk_unloaded.emit(chunk)
 	chunk.queue_free()

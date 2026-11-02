@@ -6,6 +6,7 @@ extends Node3D
 ## that ripples. Purely for looks: nothing can touch or eat it yet.
 
 const CELL := Color(0.45, 0.95, 0.8)
+const FLATTEN := 0.3
 const SPECIAL := [Color(1.0, 0.8, 0.35), Color(0.75, 0.55, 1.0), Color(1.0, 0.5, 0.45)]
 
 var shape := "sphere"
@@ -22,23 +23,24 @@ func _init(kind: String, seed_value: int) -> void:
 
 
 func _ready() -> void:
-	var count := 46 if shape == "sphere" else _rng.randi_range(10, 16)
+	var count := 90 if shape == "sphere" else _rng.randi_range(18, 28)
 	var cell := SphereMesh.new()
 	cell.radial_segments = 10
 	cell.rings = 5
-	cell.radius = 0.5 if shape == "sphere" else 0.7
+	cell.radius = 1.4 if shape == "sphere" else 1.8
 	cell.height = cell.radius * 2.0
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_colors = true
 	_multimesh.mesh = cell
 	_multimesh.instance_count = count
-	var radius := _rng.randf_range(2.6, 3.8)
+	var radius := _rng.randf_range(9.0, 13.0)
 	for i in count:
 		if shape == "sphere":
-			_points.append(_fibonacci(i, count) * radius)
+			# Squashed flat so the huge ball stays below the camera.
+			_points.append(_fibonacci(i, count) * radius * Vector3(1.0, FLATTEN, 1.0))
 		else:
-			_points.append(Vector3((i - count * 0.5) * 1.25, 0.0, 0.0))
+			_points.append(Vector3((i - count * 0.5) * 3.2, 0.0, 0.0))
 		var tint := CELL
 		if _rng.randf() < 0.25:
 			tint = SPECIAL[_rng.randi() % SPECIAL.size()]
@@ -52,7 +54,7 @@ func _ready() -> void:
 	mat.emission = Color(0.1, 0.3, 0.3)
 	view.material_override = mat
 	add_child(view)
-	_spin = _rng.randf_range(0.05, 0.15) * (1.0 if _rng.randf() < 0.5 else -1.0)
+	_spin = _rng.randf_range(0.02, 0.06) * (1.0 if _rng.randf() < 0.5 else -1.0)
 	rotation.y = _rng.randf() * TAU
 	_phase = _rng.randf() * TAU
 	_place()
@@ -65,12 +67,12 @@ func _process(delta: float) -> void:
 
 
 func _place() -> void:
-	var breathe := 1.0 + 0.04 * sin(_phase * 0.8)
+	var breathe := 1.0 + 0.03 * sin(_phase * 0.5)
 	for i in _points.size():
 		var p := _points[i] * breathe
 		if shape == "chain":
-			p.z = 1.4 * sin(_phase * 0.9 + i * 0.6)
-			p.y = 0.4 * sin(_phase * 0.5 + i * 0.4)
+			p.z = 5.0 * sin(_phase * 0.5 + i * 0.35)
+			p.y = 0.6 * sin(_phase * 0.4 + i * 0.3)
 		_multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, p))
 
 

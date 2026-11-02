@@ -43,15 +43,11 @@ func _run() -> void:
 	await _visit("current", _find(func(c: Vector2i) -> Variant:
 		for st in game.streamer.currents.streams_for(c):
 			if st.speed >= CurrentStream.MEDIUM:
-				return (st.start + st.finish) * 0.5
+				return st.position_at(st.length() * 0.5)
 		return null))
-	await _visit("teaser", _find(func(c: Vector2i) -> Variant:
-		var t := TeaserPlacer.build(game.streamer.generator.world_seed, c)
-		if t == null:
-			return null
-		var at := Vector2(t.position.x, t.position.z)
-		t.free()
-		return at))
+	game.camera.zoom = 4.0
+	await _visit("teaser", _find(_teaser.bind(TeaserPlant)))
+	await _visit("colony", _find(_teaser.bind(TeaserColony)))
 	game.camera.zoom = 1.0
 	await get_tree().create_timer(1.0).timeout
 	game.hud.pause_menu.open()
@@ -67,10 +63,21 @@ func _run() -> void:
 	get_tree().quit()
 
 
+## Where the teaser of this chunk is, if it has one of this class.
+func _teaser(c: Vector2i, kind: Variant) -> Variant:
+	var t := TeaserPlacer.build(game.streamer.generator.world_seed, c)
+	if t == null:
+		return null
+	var at := Vector2(t.position.x, t.position.z)
+	var same := is_instance_of(t, kind)
+	t.free()
+	return at if same else null
+
+
 ## The first spot `test` returns for chunks in growing rings around the
 ## start, or the start itself.
 func _find(test: Callable) -> Vector2:
-	for ring in range(1, 8):
+	for ring in range(1, 10):
 		for x in range(-ring, ring + 1):
 			for y in range(-ring, ring + 1):
 				if maxi(absi(x), absi(y)) != ring:
