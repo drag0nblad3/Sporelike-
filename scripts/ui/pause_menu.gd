@@ -16,10 +16,11 @@ var _note: Label
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	theme = UiTheme.shared()
 	visible = false
 
 	var shade := ColorRect.new()
-	shade.color = Color(0.0, 0.03, 0.06, 0.9)
+	shade.color = UiTheme.SHADE
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 
@@ -30,8 +31,15 @@ func _ready() -> void:
 	add_child(frame)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 12)
+	column.add_theme_constant_override("separation", 14)
 	frame.add_child(column)
+
+	var heading := Label.new()
+	heading.text = "Paused"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 40)
+	heading.add_theme_color_override("font_color", UiTheme.ACCENT)
+	column.add_child(heading)
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -40,6 +48,7 @@ func _ready() -> void:
 	_note = Label.new()
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_note.add_theme_font_size_override("font_size", 24)
+	_note.add_theme_color_override("font_color", UiTheme.GAIN)
 	column.add_child(_note)
 	buttons.add_child(_button("Resume", close))
 	buttons.add_child(_button("Save this cell", func() -> void: save_cell_requested.emit()))
@@ -54,10 +63,14 @@ func _ready() -> void:
 	_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_text.add_theme_font_size_override("normal_font_size", 24)
 	_text.add_theme_font_size_override("bold_font_size", 24)
-	_text.add_theme_color_override("default_color", Color(0.92, 0.97, 1.0))
+	_text.add_theme_color_override("default_color", UiTheme.INK)
 	_text.get_v_scroll_bar().custom_minimum_size.x = 40.0
 	_text.text = Glossary.TEXT
-	column.add_child(_text)
+	var page := PanelContainer.new()
+	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.PANEL, 22))
+	page.add_child(_text)
+	column.add_child(page)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -107,7 +120,7 @@ func _on_quit() -> void:
 func _button(label: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = label
-	button.custom_minimum_size = Vector2(240, 72)
+	button.custom_minimum_size = Vector2(250, 80)
 	button.add_theme_font_size_override("font_size", 28)
 	button.pressed.connect(action)
 	return button

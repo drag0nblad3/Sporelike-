@@ -1,6 +1,6 @@
 class_name Hud
 extends CanvasLayer
-## On-screen text, the touch joystick, and the pause button with its menu.
+## On-screen readouts, the touch joystick, and the pause button with its menu.
 ## The population screen is added as a child by Game.
 
 signal jet_pressed
@@ -10,8 +10,8 @@ var pause_menu: PauseMenu
 
 var _energy: EnergyBar
 var _jet: Button
-var _generation: Label
-var _species: Label
+var _generation: GenerationReadout
+var _species: SpeciesReadout
 var _debug: Label
 var _hint: Label
 var _message: Label
@@ -24,41 +24,47 @@ func _ready() -> void:
 
 	_energy = EnergyBar.new()
 	add_child(_energy)
-	_species = _corner_label(Vector2(24, 36), 20)
-	_debug = _corner_label(Vector2(24, 128), 18)
-	_debug.modulate = Color(1, 1, 1, 0.5)
+	_species = SpeciesReadout.new()
+	add_child(_species)
+	_generation = GenerationReadout.new()
+	add_child(_generation)
 
-	_generation = _corner_label(Vector2(0, 34), 30)
-	_generation.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_generation.offset_left = -360.0
-	_generation.offset_right = -24.0
-	_generation.offset_top = 34.0
-	_generation.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_debug = Label.new()
+	UiTheme.outline(_debug, 16)
+	_debug.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_debug.offset_left = 12.0
+	_debug.offset_top = -30.0
+	_debug.modulate = Color(1, 1, 1, 0.35)
+	add_child(_debug)
 
-	_hint = _center_label(-90.0, 28)
+	_hint = _center_label(-100.0, 26, UiTheme.INK)
 	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
-	_message = _center_label(-200.0, 40)
+	_message = _center_label(-220.0, 44, UiTheme.GOLD)
 
-	var pause := Button.new()
-	pause.text = "II  Help"
-	pause.add_theme_font_size_override("font_size", 26)
-	pause.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	pause.offset_left = -180.0
-	pause.offset_right = -24.0
-	pause.offset_top = 80.0
-	pause.offset_bottom = 140.0
-	add_child(pause)
-	_jet = Button.new()
-	_jet.text = "Jet"
-	_jet.add_theme_font_size_override("font_size", 32)
+	var pause := _corner_button("II  Help", 26, Vector2(170, 76))
+	pause.offset_top = 150.0
+	pause.offset_bottom = 150.0 + 76.0
+	pause.offset_right = -20.0
+	pause.offset_left = -20.0 - 170.0
+	_jet = _corner_button("Jet", 34, Vector2(160, 160))
 	_jet.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_jet.offset_left = -190.0
-	_jet.offset_top = -190.0
+	_jet.offset_left = -200.0
+	_jet.offset_top = -200.0
 	_jet.offset_right = -40.0
 	_jet.offset_bottom = -40.0
+	var ring := UiTheme.panel(UiTheme.BUTTON, 0)
+	ring.set_corner_radius_all(80)
+	ring.border_color = UiTheme.GOLD
+	ring.set_border_width_all(4)
+	var lit: StyleBoxFlat = ring.duplicate()
+	lit.bg_color = UiTheme.BUTTON_DOWN
+	_jet.add_theme_stylebox_override("normal", ring)
+	_jet.add_theme_stylebox_override("hover", ring)
+	_jet.add_theme_stylebox_override("pressed", lit)
+	_jet.add_theme_stylebox_override("hover_pressed", lit)
+	_jet.add_theme_color_override("font_color", UiTheme.GOLD)
 	_jet.visible = false
 	_jet.pressed.connect(func() -> void: jet_pressed.emit())
-	add_child(_jet)
 	pause_menu = PauseMenu.new()
 	add_child(pause_menu)
 	pause.pressed.connect(pause_menu.open)
@@ -76,17 +82,11 @@ func show_status(energy: float, full: float, most: float) -> void:
 
 ## fed: energy gathered this generation over what the body burns in one.
 func show_generation(number: int, seconds_left: float, fed: float) -> void:
-	_generation.text = "Gen %d  %ds  Fed %d%%" % [
-		number, ceili(maxf(seconds_left, 0.0)), roundi(fed * 100.0)]
+	_generation.show_generation(number, seconds_left, fed)
 
 
 func show_species(population: int, births: int, averages: Dictionary) -> void:
-	var parts := PackedStringArray()
-	var typical := StatSheet.typical(averages)
-	for t in ["size", "speed", "sense", "armor", "toxin", "jaw"]:
-		parts.append(StatSheet.trait_text(t, typical))
-	_species.text = "Species %d (births %d)\n%s\n%s" % [population, births,
-		"  ".join(parts.slice(0, 3)), "  ".join(parts.slice(3))]
+	_species.show_species(population, births, averages)
 
 
 ## Shows the Jet button when the body has a jet; dims it while recharging.
@@ -104,27 +104,27 @@ func flash_message(text: String, seconds: float) -> void:
 	_message_timer = seconds
 
 
-func _corner_label(at: Vector2, size: int) -> Label:
-	var label := Label.new()
-	label.position = at
-	_style(label, size)
-	add_child(label)
-	return label
+func _corner_button(label: String, font_size: int, min_size: Vector2) -> Button:
+	var button := Button.new()
+	button.theme = UiTheme.shared()
+	button.text = label
+	button.custom_minimum_size = min_size
+	button.add_theme_font_size_override("font_size", font_size)
+	button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	add_child(button)
+	return button
 
 
-func _center_label(from_bottom: float, size: int) -> Label:
+func _center_label(from_bottom: float, font_size: int, tint: Color) -> Label:
 	var label := Label.new()
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	label.offset_top = from_bottom
-	label.offset_left = -600.0
-	label.offset_right = 600.0
-	_style(label, size)
+	label.offset_left = -560.0
+	label.offset_right = 560.0
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	UiTheme.outline(label, font_size)
+	label.add_theme_color_override("font_color", tint)
 	add_child(label)
 	return label
-
-
-func _style(label: Label, size: int) -> void:
-	label.add_theme_font_size_override("font_size", size)
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
-	label.add_theme_constant_override("outline_size", 6)

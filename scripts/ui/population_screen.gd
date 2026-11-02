@@ -7,25 +7,30 @@ signal chosen(choice: MutationChoice)
 
 const BAR_WIDTH := 260.0
 const MARGIN := 24.0
-const UP := Color(0.5, 1.0, 0.55)
-const DOWN := Color(1.0, 0.55, 0.45)
+const UP := UiTheme.GAIN
+const DOWN := UiTheme.LOSS
 
+var _card: PanelContainer
 var _box: VBoxContainer
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	theme = UiTheme.shared()
 	visible = false
 
 	var shade := ColorRect.new()
-	shade.color = Color(0.0, 0.03, 0.06, 0.85)
+	shade.color = UiTheme.SHADE
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 
+	_card = PanelContainer.new()
+	_card.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.PANEL, 28))
+	add_child(_card)
 	_box = VBoxContainer.new()
 	_box.add_theme_constant_override("separation", 6)
-	add_child(_box)
+	_card.add_child(_box)
 	get_viewport().size_changed.connect(_fit)
 
 
@@ -39,7 +44,9 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 		title = "You were eaten. Generation %d ends" % stats.number
 	elif stats.ended_by == "starved":
 		title = "You starved. Generation %d ends" % stats.number
-	_add_label(title, 34)
+	var title_label := _add_label(title, 36)
+	title_label.add_theme_color_override("font_color",
+		UiTheme.ACCENT if stats.ended_by == "time" else UiTheme.LOSS)
 	_add_label("Population %d to %d   births %d   eaten %d   starved %d" % [
 		stats.start_population, stats.end_population, stats.births,
 		stats.deaths["eaten"], stats.deaths["starved"]], 22)
@@ -57,18 +64,15 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 	for line in [stats.adapt_text, stats.hunter_text, stats.rival_text]:
 		if line != "":
 			_add_label(line, 22)
-	_add_label(heading, 24)
+	var ask := _add_label(heading, 26)
+	ask.add_theme_color_override("font_color", UiTheme.GOLD)
 
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
+	row.add_theme_constant_override("separation", 20)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_box.add_child(row)
 	for c in choices:
-		var button := Button.new()
-		button.text = "%s\n%s" % [c.label(), c.effect(you, stats.influence())]
-		button.custom_minimum_size = Vector2(300, 110)
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", 22)
+		var button := PickCard.new(c.label(), c.effect(you, stats.influence()))
 		button.pressed.connect(func() -> void: _pick(c))
 		row.add_child(button)
 	visible = true
@@ -83,15 +87,15 @@ func _fit() -> void:
 	if not visible:
 		return
 	var screen := get_viewport_rect().size
-	_box.reset_size()
-	var content := _box.get_combined_minimum_size()
+	_card.reset_size()
+	var content := _card.get_combined_minimum_size()
 	if content.x <= 0.0 or content.y <= 0.0:
 		return
 	var fit_x := (screen.x - MARGIN * 2.0) / content.x
 	var fit_y := (screen.y - MARGIN * 2.0) / content.y
 	var s := minf(1.0, minf(fit_x, fit_y))
-	_box.scale = Vector2(s, s)
-	_box.position = (screen - content * s) / 2.0
+	_card.scale = Vector2(s, s)
+	_card.position = (screen - content * s) / 2.0
 
 
 func _pick(choice: MutationChoice) -> void:
@@ -114,6 +118,7 @@ func _add_trait_row(trait_name: String, value: float, change: float, detail: Str
 	row.add_child(track)
 	var fill := ColorRect.new()
 	fill.color = Color(0.45, 0.85, 1.0)
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fill.size = Vector2(BAR_WIDTH * clampf(value, 0.0, 1.0), 22)
 	track.add_child(fill)
 
@@ -128,10 +133,11 @@ func _add_trait_row(trait_name: String, value: float, change: float, detail: Str
 	row.add_child(detail_label)
 
 
-func _add_label(text: String, size: int) -> void:
+func _add_label(text: String, size: int) -> Label:
 	var label := _make_label(text, size)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_box.add_child(label)
+	return label
 
 
 func _make_label(text: String, size: int) -> Label:
