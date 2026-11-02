@@ -8,6 +8,8 @@ const MUTATION_CHANCE := 0.4
 const MUTATION_STEP := 0.08
 ## Scales energy burned per second by every trait. Lower = slower starvation.
 const UPKEEP_RATE := 0.62
+## Most energy use that full efficiency can cut.
+const MAX_SAVING := 0.5
 const FULL_ENERGY := 12.0
 const STORE_PER_LEVEL := 5.0
 ## How far food hardness can exceed the jaw and still be chewed through.
@@ -23,7 +25,8 @@ var values := {
 }
 ## Branching upgrades (see Feature): id -> level. Inherited unchanged.
 var features := {}
-## 0..1, hidden: grows when generations go badly; lowers upkeep up to 30%.
+## 0..1: grows with Leaner metabolism picks and bad generations; lowers
+## upkeep by up to MAX_SAVING.
 var efficiency := 0.0
 
 
@@ -142,7 +145,7 @@ func upkeep() -> float:
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
 		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining")
-	return cost * UPKEEP_RATE * lerpf(1.0, 0.7, efficiency)
+	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency)
 
 
 ## Whether the jaw is strong enough for food of this hardness.

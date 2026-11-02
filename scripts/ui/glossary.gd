@@ -70,7 +70,7 @@ changed and what killed it.
 Each pick is a big step, and bigger still when it pushes a trait further the \
 way your species already leans, so repeated picks build a specialist. \
 Picks only ever add; diet is the one trait you can push either way. \
-[b]Leaner metabolism[/b], offered often, simply burns less energy (up to 30% less).
+[b]Leaner metabolism[/b], offered often, simply burns less energy (12.5% less per pick at x1, up to 50% less).
 [b]Upgrades[/b]: each button lists every number it changes for a cell like \
 you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
 unlocks new body parts that can appear as choices:
