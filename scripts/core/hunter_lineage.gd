@@ -10,10 +10,10 @@ const HUNGRY_BELOW := 1.0
 const EVOLVE_CHANCE := 0.5
 ## id -> [label, effect per level, max level]
 const UPGRADES := {
-	"lunge": ["Lunge muscles", "+10% top speed", 3],
-	"keen_nose": ["Keen nose", "+20% sight", 3],
-	"thick_hide": ["Thick hide", "toxin stings 30% less often", 3],
-	"wide_maw": ["Wide maw", "swallows prey 8% bigger", 3],
+	"lunge": ["Lunge flagella", "+10% top speed", 3],
+	"keen_nose": ["Chemosensors", "+20% sight", 3],
+	"thick_hide": ["Thick membrane", "toxin stings 30% less often", 3],
+	"wide_maw": ["Wide gullet", "swallows prey 8% bigger", 3],
 }
 const BASE_SWALLOW := 0.85
 

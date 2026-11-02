@@ -5,6 +5,9 @@ extends Node3D
 ## compete. Patches arrive and leave with their chunks. A FoodGrid keeps
 ## lookups local.
 
+## Every piece eaten, with the energy the eater got from it (HabitTracker).
+signal eaten(org: Organism, item: FoodItem, energy: float)
+
 const STARTLE_RANGE := 2.5
 ## Organisms are never bigger than this, so it bounds the eating reach.
 const MAX_REACH := 3.5
@@ -115,7 +118,9 @@ func consume_near(org: Organism, delta: float) -> float:
 		var crack := org.genome.crack_time(item.hardness)
 		if crack == INF or (crack > 0.0 and not item.chew_for(delta, crack)):
 			continue
-		gained += org.genome.digest(item.energy, item.kind.is_plant)
+		var energy := org.genome.digest(item.energy, item.kind.is_plant)
+		gained += energy
+		eaten.emit(org, item, energy)
 		item.home.count -= 1
 		SwallowedFood.show_in(org, item)
 		item.queue_free()

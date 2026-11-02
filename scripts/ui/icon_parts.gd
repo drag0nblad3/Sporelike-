@@ -39,11 +39,21 @@ static func draw_part(ci: CanvasItem, kind: String, direction: float, c: Vector2
 			var meat := direction > 0.0
 			ci.draw_circle(c, 10.0, Color(0.9, 0.25, 0.25) if meat else Color(0.3, 0.85, 0.35))
 		"jaw":
-			for s in [-1.0, 1.0]:
-				var base := c + Vector2(8.0 * s, -r + 2.0)
-				ci.draw_line(base, base + Vector2(2.0 * s, -14.0), Color(0.95, 0.9, 0.75), 4.0)
-				ci.draw_line(base + Vector2(2.0 * s, -14.0), base + Vector2(-5.0 * s, -18.0),
-					Color(0.95, 0.9, 0.75), 3.0)
+			var mouth := c + Vector2(0, -r + 6.0)
+			ci.draw_circle(mouth, 6.0, Color(0.08, 0.04, 0.06))
+			for i in 5:
+				var d := Vector2.from_angle(-PI / 2.0 + (i - 2) * 0.45)
+				ci.draw_line(mouth + d * 7.0, mouth + d * 16.0, Color(0.95, 0.9, 0.75), 3.0)
+		"chloroplasts":
+			for p in [Vector2(-11, -8), Vector2(9, -10), Vector2(-4, 8), Vector2(12, 6)]:
+				ci.draw_set_transform(c + p, 0.5, Vector2(1.0, 0.5))
+				ci.draw_circle(Vector2.ZERO, 7.0, col)
+			ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		"vent_symbionts":
+			for i in 7:
+				var p := c + Vector2(cos(i * 1.3), sin(i * 1.3)) * (6.0 + 3.0 * (i % 3))
+				var d := Vector2.from_angle(i * 0.9) * 4.0
+				ci.draw_line(p - d, p + d, col, 4.0)
 		"efficiency":
 			for i in 3:
 				var p := c + Vector2(-12.0 + 12.0 * i, 4.0 * (i % 2))
