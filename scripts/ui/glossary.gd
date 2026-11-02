@@ -50,7 +50,18 @@ soft: easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predators that chase the nearest prey they want. \
-Armor and toxin both make them think twice.
+Armor and toxin both make them think twice. Hunters never starve, but after \
+a generation where they caught less than one prey each, they may evolve one \
+of their own upgrades: [b]Lunge muscles[/b] (+10% speed), [b]Keen nose[/b] \
+(+20% sight), [b]Thick hide[/b] (stung 30% less often) or [b]Wide maw[/b] \
+(swallows prey 8% bigger). Each goes up to level 3.
+
+[font_size=28][b]Rival species[/b][/font_size]
+Three other species share the sea: [b]Amber[/b] (orange), [b]Violet[/b] and \
+[b]Lime[/b] (yellow-green). They start with random traits a little weaker overall \
+than yours, compete with you for food, and feed the hunters too. Each \
+generation they evolve a little, mostly sharpening what they are already \
+good at, but more slowly than you. If one dies out, a new one arrives.
 
 [font_size=28][b]Generations[/b][/font_size]
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
@@ -90,6 +101,9 @@ diet allows; each level adds 10%, up to 110%.
 gold bar over the energy bar and is burned once the stomach runs low.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \
 starved), your species adapts to burn less energy, so the game keeps going.
+[b]Bonus picks[/b]: gather twice the energy your body needs (Fed 200%) \
+and you get a second set of three picks; 400% gives a third set, 800% a \
+fourth.
 [b]Influence[/b]: the better you fed yourself (the Fed number), the \
 stronger your choice: from x0.5 up to x2.
 [b]Multicellular progress[/b]: thriving generations (a big population and \

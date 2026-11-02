@@ -18,6 +18,7 @@ var screen: PopulationScreen
 var saver: GameSaver
 var streamer: ChunkStreamer
 var progress := EvolutionProgress.new()
+var round_end: EvolutionRound
 var rng := RandomNumberGenerator.new()
 ## Set by CI ("-- --smoke"): short generations, mutations picked automatically.
 var smoke_test := false
@@ -41,7 +42,6 @@ func _ready() -> void:
 	add_child(hud)
 	screen = PopulationScreen.new()
 	hud.add_child(screen)
-	screen.chosen.connect(_on_mutation_chosen)
 	hud.pause_menu.quit_requested.connect(_on_quit_requested)
 
 	var founder := Genome.new()
@@ -52,6 +52,8 @@ func _ready() -> void:
 		ecosystem.focus = you_at
 	ecosystem.saved_members = GameSaver.members_from(_save)
 	ecosystem.births = int(_save.get("births", 0))
+	ecosystem.saved_rivals = _save.get("rivals", [])
+	ecosystem.hunters.levels = _save.get("hunters", {})
 	ecosystem.species_changed.connect(_refresh_species)
 	add_child(ecosystem)
 	_add_world(world_seed)
@@ -80,6 +82,7 @@ func _ready() -> void:
 	saver.world_seed = world_seed
 	progress.points = float(_save.get("progress", 0.0))
 	add_child(saver)
+	_add_round()
 
 	if _save.is_empty():
 		director.spawn(founder, Vector2.ZERO)
@@ -112,6 +115,19 @@ func _add_world(world_seed: int) -> void:
 	add_child(zone)
 
 
+func _add_round() -> void:
+	round_end = EvolutionRound.new()
+	round_end.ecosystem = ecosystem
+	round_end.director = director
+	round_end.cycle = cycle
+	round_end.screen = screen
+	round_end.progress = progress
+	round_end.rng = rng
+	round_end.smoke_test = smoke_test
+	round_end.finished.connect(_on_round_finished)
+	add_child(round_end)
+
+
 func _resume() -> void:
 	var you := GameSaver.player_from(_save)
 	var you_genome: Genome = you[0]
@@ -142,8 +158,8 @@ func _start_cycle() -> void:
 func _announce() -> void:
 	generation_started.emit(cycle.number)
 	if smoke_test:
-		print("smoke: generation %d started, species %d, progress %d, physics %.2f ms" % [
-			cycle.number, ecosystem.species.size(), progress.points,
+		print("smoke: generation %d started, species %d, rivals %d, progress %d, physics %.2f ms" % [
+			cycle.number, ecosystem.species.size(), ecosystem.rivals.members().size(), progress.points,
 			Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0])
 
 
@@ -157,20 +173,12 @@ func _on_player_died(cause: String) -> void:
 
 func _on_generation_ended(stats: GenerationStats) -> void:
 	get_tree().paused = true
-	stats.progress_text = progress.summary(progress.add_generation(stats))
-	var genomes: Array[Genome] = [director.genome]
-	for member in ecosystem.species:
-		genomes.append(member.genome)
-	stats.adapt_text = Hardship.adapt(stats, genomes)
-	var choices := MutationChoice.roll(rng, 3, ecosystem.trait_averages(), director.genome)
-	screen.open(stats, choices, director.genome)
-	if smoke_test:
-		screen.call_deferred("_pick", choices[0])
+	round_end.start(stats)
 
 
-## Apply the choice, then take over a random survivor's offspring.
-func _on_mutation_chosen(choice: MutationChoice) -> void:
-	cycle.apply(choice)
+## After the picks: take over a random survivor's offspring, or restart the
+## species from your own (picked) genome if none survived.
+func _on_round_finished(preview: Genome) -> void:
 	var next_genome: Genome
 	var at := Vector2.ZERO
 	var parent := ecosystem.pick_parent()
@@ -178,8 +186,7 @@ func _on_mutation_chosen(choice: MutationChoice) -> void:
 		next_genome = parent.genome.mutated(rng)
 		at = parent.flat_pos() + Vector2.from_angle(rng.randf() * TAU) * 2.0
 	else:
-		next_genome = director.genome.copy()
-		choice.apply_to(next_genome, 1.0)
+		next_genome = preview
 		ecosystem.reseed(next_genome)
 	director.retire()
 	get_tree().paused = false

@@ -29,7 +29,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_fit)
 
 
-func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome) -> void:
+func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
+		heading: String) -> void:
 	for child in _box.get_children():
 		child.queue_free()
 
@@ -53,9 +54,10 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome) -
 	_add_label("your choice counts x%.1f" % stats.influence(), 22)
 	if stats.progress_text != "":
 		_add_label(stats.progress_text, 22)
-	if stats.adapt_text != "":
-		_add_label(stats.adapt_text, 22)
-	_add_label("Encourage a mutation in your species:", 24)
+	for line in [stats.adapt_text, stats.hunter_text, stats.rival_text]:
+		if line != "":
+			_add_label(line, 22)
+	_add_label(heading, 24)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)

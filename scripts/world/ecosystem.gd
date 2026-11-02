@@ -23,6 +23,10 @@ var roster := SpeciesRoster.new()
 ## Members to restore from a save as [Genome, Vector2, energy]; set before
 ## the ecosystem enters the tree. Empty means start fresh from the founder.
 var saved_members: Array = []
+## Saved rival templates (Genome dicts) and hunter upgrade levels.
+var saved_rivals: Array = []
+var rivals: Rivals
+var hunters := HunterLineage.new()
 ## Speed multiplier for hunters and food; see Pace.
 var others_pace := 1.0
 
@@ -46,6 +50,10 @@ func _ready() -> void:
 	if saved_members.is_empty():
 		for _i in START_POPULATION:
 			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(2.0, 12.0), 6.0)
+	rivals = Rivals.new()
+	rivals.ecosystem = self
+	add_child(rivals)
+	rivals.start(_founder, saved_rivals)
 	for _i in PREDATOR_COUNT:
 		_spawn_predator(_random_point(25.0, 50.0))
 
@@ -89,7 +97,7 @@ func start_roster() -> void:
 	others_pace = Pace.others(float(roster.averages().get("speed", 0.0)))
 	FoodItem.pace = others_pace
 	for hunter in predators:
-		hunter.speed_scale = others_pace
+		hunter.speed_scale = others_pace * hunters.speed_factor()
 
 
 ## The player's next body: a random awake member near the player if any,
@@ -128,7 +136,8 @@ func _spawn_predator(at: Vector2) -> void:
 	var hunter := Predator.new()
 	hunter.setup(Predator.make_genome(), 1.0)
 	hunter.ecosystem = self
-	hunter.speed_scale = others_pace
+	hunter.lineage = hunters
+	hunter.speed_scale = others_pace * hunters.speed_factor()
 	hunter.position = Vector3(at.x, 0.0, at.y)
 	add_child(hunter)
 	predators.append(hunter)
@@ -167,12 +176,17 @@ func _reproduce() -> void:
 			births += 1
 
 
-## Every living organism a predator might hunt, the player included.
+## Every living organism a predator might hunt: the player's species, the
+## rival species and the player.
 func prey_list() -> Array[Organism]:
 	var list: Array[Organism] = []
 	for member in species:
 		if member.alive and not member.dormant:
 			list.append(member)
+	if rivals:
+		for member in rivals.members():
+			if member.alive and not member.dormant:
+				list.append(member)
 	if is_instance_valid(player) and player.alive:
 		list.append(player)
 	return list

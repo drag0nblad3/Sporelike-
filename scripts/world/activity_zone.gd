@@ -20,6 +20,8 @@ func _physics_process(delta: float) -> void:
 	_timer = CHECK_INTERVAL
 	for member in ecosystem.species:
 		member.set_dormant(not streamer.is_loaded(member.flat_pos()))
+	for member in ecosystem.rivals.members():
+		member.set_dormant(not streamer.is_loaded(member.flat_pos()))
 	for hunter in ecosystem.predators:
 		if hunter.flat_pos().distance_to(ecosystem.focus) > HUNTER_LEASH:
 			var rng := ecosystem.rng
