@@ -18,7 +18,7 @@ const ROWS := {
 	"meat": ["From meat", "%d%%"],
 	"jaw": ["Bite force", "%d µN"],
 	"store": ["Stomach", "%d energy"],
-	"upkeep": ["Burns", "%.1f energy/min"],
+	"upkeep": ["Energy use", "%.1f/min"],
 }
 ## Which row best describes each trait on its own.
 const TRAIT_ROW := {
