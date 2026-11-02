@@ -130,6 +130,14 @@ stronger your choice: from x0.5 up to x2.
 a good Fed score) move your species toward its next stage, where single \
 cells band together into one body. It is a long road: about 25 to 30 good \
 generations. Your view also widens slowly as you progress.
+[b]Currents[/b]: bands of moving water, shown by pale streaks sliding \
+along a faint lane. They carry every cell, hunters included. Weak ones \
+drift at 7 µm/s, medium ones at 20 µm/s, and strong ones (brighter, \
+longer streaks) at 45 µm/s, close to your starting top speed. Ride them \
+to travel fast, or cut across them.
+[b]Giant shapes[/b]: the ghostly sea plants and huge cell colonies you \
+sometimes pass are glimpses of life at the next stage. You cannot touch \
+them yet.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """

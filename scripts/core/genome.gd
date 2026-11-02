@@ -102,8 +102,11 @@ func value_of(trait_name: String) -> float:
 	return values.get(trait_name, 0.0)
 
 
+## Body radius: 0.35 at size 0 rising to 2.4 at size 1. The curve is gentle
+## at first and steep at the top, so only big specialists get huge.
 func radius() -> float:
-	return lerpf(0.35, 1.2, value_of("size"))
+	var s := value_of("size")
+	return 0.35 + 0.85 * s + 1.2 * s * s * s
 
 
 ## Armor plates and a twitchy, agile body both cost top speed.
@@ -141,7 +144,8 @@ func toxin() -> float:
 
 ## Energy burned per second. Every advantage has a running cost.
 func upkeep() -> float:
-	var cost := 0.25 + 0.35 * value_of("size") + 0.3 * value_of("speed") \
+	var big := value_of("size")
+	var cost := 0.25 + 0.35 * big + 0.3 * big * big * big + 0.3 * value_of("speed") \
 		+ 0.2 * value_of("agility") + 0.2 * value_of("sense") + 0.15 * value_of("armor") \
 		+ 0.35 * value_of("toxin") + 0.2 * value_of("jaw") \
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \

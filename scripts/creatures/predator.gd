@@ -10,6 +10,9 @@ const STUNG_COOLDOWN := 6.0
 ## Prey must be smaller than this share of the hunter's radius to swallow,
 ## before any Wide maw upgrades.
 const SWALLOW_RATIO := HunterLineage.BASE_SWALLOW
+## Hunters keep this body radius whatever their size trait; cells can now
+## grow to twice it.
+const RADIUS := 1.2
 
 var ecosystem: Ecosystem
 var lineage := HunterLineage.new()
@@ -31,6 +34,10 @@ static func make_genome() -> Genome:
 
 func _init() -> void:
 	upkeep_scale = 0.0
+
+
+func radius() -> float:
+	return RADIUS
 
 
 func tint() -> Color:
