@@ -20,7 +20,7 @@ func _init(s: CurrentStream) -> void:
 
 func _ready() -> void:
 	var strength := stream.strength()
-	_add_ribbon(0.04 + 0.06 * strength)
+	_add_ribbon(0.09 + 0.1 * strength)
 	_add_streaks(strength)
 
 
@@ -57,14 +57,14 @@ func _add_ribbon(alpha: float) -> void:
 
 func _add_streaks(strength: float) -> void:
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.12 + 0.06 * strength, 0.8 + 2.2 * strength)
+	quad.size = Vector2(0.18 + 0.1 * strength, 1.0 + 2.4 * strength)
 	quad.orientation = PlaneMesh.FACE_Y
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_colors = true
 	_multimesh.mesh = quad
 	var area := stream.width * stream.length()
-	var count := clampi(roundi(area / (14.0 - 8.0 * strength)), 8, 110)
+	var count := clampi(roundi(area / (10.0 - 6.0 * strength)), 10, 150)
 	_multimesh.instance_count = count
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([stream.points[0], stream.length()])
@@ -73,7 +73,7 @@ func _add_streaks(strength: float) -> void:
 		_lanes.append(rng.randf_range(-0.42, 0.42) * stream.width)
 	var instance := MultiMeshInstance3D.new()
 	instance.multimesh = _multimesh
-	var mat := _material(Color(0.8, 0.95, 1.0, 0.3 + 0.4 * strength))
+	var mat := _material(Color(0.85, 0.97, 1.0, 0.5 + 0.4 * strength))
 	mat.vertex_color_use_as_albedo = true
 	instance.material_override = mat
 	add_child(instance)
