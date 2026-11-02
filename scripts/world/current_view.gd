@@ -33,7 +33,7 @@ func _add_band(strength: float) -> void:
 	var mesh := MeshInstance3D.new()
 	mesh.mesh = band
 	mesh.position.y = BAND_Y
-	mesh.material_override = _material(Color(0.55, 0.85, 1.0, 0.05 + 0.07 * strength))
+	mesh.material_override = _material(Color(0.55, 0.85, 1.0, 0.035 + 0.05 * strength))
 	add_child(mesh)
 
 

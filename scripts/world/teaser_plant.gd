@@ -31,7 +31,7 @@ func _ready() -> void:
 		pivot.rotation.y = TAU * i / count + _rng.randf_range(-0.3, 0.3)
 		add_child(pivot)
 		var leaf := MeshInstance3D.new()
-		leaf.mesh = _leaf(_rng.randf_range(6.0, 11.0), _rng.randf_range(1.2, 2.2))
+		leaf.mesh = _leaf(_rng.randf_range(10.0, 17.0), _rng.randf_range(2.0, 3.4))
 		leaf.material_override = mat
 		pivot.add_child(leaf)
 		_fronds.append(leaf)
