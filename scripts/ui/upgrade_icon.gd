@@ -19,7 +19,7 @@ static func make(choice: MutationChoice) -> UpgradeIcon:
 	icon.organelle = choice.feature_id != ""
 	icon.kind = choice.feature_id if icon.organelle else choice.trait_name
 	icon.direction = choice.direction
-	icon.custom_minimum_size = Vector2(0, 118)
+	icon.custom_minimum_size = Vector2(0, 128)
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return icon
 
