@@ -115,7 +115,8 @@ func _add_trait_row(trait_name: String, value: float, change: float, detail: Str
 	fill.size = Vector2(BAR_WIDTH * clampf(value, 0.0, 1.0), 22)
 	track.add_child(fill)
 
-	var delta_label := _make_label("%+.2f" % change, 22)
+	var shown := change if absf(change) >= 0.005 else 0.0
+	var delta_label := _make_label("%+.2f" % shown, 22)
 	if absf(change) >= 0.005:
 		delta_label.modulate = UP if change > 0.0 else DOWN
 	delta_label.custom_minimum_size = Vector2(70, 0)

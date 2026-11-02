@@ -18,7 +18,7 @@ const ROWS := {
 	"meat": ["From meat", "%d%%"],
 	"jaw": ["Bite force", "%d µN"],
 	"store": ["Stomach", "%d energy"],
-	"upkeep": ["Burns", "%.2f energy/s"],
+	"upkeep": ["Burns", "%.1f energy/min"],
 }
 ## Which row best describes each trait on its own.
 const TRAIT_ROW := {
@@ -49,7 +49,7 @@ static func measure(g: Genome) -> Dictionary:
 		"meat": g.digest(1.0, false) * 100.0,
 		"jaw": g.value_of("jaw") * 100.0,
 		"store": g.max_energy(),
-		"upkeep": g.upkeep(),
+		"upkeep": g.upkeep() * 60.0,
 	}
 
 
