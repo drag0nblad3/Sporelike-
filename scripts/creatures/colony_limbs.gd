@@ -26,9 +26,9 @@ func build(colony: Colony) -> void:
 	for i in colony.plan.parts.size():
 		var role := colony.plan.parts[i].role
 		if role == "flagellum":
-			_add(i, false, 6, 0.32, BodyPart.color(role))
+			_add(i, false, 7, 0.38, BodyPart.color(role))
 		elif role == "mouth" and radial:
-			_add(i, true, 8, 0.38, BodyPart.color(role))
+			_add(i, true, 8, 0.45, BodyPart.color(role))
 
 
 ## Tips of the tentacles, which can pick up food like a mouth.
@@ -77,7 +77,7 @@ func _reach_for_food(root: Vector3, out: Vector3, reach: float, k: int) -> Vecto
 
 func _add(cell: int, tentacle: bool, joints: int, segment: float, color: Color) -> void:
 	var limb := IkLimb.new()
-	limb.setup(joints, segment, 0.16 if tentacle else 0.11, color)
+	limb.setup(joints, segment, 0.28 if tentacle else 0.2, color)
 	add_child(limb)
 	_limbs.append(limb)
 	_cells.append(cell)

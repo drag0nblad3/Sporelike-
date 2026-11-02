@@ -78,9 +78,10 @@ func max_energy() -> float:
 	return MAX_ENERGY_PER_CELL * plan.parts.size()
 
 
-## Share of a meal's energy the gut keeps: more digestive cells, more kept.
+## Share of a meal's energy the gut keeps: more digestive cells, more kept,
+## up to all of it.
 func digest_share() -> float:
-	return minf(0.5 + 0.1 * plan.count("gut"), 1.3)
+	return minf(0.55 + 0.06 * plan.count("gut"), 1.0)
 
 
 func feed(amount: float) -> void:
