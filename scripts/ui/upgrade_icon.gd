@@ -30,7 +30,7 @@ func _draw() -> void:
 		draw_arc(c, R + 12.0, 0.0, TAU, 40, Color(GOLD, 0.6), 2.0, true)
 		draw_string(get_theme_default_font(), Vector2(0, 16), "ORGANELLE",
 			HORIZONTAL_ALIGNMENT_CENTER, size.x, 17, GOLD)
-	var r := R * (1.3 if kind == "size" else 1.0)
+	var r := R * (1.15 if kind == "size" else 1.0)
 	draw_circle(c, r, Color(CELL, 0.25))
 	draw_arc(c, r, 0.0, TAU, 36, CELL, 2.0, true)
 	IconParts.draw_part(self, kind, direction, c, r)

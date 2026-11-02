@@ -10,7 +10,7 @@ static func draw_part(ci: CanvasItem, kind: String, direction: float, c: Vector2
 		"size":
 			for a in [0.0, PI / 2.0, PI, PI * 1.5]:
 				var d := Vector2.from_angle(a)
-				ci.draw_line(c + d * (r + 4.0), c + d * (r + 14.0), Color.WHITE, 2.0)
+				ci.draw_line(c + d * (r + 4.0), c + d * (r + 10.0), Color.WHITE, 2.0)
 		"speed", "tail_bud":
 			_tail(ci, c + Vector2(0, r), Color.WHITE if kind == "speed" else col)
 			if kind == "tail_bud":
