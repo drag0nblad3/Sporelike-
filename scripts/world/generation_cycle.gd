@@ -52,9 +52,10 @@ func finish(reason: String) -> void:
 	ended.emit(stats)
 
 
-func record_food() -> void:
+func record_food(energy: float) -> void:
 	if running:
 		stats.food_eaten += 1
+		stats.energy_gained += energy
 
 
 func apply(choice: MutationChoice) -> void:

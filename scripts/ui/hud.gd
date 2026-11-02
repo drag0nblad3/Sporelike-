@@ -25,7 +25,7 @@ func _ready() -> void:
 	_energy = EnergyBar.new()
 	add_child(_energy)
 	_species = _corner_label(Vector2(24, 36), 20)
-	_debug = _corner_label(Vector2(24, 100), 18)
+	_debug = _corner_label(Vector2(24, 128), 18)
 	_debug.modulate = Color(1, 1, 1, 0.5)
 
 	_generation = _corner_label(Vector2(0, 34), 30)
@@ -74,15 +74,19 @@ func show_status(energy: float, full: float, most: float) -> void:
 	_energy.show_energy(energy, full, most)
 
 
-func show_generation(number: int, seconds_left: float, food: int) -> void:
-	_generation.text = "Gen %d  %ds  Food %d" % [number, ceili(maxf(seconds_left, 0.0)), food]
+## fed: energy gathered this generation over what the body burns in one.
+func show_generation(number: int, seconds_left: float, fed: float) -> void:
+	_generation.text = "Gen %d  %ds  Fed %d%%" % [
+		number, ceili(maxf(seconds_left, 0.0)), roundi(fed * 100.0)]
 
 
 func show_species(population: int, births: int, averages: Dictionary) -> void:
 	var parts := PackedStringArray()
-	for t in Genome.TRAITS:
-		parts.append("%s %.2f" % [t, averages[t]])
-	_species.text = "Species %d (births %d)\n%s" % [population, births, "  ".join(parts)]
+	var typical := StatSheet.typical(averages)
+	for t in ["size", "speed", "sense", "armor", "toxin", "jaw"]:
+		parts.append(StatSheet.trait_text(t, typical))
+	_species.text = "Species %d (births %d)\n%s\n%s" % [population, births,
+		"  ".join(parts.slice(0, 3)), "  ".join(parts.slice(3))]
 
 
 ## Shows the Jet button when the body has a jet; dims it while recharging.

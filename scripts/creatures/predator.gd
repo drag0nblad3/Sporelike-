@@ -6,6 +6,8 @@ extends Organism
 
 const BITE_COOLDOWN := 2.5
 const STUNG_COOLDOWN := 6.0
+## Prey must be smaller than this share of the hunter's radius to swallow.
+const SWALLOW_RATIO := 0.85
 
 var ecosystem: Ecosystem
 var cooldown := 0.0
@@ -33,7 +35,7 @@ func tint() -> Color:
 
 
 func wants(prey: Organism) -> bool:
-	return prey.radius() < radius() * 0.85 and prey.genome.value_of("toxin") < avoid_toxin
+	return prey.radius() < radius() * SWALLOW_RATIO and prey.genome.value_of("toxin") < avoid_toxin
 
 
 func try_bite(prey: Organism, rng: RandomNumberGenerator) -> void:

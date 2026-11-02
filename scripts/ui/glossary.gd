@@ -9,9 +9,16 @@ const TEXT := """[font_size=34][b]How it works[/b][/font_size]
 energy each second just to have (its upkeep), so the bar keeps emptying. Eat \
 to refill it. When it runs out you starve.
 
+[b]Units[/b]: lengths are in micrometres (µm, thousandths of a millimetre), \
+speeds in µm per second, and energy is the same energy shown on the bar.
+
 [font_size=28][b]Traits[/b][/font_size] (0 to 1; higher is stronger but costs more upkeep)
-[b]Size[/b]: a bigger body with a longer reach, but slower to turn.
-[b]Speed[/b]: top swimming speed. Catches darting food and outruns hunters.
+[b]Size[/b]: a bigger body with a longer reach that chews faster, but slower \
+to turn and costlier to run. Grow big enough and hunters can no longer \
+swallow you.
+[b]Speed[/b]: top swimming speed. Catches darting food and outruns hunters. \
+Each step adds a little less than the last, but as your species gets faster \
+the hunters and darting food around it slow down very slightly.
 [b]Agility[/b]: how fast you speed up and turn.
 [b]Sense[/b]: how far away you notice food and hunters.
 [b]Armor[/b]: spikes that can deflect a hunter's bite.
@@ -48,6 +55,9 @@ Armor and toxin both make them think twice.
 [font_size=28][b]Generations[/b][/font_size]
 [b]Generation[/b]: a timed round (top right shows time left). It ends when \
 the timer runs out or you die.
+[b]Fed[/b] (top right): energy you have gathered this generation compared \
+with what your body burns in a whole generation. 100% means you broke even. \
+A bigger, more evolved body costs more to run, so it must gather more.
 [b]Species[/b]: the other cells of your kind. They eat, breed and die on \
 their own, and roam between nearby patches when food runs out. Cells left \
 far behind you sleep until you come back. The \
@@ -56,8 +66,14 @@ everyone in the species this generation, so deaths do not drag it down.
 [b]Births[/b]: well-fed cells split into offspring with small random mutations.
 [b]Population screen[/b]: between generations it shows how your species \
 changed and what killed it.
-[b]Mutation choice[/b]: pick a trait to push your whole species toward.
-[b]Upgrades[/b]: each button says what it does. Pushing a trait far enough \
+[b]Mutation choice[/b]: pick a trait to push your whole species toward. \
+Each pick is a big step, and bigger still when it pushes a trait further the \
+way your species already leans, so repeated picks build a specialist. \
+Picks only ever add; diet is the one trait you can push either way. \
+[b]Leaner metabolism[/b], offered often, simply burns less energy \
+(12.5% less per pick at x1, up to 50% less).
+[b]Upgrades[/b]: each button lists every number it changes for a cell like \
+you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
 unlocks new body parts that can appear as choices:
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
   [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
@@ -68,14 +84,17 @@ of your species jet away from hunters on their own.
   [b]Scent trail[/b] (from very high sense): an arrow by your cell points to \
 the nearest food your body can eat well, even in hidden fields. Cells of your \
 species follow the scent too.
+  [b]Gut lining[/b] (any time): a new species digests only 80% of what its \
+diet allows; each level adds 10%, up to 110%.
   [b]Fat store[/b] (any time): keep eating past full. Stored food shows as a \
 gold bar over the energy bar and is burned once the stomach runs low.
 [b]Hard times[/b]: after a bad generation (your species shrank a lot, or you \
 starved), your species adapts to burn less energy, so the game keeps going.
-[b]Influence[/b]: the more food you ate this generation, the stronger your choice.
+[b]Influence[/b]: the better you fed yourself (the Fed number), the \
+stronger your choice: from x0.5 up to x2.
 [b]Multicellular progress[/b]: thriving generations (a big population and \
-plenty of food eaten) move your species toward its next stage, where single \
-cells band together into one body.
+a good Fed score) move your species toward its next stage, where single \
+cells band together into one body. Your view also widens slowly as you progress.
 [b]Rebirth[/b]: you return as the offspring of a surviving cell. If all \
 died, your species starts over from you.
 """

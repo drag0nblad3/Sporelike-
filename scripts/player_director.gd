@@ -4,7 +4,7 @@ extends Node
 ## keys, following it with the camera, and reporting its meals and death.
 
 signal died(cause: String)
-signal ate
+signal ate(energy: float)
 
 var ecosystem: Ecosystem
 var camera: CameraRig
@@ -71,8 +71,8 @@ func _on_player_died(_org: Organism, cause: String) -> void:
 	died.emit(cause)
 
 
-func _on_player_ate(_amount: float) -> void:
-	ate.emit()
+func _on_player_ate(amount: float) -> void:
+	ate.emit(amount)
 
 
 func _read_move_input() -> Vector2:

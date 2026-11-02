@@ -16,6 +16,8 @@ var alive := true
 var dormant := false
 ## Multiplier on genome upkeep; predators set it to 0.
 var upkeep_scale := 1.0
+## Multiplies top speed and push; Ecosystem slows hunters with it (Pace).
+var speed_scale := 1.0
 
 ## Seconds left on a jet boost, and until the next one is ready.
 var boost_time := 0.0
@@ -105,8 +107,8 @@ func wander_input(delta: float) -> Vector2:
 
 
 func _move(delta: float) -> void:
-	var top_speed := genome.max_speed()
-	var push := genome.acceleration()
+	var top_speed := genome.max_speed() * speed_scale
+	var push := genome.acceleration() * speed_scale
 	boost_cooldown = maxf(boost_cooldown - delta, 0.0)
 	if boost_time > 0.0:
 		boost_time -= delta

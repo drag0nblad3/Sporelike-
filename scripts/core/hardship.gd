@@ -2,7 +2,7 @@ class_name Hardship
 extends RefCounted
 ## Keeps a struggling game going: after a bad generation (the species
 ## shrank a lot, or the player starved) every member becomes a little more
-## efficient, burning less energy, up to 30% less in all.
+## efficient, burning less energy, up to Genome.MAX_SAVING less in all.
 
 const SHRINK_LIMIT := 0.25
 
@@ -22,5 +22,5 @@ static func adapt(stats: GenerationStats, genomes: Array[Genome]) -> String:
 		total += g.efficiency
 	if genomes.is_empty():
 		return ""
-	var saved := roundi(total / genomes.size() * 30.0)
+	var saved := roundi(total / genomes.size() * Genome.MAX_SAVING * 100.0)
 	return "Hard times: your species adapted and now burns %d%% less energy" % saved

@@ -7,20 +7,26 @@ const TRAITS := ["size", "speed", "agility", "sense", "armor", "toxin", "diet", 
 const MUTATION_CHANCE := 0.4
 const MUTATION_STEP := 0.08
 ## Scales energy burned per second by every trait. Lower = slower starvation.
-const UPKEEP_RATE := 0.75
+const UPKEEP_RATE := 0.62
+## Most energy use that full efficiency can cut.
+const MAX_SAVING := 0.5
 const FULL_ENERGY := 12.0
 const STORE_PER_LEVEL := 5.0
 ## How far food hardness can exceed the jaw and still be chewed through.
 const CHEW_MARGIN := 0.2
+## Share of food energy a starting gut keeps, and what each Gut lining adds.
+const GUT_START := 0.8
+const GUT_PER_LEVEL := 0.1
 
 ## diet: 0 = eats plants well, 1 = eats animals well. jaw cracks shells.
 var values := {
 	"size": 0.3, "speed": 0.5, "agility": 0.3, "sense": 0.4,
-	"armor": 0.1, "toxin": 0.0, "diet": 0.3, "jaw": 0.1,
+	"armor": 0.0, "toxin": 0.0, "diet": 0.3, "jaw": 0.1,
 }
 ## Branching upgrades (see Feature): id -> level. Inherited unchanged.
 var features := {}
-## 0..1, hidden: grows when generations go badly; lowers upkeep up to 30%.
+## 0..1: grows with Leaner metabolism picks and bad generations; lowers
+## upkeep by up to MAX_SAVING.
 var efficiency := 0.0
 
 
@@ -78,7 +84,7 @@ func max_energy() -> float:
 
 ## Extra eating reach from grabbing cilia.
 func grab_reach() -> float:
-	return 0.5 * feature("grabbing_cilia")
+	return 0.8 * feature("grabbing_cilia")
 
 
 ## A child genome: each trait has a chance to drift a little up or down.
@@ -100,8 +106,10 @@ func radius() -> float:
 
 ## Armor plates and a twitchy, agile body both cost top speed.
 func max_speed() -> float:
-	return lerpf(3.3, 8.5, value_of("speed")) * lerpf(1.0, 0.7, value_of("armor")) \
-		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.12 * feature("tail_bud"))
+	# Each step of speed adds a little less than the one before (see Pace).
+	var s := value_of("speed")
+	return (3.3 + 5.6 * s / (1.0 + 0.3 * s)) * lerpf(1.0, 0.7, value_of("armor")) \
+		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.2 * feature("tail_bud"))
 
 
 ## How hard the cell can push: high agility means quick starts and turns.
@@ -109,12 +117,13 @@ func acceleration() -> float:
 	return max_speed() * lerpf(1.2, 4.5, value_of("agility"))
 
 
+## Agile cells turn fast; big bodies turn slower.
 func turn_rate() -> float:
-	return lerpf(4.0, 14.0, value_of("agility"))
+	return lerpf(4.0, 14.0, value_of("agility")) * lerpf(1.1, 0.7, value_of("size"))
 
 
 func sense_range() -> float:
-	return lerpf(3.0, 12.0, value_of("sense")) * (1.0 + 0.25 * feature("eye_cluster"))
+	return lerpf(3.0, 12.0, value_of("sense")) * (1.0 + 0.4 * feature("eye_cluster"))
 
 
 ## Chance (0..1) to survive a predator's bite.
@@ -135,8 +144,8 @@ func upkeep() -> float:
 		+ 0.08 * feature("tail_bud") + 0.04 * feature("fat_store") \
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
-		+ 0.05 * feature("food_scent")
-	return cost * UPKEEP_RATE * lerpf(1.0, 0.7, efficiency)
+		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining")
+	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency)
 
 
 ## Whether the jaw is strong enough for food of this hardness.
@@ -160,7 +169,8 @@ func crack_time(hardness: float) -> float:
 func digest(energy: float, is_plant: bool) -> float:
 	var efficiency := lerpf(1.0, 0.3, value_of("diet")) if is_plant \
 		else lerpf(0.3, 1.0, value_of("diet"))
-	return energy * efficiency
+	# A young gut wastes some of everything; Gut lining levels fix that.
+	return energy * efficiency * (GUT_START + GUT_PER_LEVEL * feature("gut_lining"))
 
 
 ## How far away food this visible (0..1) can be noticed.
