@@ -25,7 +25,7 @@ const LABELS := {
 }
 ## The plain energy-saving pick: how much efficiency it adds at x1
 ## influence, and how often it is one of the choices.
-const EFFICIENCY_STEP := 0.12
+const EFFICIENCY_STEP := 0.25
 const EFFICIENCY_CHANCE := 0.5
 ## Chance one of the choices is a branching feature, when any is available.
 const FEATURE_CHANCE := 0.6
