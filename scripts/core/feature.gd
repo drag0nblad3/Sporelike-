@@ -1,7 +1,8 @@
 class_name Feature
 extends RefCounted
-## Branching upgrades: special body parts a species can grow once a trait is
-## developed enough (or, for storage, at any time). Each has a few levels.
+## Organelles: branching upgrades that add a new capability with a new visible
+## part (drawn by OrganelleParts), grown once a trait is developed enough
+## (or, for storage, at any time). Each has a few levels.
 ## Genome reads the levels; this file says what exists and when it unlocks.
 
 ## Extra reach per Sticky coat level at which darting food sticks.

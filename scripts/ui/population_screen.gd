@@ -73,6 +73,7 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 	_box.add_child(row)
 	for c in choices:
 		var button := PickCard.new(c.label(), c.effect(you, stats.influence()))
+		button.add_icon(UpgradeIcon.make(c))
 		button.pressed.connect(func() -> void: _pick(c))
 		row.add_child(button)
 	visible = true

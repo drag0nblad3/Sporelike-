@@ -88,7 +88,8 @@ Picks only ever add; diet is the one trait you can push either way. \
 (12.5% less per pick at x1, up to 50% less).
 [b]Upgrades[/b]: each button lists every number it changes for a cell like \
 you, gains and costs alike, such as "Top speed 59 → 62 µm/s". Pushing a trait far enough \
-unlocks new body parts that can appear as choices:
+unlocks [b]organelles[/b]: new capabilities that grow a new visible part on \
+your cell, each with its own shape and colour (the pick card shows a drawing):
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
   [b]Tail bud[/b] (from high speed): grow another tail; faster, but costs more.
   [b]Eye cluster[/b] (from high sense): spot food from farther away.

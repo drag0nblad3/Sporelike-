@@ -35,6 +35,12 @@ func _init(title: String, effect: String) -> void:
 		column.add_child(_line(line, 21, tint))
 
 
+## Puts a drawing of the pick (UpgradeIcon) above the name.
+func add_icon(icon: Control) -> void:
+	_column.add_child(icon)
+	_column.move_child(icon, 0)
+
+
 ## The button grows to fit the text it holds (a Button ignores its children).
 func _ready() -> void:
 	custom_minimum_size.y = maxf(custom_minimum_size.y,

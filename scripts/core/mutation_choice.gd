@@ -1,7 +1,7 @@
 class_name MutationChoice
 extends RefCounted
 ## One upgrade the player can encourage across the whole species between
-## generations: a nudge to a trait, or a new level of a branching Feature.
+## generations: a nudge to a trait, or a new level of an organelle (Feature).
 
 ## Base trait change per pick at x1 influence.
 const STEP := 0.12
@@ -38,7 +38,7 @@ var feature_id := ""
 
 func label() -> String:
 	if feature_id != "":
-		return "New: " + Feature.label(feature_id)
+		return "New organelle: " + Feature.label(feature_id)
 	var pair: Array = LABELS[trait_name]
 	return pair[0] if direction > 0.0 else pair[1]
 
