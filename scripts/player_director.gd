@@ -71,6 +71,11 @@ func _process(delta: float) -> void:
 		player.try_boost()
 
 
+## Stops showing the how-to-swim hint (the player has moved on).
+func hide_hint() -> void:
+	_has_moved = true
+
+
 ## Called from the HUD's Jet button.
 func boost() -> void:
 	if is_alive():

@@ -59,6 +59,7 @@ func switch_to(kind: String, at: Vector2) -> void:
 	plan = BodyPlan.starter(kind)
 	var grown := CarryOver.grow_from(plan, director.genome)
 	director.retire()
+	director.hide_hint()
 	_spawn(at)
 	var note := "Your cells stay stuck together!"
 	if not grown.is_empty():
@@ -74,6 +75,7 @@ func resume(data: Dictionary, at: Vector2) -> void:
 	plan = BodyPlan.from_dict(saved)
 	pilot.tint = director.genome.color()
 	director.retire()
+	director.hide_hint()
 	pilot.spawn(plan, at, float(data.get("colony_energy", 0.0)))
 	if pilot.colony.energy <= 0.0:
 		pilot.colony.energy = pilot.colony.max_energy() * START_ENERGY
