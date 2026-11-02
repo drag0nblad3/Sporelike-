@@ -56,6 +56,8 @@ func update(delta: float) -> void:
 		var reach := _limbs[k].length()
 		var target: Vector3
 		if _tentacle[k] == 1:
+			# Tentacles grow from the mouth ring over the top of the body.
+			root.y += 0.45
 			target = _reach_for_food(root, out, reach, k)
 		else:
 			if _colony.plan.symmetry == Symmetry.BILATERAL:
