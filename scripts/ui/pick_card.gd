@@ -4,7 +4,7 @@ extends Button
 ## the pick's name on top and each stat change on its own line below.
 ## Energy costs are tinted so the tradeoff stands out.
 
-const WIDTH := 320.0
+const WIDTH := 380.0
 
 var _column: VBoxContainer
 
@@ -32,7 +32,7 @@ func _init(title: String, effect: String) -> void:
 	column.add_child(rule)
 	for line in effect.split("\n"):
 		var tint := UiTheme.COST if line.begins_with("Energy use") else UiTheme.INK
-		column.add_child(_line(line, 21, tint))
+		column.add_child(_line(line, 20, tint))
 
 
 ## The button grows to fit the text it holds (a Button ignores its children).
