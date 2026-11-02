@@ -78,12 +78,7 @@ func open_picker() -> void:
 
 ## Joystick when touched, otherwise arrow keys or WASD.
 func steering() -> Vector2:
-	if joystick.is_active():
-		return joystick.output
-	var keys := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	keys.x += float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A))
-	keys.y += float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
-	return keys.limit_length(1.0)
+	return TouchSteer.read(joystick)
 
 
 func show_status(colony: Colony) -> void:

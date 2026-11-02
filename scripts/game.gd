@@ -19,9 +19,12 @@ var saver: GameSaver
 var streamer: ChunkStreamer
 var progress := EvolutionProgress.new()
 var round_end: EvolutionRound
+var stage_two: StageTwo
 var rng := RandomNumberGenerator.new()
 ## Set by CI ("-- --smoke"): short generations, mutations picked automatically.
 var smoke_test := false
+## Set from the title screen's "Test stage 2": skip straight to the switch.
+var jump_to_stage_two := false
 
 var _save := {}
 
@@ -45,7 +48,7 @@ func _ready() -> void:
 	hud.pause_menu.quit_requested.connect(_on_quit_requested)
 	hud.pause_menu.save_cell_requested.connect(_on_save_cell)
 
-	var founder := Genome.new()
+	var founder := EvolvedSpecies.random(rng) if jump_to_stage_two else Genome.new()
 	ecosystem = Ecosystem.new()
 	ecosystem.setup(founder)
 	if not _save.is_empty():
@@ -76,19 +79,30 @@ func _ready() -> void:
 	hud.jet_pressed.connect(director.boost)
 	add_child(director)
 
+	_add_stage_two()
 	saver = GameSaver.new()
+	saver.stage_two = stage_two
 	saver.ecosystem = ecosystem
 	saver.director = director
 	saver.cycle = cycle
 	saver.progress = progress
 	saver.world_seed = world_seed
+	# A stage 2 test run must not overwrite the player's real save.
+	saver.enabled = not jump_to_stage_two
 	progress.points = float(_save.get("progress", 0.0))
+	if smoke_test and _save.is_empty():
+		# CI: reach the multicellular switch after the first generation.
+		progress.points = EvolutionProgress.GOAL - 1.0
 	add_child(saver)
 	_add_round()
 
 	if _save.is_empty():
 		director.spawn(founder, Vector2.ZERO)
-		_begin_generation()
+		if jump_to_stage_two:
+			progress.points = EvolutionProgress.GOAL
+			stage_two.offer_switch(Vector2.ZERO)
+		else:
+			_begin_generation()
 	else:
 		_resume()
 	_refresh_species()
@@ -97,6 +111,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if director.is_alive():
 		ecosystem.focus = director.player.flat_pos()
+	elif stage_two.pilot.is_alive():
+		ecosystem.focus = stage_two.center()
 	streamer.update(ecosystem.focus)
 	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.fed_ratio())
 
@@ -117,6 +133,20 @@ func _add_world(world_seed: int) -> void:
 	add_child(zone)
 
 
+func _add_stage_two() -> void:
+	stage_two = StageTwo.new()
+	stage_two.ecosystem = ecosystem
+	stage_two.camera = camera
+	stage_two.hud = hud
+	stage_two.director = director
+	stage_two.rng = rng
+	stage_two.smoke_test = smoke_test
+	stage_two.died.connect(_on_player_died)
+	stage_two.ready_to_play.connect(_on_stage_two_ready)
+	stage_two.pilot.ate.connect(cycle.record_food)
+	add_child(stage_two)
+
+
 func _add_round() -> void:
 	round_end = EvolutionRound.new()
 	round_end.ecosystem = ecosystem
@@ -134,8 +164,12 @@ func _resume() -> void:
 	var you := GameSaver.player_from(_save)
 	var you_genome: Genome = you[0]
 	var you_at: Vector2 = you[1]
-	director.spawn(you_genome, you_at)
-	director.player.energy = you[2]
+	if int(_save.get("stage", 1)) == 2:
+		director.genome = you_genome
+		stage_two.resume(_save, you_at)
+	else:
+		director.spawn(you_genome, you_at)
+		director.player.energy = you[2]
 	cycle.number = int(_save.get("generation", 1)) - 1
 	_start_cycle()
 	cycle.time_left = minf(float(_save.get("time_left", cycle.length)), cycle.length)
@@ -155,7 +189,8 @@ func _start_cycle() -> void:
 	cycle.begin()
 	director.tracker.reset(cycle.length)
 	StatSheet.shared = director.genome
-	cycle.stats.energy_needed = director.genome.upkeep() * cycle.length
+	var upkeep := stage_two.upkeep() if stage_two.active else director.genome.upkeep()
+	cycle.stats.energy_needed = upkeep * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
 	ecosystem.food.abundance = progress.food_abundance()
 
@@ -178,7 +213,10 @@ func _on_player_died(cause: String) -> void:
 
 func _on_generation_ended(stats: GenerationStats) -> void:
 	get_tree().paused = true
-	round_end.start(stats)
+	if stage_two.active:
+		stage_two.end_generation(stats)
+	else:
+		round_end.start(stats)
 
 
 ## After the picks: take over a random survivor's offspring, or restart the
@@ -193,9 +231,21 @@ func _on_round_finished(preview: Genome) -> void:
 	else:
 		next_genome = preview
 		ecosystem.reseed(next_genome)
+	if progress.is_ready() and not stage_two.active:
+		var here := director.player.flat_pos() if director.is_alive() else at
+		director.retire()
+		stage_two.offer_switch(here)
+		return
 	director.retire()
 	get_tree().paused = false
 	director.spawn(next_genome, at)
+	_begin_generation()
+	_refresh_species()
+
+
+## The switch to the multicellular stage, or a stage 2 pick, is done.
+func _on_stage_two_ready() -> void:
+	get_tree().paused = false
 	_begin_generation()
 	_refresh_species()
 

@@ -55,6 +55,7 @@ func _run() -> void:
 	game.hud.pause_menu.close()
 	game.cycle.finish("time")
 	await _shoot("generation")
+	await _shoot_stage_two()
 	game.queue_free()
 	await get_tree().process_frame
 	await _shoot_colony_lab()
@@ -95,7 +96,21 @@ func _visit(shot_name: String, at: Vector2) -> void:
 	await _shoot(shot_name)
 
 
-## The Stage 2 preview: the symmetry choice, then two kinds of colony
+## The multicellular stage in the real game: the switch, a colony swimming
+## among single cells and seaweed, then the cell picks between generations.
+func _shoot_stage_two() -> void:
+	game.screen.visible = false
+	game.stage_two.offer_switch(game.ecosystem.focus)
+	await _shoot("switch")
+	game.stage_two.switch_to(Symmetry.BILATERAL, game.ecosystem.focus)
+	game.stage_two.pilot.autopilot = Vector2(0.6, -1.0)
+	await get_tree().create_timer(3.0).timeout
+	await _shoot("stage2")
+	game.cycle.finish("time")
+	await _shoot("cell_picks")
+
+
+## The colony lab: the symmetry choice, then two kinds of colony
 ## swimming among seaweed.
 func _shoot_colony_lab() -> void:
 	var lab := ColonyLab.new()

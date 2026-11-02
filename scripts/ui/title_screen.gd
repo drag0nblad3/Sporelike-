@@ -1,12 +1,13 @@
 class_name TitleScreen
 extends CanvasLayer
 ## The first screen: the game's name, Continue (only when a save exists),
-## New Game and the Stage 2 preview (the colony lab). Starting a new game
-## over a save asks to confirm first.
+## New Game and Test stage 2 (a made-up evolved species that goes straight
+## to the multicellular switch, without touching the save). Starting a new
+## game over a save asks to confirm first.
 
 signal new_game
 signal continue_game
-signal lab_requested
+signal test_stage_two
 
 var _continue: Button
 var _new: Button
@@ -48,7 +49,7 @@ func _ready() -> void:
 	column.add_child(_continue)
 	_new = _button("New Game", _on_new_pressed)
 	column.add_child(_new)
-	column.add_child(_button("Stage 2 preview", func() -> void: lab_requested.emit()))
+	column.add_child(_button("Test stage 2", func() -> void: test_stage_two.emit()))
 
 
 ## Shows the title; Continue appears only when there is a save to load.

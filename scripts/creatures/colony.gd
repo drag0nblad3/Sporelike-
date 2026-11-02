@@ -26,6 +26,7 @@ var tint := Color(0.55, 0.9, 0.8)
 ## Where the gut cavity and mouth openings sit in the resting shape.
 var hollow_rest := PackedVector3Array()
 var _look := ColonyLook.new()
+var _time := 0.0
 
 
 func _ready() -> void:
@@ -44,7 +45,11 @@ func build(new_plan: BodyPlan, at: Vector3) -> void:
 	centroid /= float(maxi(plan.parts.size(), 1))
 	body = SoftBody.new()
 	body.heading = facing
-	body.steer = 0.35
+	# Loose enough to bend, squash and wobble as it swims and bumps things.
+	body.steer = 0.2
+	body.shape_stiffness = 0.1
+	body.spring_stiffness = 0.35
+	body.passes = 2
 	for part in plan.parts:
 		var local := part.local_position() - centroid
 		body.add_point(at + local.rotated(Vector3.UP, facing), local)
@@ -119,7 +124,7 @@ func _physics_process(delta: float) -> void:
 	if dir.length() > 0.1:
 		_turn_toward(dir, delta)
 	body.heading = facing
-	body.push_all(dir * swim_push())
+	_swim(dir, delta)
 	body.step(delta)
 	energy = maxf(energy - UPKEEP_PER_CELL * plan.parts.size() * delta, 0.0)
 
@@ -129,6 +134,25 @@ func _process(delta: float) -> void:
 		return
 	_look.update(body, hollow_rest)
 	limbs.update(delta)
+
+
+## Most of the push is shared by the whole body; the rest comes from the
+## cells that do the swimming, so a flagellum tail drives and flexes the
+## body, and its whips shove it side to side as they beat.
+func _swim(dir: Vector3, delta: float) -> void:
+	_time += delta
+	var push := swim_push()
+	if dir == Vector3.ZERO or push <= 0.0:
+		return
+	var average := push / SWIM_FORCE
+	var side := dir.cross(Vector3.UP)
+	for i in plan.parts.size():
+		var role := plan.parts[i].role
+		var share := float(PUSH.get(role, OTHER_PUSH)) / average
+		var a := dir * push * (0.6 + 0.4 * share)
+		if role == "flagellum":
+			a += side * sin(_time * 9.0 + i) * push * 0.5
+		body.push(i, a)
 
 
 func _turn_toward(dir: Vector3, delta: float) -> void:

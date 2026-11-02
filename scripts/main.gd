@@ -7,7 +7,6 @@ var smoke_test := "--smoke" in OS.get_cmdline_user_args()
 
 var _title: TitleScreen
 var _game: Game
-var _lab: ColonyLab
 var _smoke_reloaded := false
 
 
@@ -15,7 +14,7 @@ func _ready() -> void:
 	_title = TitleScreen.new()
 	_title.new_game.connect(_on_new_game)
 	_title.continue_game.connect(_on_continue)
-	_title.lab_requested.connect(_open_lab)
+	_title.test_stage_two.connect(func() -> void: _start({}, true))
 	add_child(_title)
 	if smoke_test:
 		SaveGame.delete()
@@ -43,30 +42,16 @@ func _on_continue() -> void:
 	_start(SaveGame.load_data())
 
 
-func _start(save: Dictionary) -> void:
+## jump: a throwaway game that goes straight to the stage 2 switch.
+func _start(save: Dictionary, jump: bool = false) -> void:
 	_close_game()
 	_title.visible = false
 	_game = Game.new()
 	_game.setup(save, smoke_test)
+	_game.jump_to_stage_two = jump
 	_game.quit_to_title.connect(_on_quit_to_title)
 	_game.generation_started.connect(_on_generation_started)
 	add_child(_game)
-
-
-## The Stage 2 preview: a sandbox for the multicellular stage's colonies.
-func _open_lab() -> void:
-	_close_game()
-	_title.visible = false
-	_lab = ColonyLab.new()
-	_lab.back_requested.connect(_close_lab)
-	add_child(_lab)
-
-
-func _close_lab() -> void:
-	if is_instance_valid(_lab):
-		_lab.queue_free()
-	_lab = null
-	_title.open(SaveGame.exists())
 
 
 func _on_quit_to_title() -> void:
