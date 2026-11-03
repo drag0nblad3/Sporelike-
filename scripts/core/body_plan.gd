@@ -91,19 +91,45 @@ func open_spots() -> Array[Vector2]:
 	return spots
 
 
-## Adds a `role` cell where it belongs plus its symmetric copies. Returns
-## how many cells were added (0 when the body is full or has no room).
+func part_at(spot: Vector2) -> BodyPart:
+	var at := snap(spot)
+	for part in parts:
+		if part.offset == at:
+			return part
+	return null
+
+
+## Grows `role` cells where they belong, copied by the symmetry. A cell may
+## take over a skin cell and push new skin outward (see CellPlacement).
+## Returns how many `role` cells were added (0 when there is no room).
 func grow(role: String) -> int:
 	if parts.size() >= MAX_CELLS:
 		return 0
-	var spot := CellPlacement.best_spot(self, role)
-	if spot == Vector2.INF:
+	var choice := CellPlacement.choose(self, role)
+	if choice.is_empty():
 		return 0
+	var spot: Vector2 = choice[0]
+	var takes_over: bool = choice[1]
 	var added := 0
 	for copy in Symmetry.copies(symmetry, spot):
-		if parts.size() >= MAX_CELLS:
-			break
-		if not is_taken(copy):
+		if takes_over:
+			var part := part_at(copy)
+			if part and part.role == "skin":
+				part.role = role
+				added += 1
+		elif parts.size() < MAX_CELLS and not is_taken(copy):
 			parts.append(BodyPart.make(role, copy))
 			added += 1
+	if takes_over:
+		_push_out_skin(added)
 	return added
+
+
+## Replaces skin cells that took on another job with fresh skin outside.
+func _push_out_skin(count: int) -> void:
+	var grown := 0
+	while grown < count and parts.size() < MAX_CELLS:
+		var more := grow("skin")
+		if more == 0:
+			return
+		grown += more
