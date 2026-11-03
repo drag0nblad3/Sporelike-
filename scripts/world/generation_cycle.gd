@@ -6,10 +6,10 @@ extends Node
 signal ended(stats: GenerationStats)
 
 ## Seconds per generation. CI's smoke test shortens it.
-var length := 90.0
+var length := 80.0
 var ecosystem: Ecosystem
 var number := 0
-var time_left := 90.0
+var time_left := 80.0
 var stats: GenerationStats
 var running := false
 
