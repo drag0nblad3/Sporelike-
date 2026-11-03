@@ -54,7 +54,10 @@ func effect(template: Genome, influence: float) -> String:
 	var after := template.copy()
 	apply_to(after, influence)
 	var lines := StatSheet.changes(template, after)
-	if feature_id != "":
+	if Ability.is_ability(feature_id):
+		lines.insert(0, Ability.card_text(feature_id, after.feature(feature_id),
+			template.feature(feature_id)))
+	elif feature_id != "":
 		lines.insert(0, Feature.effect(feature_id))
 	if BodyForm.ALL.has(feature_id):
 		lines.insert(1, "Level %d of %d" % [after.feature(feature_id), BodyForm.MAX_LEVEL])

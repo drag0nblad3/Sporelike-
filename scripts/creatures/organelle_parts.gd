@@ -18,6 +18,9 @@ const COLORS := {
 	"efficiency": Color(1.0, 0.6, 0.35),
 	"chloroplasts": EnergyOrganelles.CHLOROPLAST,
 	"vent_symbionts": EnergyOrganelles.SYMBIONT,
+	"trichocysts": Color(0.95, 0.95, 1.0),
+	"toxicysts": Color(0.85, 0.35, 1.0),
+	"flash": Color(0.4, 1.0, 0.95),
 }
 
 
@@ -34,6 +37,7 @@ static func add_all(root: Node3D, body: Node3D, genome: Genome) -> void:
 	_add(body, vesicles(roundi(genome.value_of("toxin") * 8.0)))
 	_add(body, mitochondria(roundi(genome.efficiency * 6.0)))
 	EnergyOrganelles.add_all(body, genome)
+	AbilityParts.add_all(root, body, genome)
 
 
 static func _add(parent: Node3D, part: Node3D) -> void:
@@ -78,13 +82,12 @@ static func eye_cluster(level: int) -> Node3D:
 	return root
 
 
-## Jet boost: a glowing orange nozzle ring at the back, wider per level.
+## Jet: a glowing orange nozzle ring at the back. Every cell has a small
+## one; Contractile jet levels widen it.
 static func jet_nozzle(level: int) -> Node3D:
 	var root := Node3D.new()
-	if level <= 0:
-		return root
 	var ring := TorusMesh.new()
-	ring.inner_radius = 0.18 + 0.06 * level
+	ring.inner_radius = 0.14 + 0.07 * level
 	ring.outer_radius = ring.inner_radius + 0.1
 	var mesh := MeshInstance3D.new()
 	mesh.mesh = ring

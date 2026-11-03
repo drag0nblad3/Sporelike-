@@ -42,7 +42,7 @@ func spawn(plan: BodyPlan, at: Vector2, energy: float) -> void:
 	_starved = false
 	bed.plant_around(colony.center())
 	camera.snap_to(colony.center())
-	hud.show_jet(false, false)
+	hud.hide_abilities()
 
 
 func retire() -> void:

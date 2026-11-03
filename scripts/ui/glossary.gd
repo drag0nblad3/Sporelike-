@@ -96,9 +96,17 @@ your cell, each with its own shape and colour (the pick card shows a drawing):
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
   [b]Second flagellum[/b] (from high speed): another whip-like tail; faster, but costs more.
   [b]Eyespot cluster[/b] (from high sense): spot food from farther away.
-  [b]Contractile jet[/b] (from speed): tap the Jet button and a vacuole \
-squirts water for a quick burst. Cells of your species jet away from hunters \
+  [b]Contractile jet[/b] (from speed): every cell is born with a Jet button \
+(Space on a keyboard): a vacuole squirts water for a quick burst. This \
+upgrade makes it recharge faster. Cells of your species jet away from hunters \
 on their own.
+  [b]Trichocysts[/b] (from spines): a Shove button (Q). Spindles shoot out, \
+pushing nearby hunters away and stunning them.
+  [b]Toxicysts[/b] (from toxin): a Harpoon button (E). Poison darts paralyze \
+the nearest hunters or darting food, so you can escape or catch it.
+  [b]Scintillons[/b] (from sense): a Flash button (R). A burst of \
+bioluminescence dazzles nearby hunters, and none can find you for a few seconds.
+  Your species' cells use these on their own when a hunter gets close.
   [b]Mucus coat[/b] (from spines): darting food that comes close gets stuck.
   [b]Chemoreceptors[/b] (from very high sense): you taste the water, and an \
 arrow by your cell points to \

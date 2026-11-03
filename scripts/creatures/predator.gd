@@ -46,7 +46,7 @@ func tint() -> Color:
 
 func wants(prey: Organism) -> bool:
 	return prey.radius() < radius() * lineage.swallow_ratio() \
-		and prey.genome.value_of("toxin") < avoid_toxin
+		and prey.genome.value_of("toxin") < avoid_toxin and prey.hidden_time <= 0.0
 
 
 func try_bite(prey: Organism, rng: RandomNumberGenerator) -> void:

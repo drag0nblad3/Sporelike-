@@ -3,13 +3,13 @@ extends CanvasLayer
 ## On-screen readouts, the touch joystick, and the pause button with its menu.
 ## The population screen is added as a child by Game.
 
-signal jet_pressed
+signal ability_pressed(id: String)
 
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
 
 var _energy: EnergyBar
-var _jet: Button
+var _abilities: AbilityBar
 var _generation: GenerationReadout
 var _species: SpeciesReadout
 var _debug: Label
@@ -46,25 +46,9 @@ func _ready() -> void:
 	pause.offset_bottom = 150.0 + 76.0
 	pause.offset_right = -20.0
 	pause.offset_left = -20.0 - 170.0
-	_jet = _corner_button("Jet", 34, Vector2(160, 160))
-	_jet.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_jet.offset_left = -200.0
-	_jet.offset_top = -200.0
-	_jet.offset_right = -40.0
-	_jet.offset_bottom = -40.0
-	var ring := UiTheme.panel(UiTheme.BUTTON, 0)
-	ring.set_corner_radius_all(80)
-	ring.border_color = UiTheme.GOLD
-	ring.set_border_width_all(4)
-	var lit: StyleBoxFlat = ring.duplicate()
-	lit.bg_color = UiTheme.BUTTON_DOWN
-	_jet.add_theme_stylebox_override("normal", ring)
-	_jet.add_theme_stylebox_override("hover", ring)
-	_jet.add_theme_stylebox_override("pressed", lit)
-	_jet.add_theme_stylebox_override("hover_pressed", lit)
-	_jet.add_theme_color_override("font_color", UiTheme.GOLD)
-	_jet.visible = false
-	_jet.pressed.connect(func() -> void: jet_pressed.emit())
+	_abilities = AbilityBar.new()
+	add_child(_abilities)
+	_abilities.pressed.connect(func(id: String) -> void: ability_pressed.emit(id))
 	pause_menu = PauseMenu.new()
 	add_child(pause_menu)
 	pause.pressed.connect(pause_menu.open)
@@ -89,10 +73,13 @@ func show_species(population: int, births: int, averages: Dictionary) -> void:
 	_species.show_species(population, births, averages)
 
 
-## Shows the Jet button when the body has a jet; dims it while recharging.
-func show_jet(has_jet: bool, ready: bool) -> void:
-	_jet.visible = has_jet
-	_jet.modulate.a = 1.0 if ready else 0.4
+## Shows the ability buttons this body has, dimmed while recharging.
+func show_abilities(g: Genome, timers: AbilityTimers) -> void:
+	_abilities.show_for(g, timers)
+
+
+func hide_abilities() -> void:
+	_abilities.hide_all()
 
 
 func set_hint_visible(visible_now: bool) -> void:

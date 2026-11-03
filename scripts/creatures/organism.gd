@@ -21,9 +21,14 @@ var upkeep_scale := 1.0
 ## Multiplies top speed and push; Ecosystem slows hunters with it (Pace).
 var speed_scale := 1.0
 
-## Seconds left on a jet boost, and until the next one is ready.
+## Seconds left on a jet burst; AbilityCaster starts it.
 var boost_time := 0.0
-var boost_cooldown := 0.0
+## Recharge timers for the Jet and the other abilities (see Ability).
+var abilities := AbilityTimers.new()
+## Seconds left paralyzed (Toxicysts, Trichocysts): no swimming or biting.
+var stun_time := 0.0
+## Seconds hunters cannot find this cell (Scintillons flash).
+var hidden_time := 0.0
 ## Energy per second this cell is making from light or vents, rechecked by
 ## EnergySources every ambient_timer seconds.
 var ambient_rate := 0.0
@@ -72,14 +77,9 @@ func think(_delta: float) -> void:
 	pass
 
 
-## Fires the jet boost if this body has one and it is ready.
-func try_boost() -> bool:
-	var level := genome.feature("jet")
-	if level <= 0 or boost_cooldown > 0.0:
-		return false
-	boost_time = 0.35
-	boost_cooldown = 4.5 - 1.5 * level
-	return true
+## Starts a jet burst (AbilityCaster checks the recharge).
+func start_jet() -> void:
+	boost_time = Ability.JET_TIME
 
 
 func eat(amount: float) -> void:
@@ -104,7 +104,13 @@ func _physics_process(delta: float) -> void:
 	if not alive:
 		return
 	stats.tick(genome, delta)
-	think(delta)
+	abilities.tick(delta)
+	hidden_time = maxf(hidden_time - delta, 0.0)
+	if stun_time > 0.0:
+		stun_time -= delta
+		move_input = Vector2.ZERO
+	else:
+		think(delta)
 	_move(delta)
 	energy -= stats.upkeep * upkeep_scale * delta
 	if energy <= 0.0:
@@ -123,7 +129,6 @@ func wander_input(delta: float) -> Vector2:
 func _move(delta: float) -> void:
 	var top_speed := stats.top_speed * speed_scale
 	var push := stats.push * speed_scale
-	boost_cooldown = maxf(boost_cooldown - delta, 0.0)
 	if boost_time > 0.0:
 		boost_time -= delta
 		top_speed *= 2.2

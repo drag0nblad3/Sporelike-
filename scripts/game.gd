@@ -73,10 +73,11 @@ func _ready() -> void:
 	director.ecosystem = ecosystem
 	director.camera = camera
 	director.hud = hud
+	director.smoke_test = smoke_test
 	director.died.connect(_on_player_died)
 	director.ate.connect(cycle.record_food)
 	director.made_energy.connect(cycle.record_energy)
-	hud.jet_pressed.connect(director.boost)
+	hud.ability_pressed.connect(director.use)
 	add_child(director)
 
 	_add_stage_two()
