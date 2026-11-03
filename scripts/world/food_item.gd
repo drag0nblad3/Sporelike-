@@ -35,6 +35,8 @@ var _base_scale := 1.0
 
 func _ready() -> void:
 	_phase = randf() * TAU
+	# Only runs while something is chewing on it (see chew_for).
+	set_physics_process(false)
 
 
 func roll(food_kind: FoodKind, rng: RandomNumberGenerator) -> void:
@@ -60,11 +62,14 @@ func tier() -> int:
 func chew_for(delta: float, needed: float) -> bool:
 	chew += delta
 	_chewed_this_frame = true
+	set_physics_process(true)
 	return chew >= needed
 
 
 func _physics_process(delta: float) -> void:
 	if chew <= 0.0:
+		scale = Vector3.ONE * _base_scale
+		set_physics_process(false)
 		return
 	if not _chewed_this_frame:
 		chew = maxf(chew - delta, 0.0)

@@ -61,13 +61,15 @@ func remove_patches(old_patches: Array[FoodPatch]) -> void:
 	for child in get_children():
 		var item := child as FoodItem
 		if item.home in old_patches:
+			_grid.remove(item)
 			item.queue_free()
 	refresh()
 
 
-## Re-buckets all food. The ecosystem calls this once per physics frame.
+## Re-buckets the food that moves. The ecosystem calls this once per
+## physics frame; food that stays put was bucketed when it grew.
 func refresh() -> void:
-	_grid.rebuild(get_children())
+	_grid.update_moving()
 
 
 ## Darting food flees from any of these organisms that come close, unless
@@ -128,6 +130,7 @@ func consume_near(org: Organism, delta: float) -> float:
 		eaten.emit(org, item, energy)
 		item.home.count -= 1
 		SwallowedFood.show_in(org, item)
+		_grid.remove(item)
 		item.queue_free()
 	return gained
 
@@ -143,6 +146,7 @@ func take_near(point: Vector2, reach: float) -> float:
 			continue
 		gained += item.energy
 		item.home.count -= 1
+		_grid.remove(item)
 		item.queue_free()
 	return gained
 
@@ -166,4 +170,5 @@ func _spawn(patch: FoodPatch) -> void:
 	var p := patch.random_point(rng)
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)
+	_grid.add(item)
 	patch.count += 1

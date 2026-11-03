@@ -63,7 +63,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_phase += delta
 	rotation.y += _spin * delta
-	_place()
+	if shape == "chain":
+		_place()
+	else:
+		# A ball only breathes in and out, so scale the node rather than
+		# moving all 90 cells one by one every frame.
+		scale = Vector3.ONE * (1.0 + 0.03 * sin(_phase * 0.5))
 
 
 func _place() -> void:
