@@ -26,9 +26,9 @@ func build(colony: Colony) -> void:
 	for i in colony.plan.parts.size():
 		var role := colony.plan.parts[i].role
 		if role == "flagellum":
-			_add(i, false, 7, 0.38, BodyPart.color(role))
+			_add(i, false, 7, 0.38, _limb_color(colony, role))
 		elif role == "mouth" and radial:
-			_add(i, true, 8, 0.45, BodyPart.color(role))
+			_add(i, true, 8, 0.45, _limb_color(colony, role))
 
 
 ## Tips of the tentacles, which can pick up food like a mouth.
@@ -75,6 +75,11 @@ func _reach_for_food(root: Vector3, out: Vector3, reach: float, k: int) -> Vecto
 			return food
 	var sway := sin(_time * 1.8 + k * 2.1)
 	return root + out * reach * 0.8 + out.cross(Vector3.UP) * sway * reach * 0.35
+
+
+## Limbs share the species' colour, like a stage 1 cell's flagellum.
+static func _limb_color(colony: Colony, role: String) -> Color:
+	return Color(colony.tint.lerp(BodyPart.color(role), 0.25), 1.0)
 
 
 func _add(cell: int, tentacle: bool, joints: int, segment: float, color: Color) -> void:
