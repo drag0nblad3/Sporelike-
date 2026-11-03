@@ -1,11 +1,13 @@
 extends Node
-## Entry point: shows the title screen and starts or continues a Game.
-## Keep this thin; the session itself lives in Game.
+## Entry point: shows the title screen, the subspecies creator for a new
+## run, and starts or continues a Game. Keep this thin; the session itself
+## lives in Game.
 
 ## Set by CI ("-- --smoke"): skip the title, then reload the save once.
 var smoke_test := "--smoke" in OS.get_cmdline_user_args()
 
 var _title: TitleScreen
+var _creator: SubspeciesCreator
 var _game: Game
 var _smoke_reloaded := false
 
@@ -16,9 +18,17 @@ func _ready() -> void:
 	_title.continue_game.connect(_on_continue)
 	_title.test_stage_two.connect(func() -> void: _start({}, true))
 	add_child(_title)
+	var layer := CanvasLayer.new()
+	layer.layer = 5
+	add_child(layer)
+	_creator = SubspeciesCreator.new()
+	_creator.visible = false
+	_creator.begin.connect(_on_begin_run)
+	_creator.back.connect(func() -> void: _title.open(SaveGame.exists()))
+	layer.add_child(_creator)
 	if smoke_test:
 		SaveGame.delete()
-		_on_new_game.call_deferred()
+		_on_begin_run.call_deferred("Smokeus testii", [] as Array[String])
 	elif "--shot" in OS.get_cmdline_user_args():
 		_start_screenshot_tour.call_deferred()
 	else:
@@ -30,12 +40,19 @@ func _start_screenshot_tour() -> void:
 	var tour := ScreenshotTour.new()
 	tour.game = _game
 	tour.title = _title
+	tour.creator = _creator
 	add_child(tour)
 
 
+## New run: found a subspecies first (the creator), then start.
 func _on_new_game() -> void:
+	_title.visible = false
+	_creator.open(GeneBank.load_bank())
+
+
+func _on_begin_run(subspecies_name: String, loadout: Array[String]) -> void:
 	SaveGame.delete()
-	_start({})
+	_start({}, false, subspecies_name, loadout)
 
 
 func _on_continue() -> void:
@@ -43,11 +60,12 @@ func _on_continue() -> void:
 
 
 ## jump: a throwaway game that goes straight to the stage 2 switch.
-func _start(save: Dictionary, jump: bool = false) -> void:
+func _start(save: Dictionary, jump: bool = false, subspecies_name: String = "",
+		loadout: Array[String] = []) -> void:
 	_close_game()
 	_title.visible = false
 	_game = Game.new()
-	_game.setup(save, smoke_test)
+	_game.setup(save, smoke_test, subspecies_name, loadout)
 	_game.jump_to_stage_two = jump
 	_game.quit_to_title.connect(_on_quit_to_title)
 	_game.generation_started.connect(_on_generation_started)
@@ -73,6 +91,7 @@ func _on_generation_started(number: int) -> void:
 		_on_continue.call_deferred()
 	elif smoke_test and number == 3:
 		_check_glossary()
+		_check_genes()
 
 
 ## In CI, open the pause menu and fail if the glossary text is blank.
@@ -89,3 +108,20 @@ func _check_glossary() -> void:
 	print("smoke: saved cells %d" % OrganismCollection.entries().size())
 	menu.close()
 	ColonyCheck.run(self)
+
+
+## In CI, build the subspecies creator and gene trees with a made-up bank.
+func _check_genes() -> void:
+	var bank := GeneBank.new()
+	bank.points = 40
+	bank.unlocked.append("spines_1")
+	bank.unlocked.append("jet")
+	_creator.open(bank)
+	_creator.call("_toggle", "jet")
+	print("smoke: creator uses %d of %d slots" % [_creator.used_slots(), bank.slots()])
+	var trees := GeneTreeScreen.new()
+	add_child(trees)
+	trees.open(bank)
+	print("smoke: gene trees open, %d genes" % GeneCatalog.ALL.size())
+	trees.queue_free()
+	_creator.visible = false

@@ -8,6 +8,7 @@ const OUT_DIR := "res://build/shots"
 
 var game: Game
 var title: TitleScreen
+var creator: SubspeciesCreator
 
 
 func _ready() -> void:
@@ -63,6 +64,7 @@ func _run() -> void:
 	await _shoot_colony_lab()
 	title.open(true)
 	await _shoot("title")
+	await _shoot_genes()
 	print("shot: done")
 	get_tree().quit()
 
@@ -168,3 +170,18 @@ func _shoot(shot_name: String) -> void:
 	var data := Marshalls.raw_to_base64(image.save_jpg_to_buffer(0.8))
 	for i in range(0, data.length(), 4000):
 		print("shotb64 %s %s" % [shot_name, data.substr(i, 4000)])
+
+
+## The subspecies creator and the gene trees, with a made-up gene bank.
+func _shoot_genes() -> void:
+	var bank := GeneBank.new()
+	bank.points = 12
+	bank.lifetime = 24
+	for id in ["big_1", "spines_1", "trichocysts", "jet", "gut_lining"]:
+		bank.unlocked.append(id)
+	creator.open(bank)
+	creator.call("_toggle", "trichocysts")
+	await _shoot("creator")
+	creator.call("_open_trees")
+	await _shoot("gene_trees")
+	creator.visible = false

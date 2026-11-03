@@ -12,6 +12,8 @@ var stage_two: StageTwo
 ## False for throwaway runs (the title screen's Test stage 2).
 var enabled := true
 var world_seed := 0
+## The run's subspecies name and founding genes, saved alongside.
+var run_info := {}
 
 
 func _notification(what: int) -> void:
@@ -47,6 +49,7 @@ func save_now() -> void:
 		"rivals": ecosystem.rivals.to_save(),
 		"hunters": ecosystem.hunters.levels,
 	}
+	data.merge(run_info)
 	if stage_two:
 		data.merge(stage_two.save_data())
 	SaveGame.write(data)
