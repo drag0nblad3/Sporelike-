@@ -14,6 +14,9 @@ var screen: PopulationScreen
 var progress: EvolutionProgress
 var rng: RandomNumberGenerator
 var smoke_test := false
+## Offer the body form choice on the first pick, not only at Fed 200%
+## (the screenshot tour uses this).
+var forms_early := false
 
 var _stats: GenerationStats
 var _total := 1
@@ -58,10 +61,23 @@ func _offer() -> void:
 	if _total > 1:
 		heading = "Encourage a mutation: pick %d of %d (bonus picks for eating well)" % [
 			_offered, _total]
-	var choices := PickRoller.roll(rng, 3, ecosystem.trait_averages(), _preview, _habits)
+	var choices: Array[MutationChoice]
+	if _form_time():
+		heading = "Your cells are thriving. Choose a body form (it grows with later picks):"
+		choices = BodyForm.roll(rng, 3, _habits)
+	else:
+		choices = PickRoller.roll(rng, 3, ecosystem.trait_averages(), _preview, _habits)
 	screen.open(_stats, choices, _preview, heading)
 	if smoke_test:
 		screen.call_deferred("_pick", choices[0])
+
+
+## The first bonus pick (Fed 200%) is the body form choice, once per species.
+## Smoke tests offer it straight away so CI exercises it.
+func _form_time() -> bool:
+	if BodyForm.of(_preview) != "":
+		return false
+	return _offered == 2 or ((smoke_test or forms_early) and _offered == 1)
 
 
 func _on_chosen(choice: MutationChoice) -> void:

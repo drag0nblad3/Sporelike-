@@ -39,6 +39,8 @@ var reason := ""
 
 
 func label() -> String:
+	if BodyForm.ALL.has(feature_id):
+		return "Body form: " + Feature.label(feature_id)
 	if feature_id != "":
 		return "New organelle: " + Feature.label(feature_id)
 	var pair: Array = LABELS[trait_name]
@@ -54,6 +56,8 @@ func effect(template: Genome, influence: float) -> String:
 	var lines := StatSheet.changes(template, after)
 	if feature_id != "":
 		lines.insert(0, Feature.effect(feature_id))
+	if BodyForm.ALL.has(feature_id):
+		lines.insert(1, "Level %d of %d" % [after.feature(feature_id), BodyForm.MAX_LEVEL])
 	if lines.is_empty():
 		lines.append("No noticeable change")
 	if reason != "":

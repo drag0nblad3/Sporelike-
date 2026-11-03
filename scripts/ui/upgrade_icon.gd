@@ -26,6 +26,11 @@ static func make(choice: MutationChoice) -> UpgradeIcon:
 
 func _draw() -> void:
 	var c := Vector2(size.x / 2.0, 70.0)
+	if BodyForm.ALL.has(kind):
+		FormIcon.draw_form(self, kind, c, R)
+		draw_string(get_theme_default_font(), Vector2(0, 16), "BODY FORM",
+			HORIZONTAL_ALIGNMENT_CENTER, size.x, 17, GOLD)
+		return
 	if organelle:
 		draw_arc(c, R + 12.0, 0.0, TAU, 40, Color(GOLD, 0.6), 2.0, true)
 		draw_string(get_theme_default_font(), Vector2(0, 16), "ORGANELLE",

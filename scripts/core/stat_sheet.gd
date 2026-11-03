@@ -22,6 +22,7 @@ const ROWS := {
 	"store": ["Energy store", "%d energy"],
 	"sun": ["Sunlight energy", "%.1f/min"],
 	"vent": ["Vent energy", "%.1f/min"],
+	"drift": ["Pushed by currents", "%d%%"],
 	"others": ["Hunters & food speed", "%d%%"],
 	"upkeep": ["Energy use", "%.1f/min"],
 }
@@ -59,7 +60,7 @@ static func measure(g: Genome) -> Dictionary:
 		"sight": g.sense_range() * MICRONS,
 		"grab": g.grab_reach() * MICRONS,
 		"sticky": Feature.STICKY_REACH * g.feature("sticky_coat") * MICRONS,
-		"chew": (0.7 + g.value_of("size")) * 100.0,
+		"chew": (0.7 + g.value_of("size")) * BodyForm.chew(g) * 100.0,
 		"armor": g.armor() * 100.0,
 		"toxin": g.toxin() * 100.0,
 		"plants": g.digest(1.0, true) * 100.0,
@@ -68,6 +69,7 @@ static func measure(g: Genome) -> Dictionary:
 		"store": g.max_energy(),
 		"sun": EnergySources.sun_rate(g) * 60.0,
 		"vent": EnergySources.vent_rate(g) * 60.0,
+		"drift": BodyForm.drift(g) * 100.0,
 		"others": Pace.others(g.value_of("speed")) * 100.0,
 		"upkeep": g.upkeep() * 60.0,
 	}
