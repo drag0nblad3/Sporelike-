@@ -42,6 +42,6 @@ func is_ready() -> bool:
 
 func summary(earned: float) -> String:
 	if is_ready():
-		return "Your species is ready to become multicellular (coming in a future update)"
+		return "Your species is ready to become multicellular: choose its body plan next"
 	return "Multicellular progress %d%% (+%d this generation)" % [
 		roundi(fraction() * 100.0), roundi(earned)]

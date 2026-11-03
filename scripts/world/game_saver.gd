@@ -8,6 +8,9 @@ var ecosystem: Ecosystem
 var director: PlayerDirector
 var cycle: GenerationCycle
 var progress: EvolutionProgress
+var stage_two: StageTwo
+## False for throwaway runs (the title screen's Test stage 2).
+var enabled := true
 var world_seed := 0
 
 
@@ -20,7 +23,7 @@ func _notification(what: int) -> void:
 ## Saves the generation in progress. Between generations (population screen
 ## open) the save from the start of the generation is kept instead.
 func save_now() -> void:
-	if not cycle.running:
+	if not cycle.running or not enabled:
 		return
 	var members: Array = []
 	for cell in ecosystem.species:
@@ -29,7 +32,11 @@ func save_now() -> void:
 	var you := {"genome": director.genome.to_dict(), "x": 0.0, "y": 0.0, "energy": 8.0}
 	if director.is_alive():
 		you = _organism_entry(director.player)
-	SaveGame.write({
+	elif stage_two and stage_two.active:
+		var at := stage_two.center()
+		you["x"] = at.x
+		you["y"] = at.y
+	var data := {
 		"generation": cycle.number,
 		"time_left": cycle.time_left,
 		"births": ecosystem.births,
@@ -39,7 +46,10 @@ func save_now() -> void:
 		"species": members,
 		"rivals": ecosystem.rivals.to_save(),
 		"hunters": ecosystem.hunters.levels,
-	})
+	}
+	if stage_two:
+		data.merge(stage_two.save_data())
+	SaveGame.write(data)
 
 
 static func _organism_entry(org: Organism) -> Dictionary:

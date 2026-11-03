@@ -71,6 +71,11 @@ func _process(delta: float) -> void:
 		player.try_boost()
 
 
+## Stops showing the how-to-swim hint (the player has moved on).
+func hide_hint() -> void:
+	_has_moved = true
+
+
 ## Called from the HUD's Jet button.
 func boost() -> void:
 	if is_alive():
@@ -86,15 +91,4 @@ func _on_player_ate(amount: float) -> void:
 
 
 func _read_move_input() -> Vector2:
-	if hud.joystick.is_active():
-		return hud.joystick.output
-	var keys := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	if Input.is_physical_key_pressed(KEY_A):
-		keys.x -= 1.0
-	if Input.is_physical_key_pressed(KEY_D):
-		keys.x += 1.0
-	if Input.is_physical_key_pressed(KEY_W):
-		keys.y -= 1.0
-	if Input.is_physical_key_pressed(KEY_S):
-		keys.y += 1.0
-	return keys.limit_length(1.0)
+	return TouchSteer.read(hud.joystick)

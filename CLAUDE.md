@@ -7,7 +7,7 @@ An evolution game in Godot 4.5 (GDScript), built for Android first and Windows s
 - **Keep files small and single-purpose.** One class per file, ideally under about 150 lines. Add a new file rather than growing an existing one into a catch-all, so a change only needs to read the file it touches.
 - Build scenes in code. `scenes/main.tscn` is only a root node with `scripts/main.gd`; keep `main.gd` (title screen to `Game`) and `game.gd` (one session) thin wiring layers.
 - Folders: `scripts/core` (pure data and rules, like `Genome`, `BodyPlan`), `scripts/creatures` (organisms, colonies and their AI and visuals), `scripts/physics` (`SoftBody` springs, `SoftContact`, `IkChain`), `scripts/world` (arena, food, ecosystem, seaweed), `scripts/ui` (HUD, joystick).
-- The multicellular stage is being built in the colony lab (`scripts/colony_lab.gd`, title screen "Stage 2 preview") before it is wired into `Game`.
+- The multicellular stage runs inside `Game` through `StageTwo` (switch at the stage 1 goal, `ColonyPilot`, cell picks). The title screen's "Test stage 2" starts a throwaway game with a random evolved species (`EvolvedSpecies`) straight at the switch, without saving. `ColonyLab` is a sandbox used by CI and the screenshot tour.
 - Give every class a `class_name` and a `##` doc comment saying what it owns.
 - Use explicit types where a value comes from a Dictionary or untyped Array; `:=` on a Variant is a compile error.
 

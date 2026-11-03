@@ -132,6 +132,21 @@ func consume_near(org: Organism, delta: float) -> float:
 	return gained
 
 
+## Takes every piece within `reach` of a point, such as a colony's mouth
+## cell: colonies swallow food whole and their gut does the rest. Returns
+## the energy the pieces held.
+func take_near(point: Vector2, reach: float) -> float:
+	var gained := 0.0
+	for item in _grid.near(point, reach + 0.5):
+		var r := reach + item.kind.size
+		if point.distance_squared_to(item.flat_pos()) > r * r:
+			continue
+		gained += item.energy
+		item.home.count -= 1
+		item.queue_free()
+	return gained
+
+
 ## Pieces this patch grows back to at the current abundance.
 func _stock(patch: FoodPatch) -> int:
 	return maxi(roundi(patch.target * abundance), 2)
