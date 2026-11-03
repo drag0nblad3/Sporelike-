@@ -134,9 +134,11 @@ func _move(delta: float) -> void:
 	velocity -= velocity * minf(2.5 * delta, 1.0)
 	velocity = velocity.limit_length(top_speed)
 	position += velocity * delta
-	# Water currents carry everything along on top of its own swimming.
+	# Water currents carry everything along on top of its own swimming;
+	# some body forms are pushed less (or more), see BodyForm.drift.
 	if CurrentField.active:
-		var flow := CurrentField.active.flow_at(Vector2(position.x, position.z))
+		var flow := CurrentField.active.flow_at(Vector2(position.x, position.z)) \
+			* BodyForm.drift(genome)
 		position += Vector3(flow.x, 0.0, flow.y) * delta
 
 	if velocity.length() > 0.1:

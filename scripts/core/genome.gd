@@ -54,7 +54,7 @@ static func from_dict(data: Dictionary) -> Genome:
 			g.values[t] = clampf(float(data[t]), 0.0, 1.0)
 	var saved_features: Dictionary = data.get("features", {})
 	for id in saved_features:
-		if Feature.ALL.has(id):
+		if Feature.ALL.has(id) or BodyForm.ALL.has(id):
 			g.features[id] = int(saved_features[id])
 	g.efficiency = clampf(float(data.get("efficiency", 0.0)), 0.0, 1.0)
 	return g
@@ -81,12 +81,12 @@ func feature(id: String) -> int:
 
 ## Most energy this body can hold: a full stomach plus any fat store.
 func max_energy() -> float:
-	return FULL_ENERGY + STORE_PER_LEVEL * feature("fat_store")
+	return FULL_ENERGY + STORE_PER_LEVEL * feature("fat_store") + BodyForm.store(self)
 
 
 ## Extra eating reach from grabbing cilia.
 func grab_reach() -> float:
-	return 0.8 * feature("grabbing_cilia")
+	return 0.8 * feature("grabbing_cilia") + BodyForm.reach(self)
 
 
 ## A child genome: each trait has a chance to drift a little up or down.
@@ -115,7 +115,8 @@ func max_speed() -> float:
 	var s := value_of("speed")
 	return (3.3 + 5.6 * s / (1.0 + 0.3 * s)) * lerpf(1.0, 0.7, value_of("armor")) \
 		* lerpf(1.0, 0.85, value_of("agility")) * (1.0 + 0.2 * feature("tail_bud")) \
-		* (1.0 - 0.04 * (feature("chloroplasts") + feature("vent_symbionts")))
+		* (1.0 - 0.04 * (feature("chloroplasts") + feature("vent_symbionts"))) \
+		* BodyForm.speed(self)
 
 
 ## How hard the cell can push: high agility means quick starts and turns.
@@ -125,7 +126,8 @@ func acceleration() -> float:
 
 ## Agile cells turn fast; big bodies turn slower.
 func turn_rate() -> float:
-	return lerpf(4.0, 14.0, value_of("agility")) * lerpf(1.1, 0.7, value_of("size"))
+	return lerpf(4.0, 14.0, value_of("agility")) * lerpf(1.1, 0.7, value_of("size")) \
+		* BodyForm.turn(self)
 
 
 func sense_range() -> float:
@@ -134,7 +136,7 @@ func sense_range() -> float:
 
 ## Chance (0..1) to survive a predator's bite.
 func armor() -> float:
-	return value_of("armor") * 0.6
+	return minf(value_of("armor") * 0.6 + BodyForm.block(self), 0.9)
 
 
 ## Chance (0..1) a biting predator is stung and lets go.
@@ -153,7 +155,7 @@ func upkeep() -> float:
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
 		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining") \
 		+ 0.03 * feature("chloroplasts") + 0.03 * feature("vent_symbionts")
-	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency)
+	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency) * BodyForm.upkeep(self)
 
 
 ## Whether the cell mouth is strong enough for food of this hardness.
@@ -170,7 +172,7 @@ func crack_time(hardness: float) -> float:
 		return 0.0
 	if gap > CHEW_MARGIN:
 		return INF
-	return (0.5 + gap * 10.0) / (0.7 + value_of("size"))
+	return (0.5 + gap * 10.0) / ((0.7 + value_of("size")) * BodyForm.chew(self))
 
 
 ## Energy gained from food worth `energy`, after digestive efficiency.

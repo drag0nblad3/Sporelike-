@@ -74,6 +74,10 @@ func evolve(rng: RandomNumberGenerator, habits: Habits, crowding: Dictionary) ->
 	var genomes: Array[Genome] = [template]
 	for cell in members:
 		genomes.append(cell.genome)
+	if BodyForm.of(template) == "" and rng.randf() < BodyForm.RIVAL_CHANCE:
+		var form := BodyForm.for_niche(niche, rng)
+		for g in genomes:
+			g.features[form] = 1
 	HabitDrift.apply_all(habits, genomes)
 	var choices := PickRoller.roll(rng, 3, Genome.average(genomes), template, habits)
 	var best: MutationChoice = null

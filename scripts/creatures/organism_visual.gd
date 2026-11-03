@@ -23,6 +23,9 @@ func build(genome: Genome, tint: Color) -> void:
 	add_child(VisualParts.cilia(int(round(genome.value_of("agility") * 16.0)), tint))
 	# Organelles and inner parts, each with its own look (see OrganelleParts).
 	OrganelleParts.add_all(self, _body, genome)
+	# The body form stretches the whole cell and adds its own parts.
+	scale = FormLook.shape_scale(genome)
+	add_child(FormLook.make(genome, tint))
 	add_child(VisualParts.eye(lerpf(0.12, 0.3, genome.value_of("sense"))))
 	if genome.value_of("jaw") > 0.25:
 		add_child(VisualParts.mouth(genome.value_of("jaw")))

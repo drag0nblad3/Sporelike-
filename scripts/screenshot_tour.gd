@@ -31,6 +31,7 @@ func _run() -> void:
 	game.director.player.energy = 17.0
 	await get_tree().create_timer(0.5).timeout
 	await _shoot("play")
+	await _shoot_forms(g)
 	game.camera.zoom = 6.0
 	await get_tree().create_timer(1.5).timeout
 	await _shoot("map")
@@ -53,6 +54,7 @@ func _run() -> void:
 	game.hud.pause_menu.open()
 	await _shoot("pause")
 	game.hud.pause_menu.close()
+	game.round_end.forms_early = true
 	game.cycle.finish("time")
 	await _shoot("generation")
 	await _shoot_stage_two()
@@ -63,6 +65,27 @@ func _run() -> void:
 	await _shoot("title")
 	print("shot: done")
 	get_tree().quit()
+
+
+## One still cell of each body form, at its top level, beside the player.
+func _shoot_forms(base: Genome) -> void:
+	var shown: Array[Organism] = []
+	var i := 0
+	for id in BodyForm.ALL:
+		var g := base.copy()
+		g.features = {id: BodyForm.MAX_LEVEL}
+		var cell := Organism.new()
+		cell.setup(g, 10.0)
+		cell.upkeep_scale = 0.0
+		var p := game.director.player.position
+		cell.position = p + Vector3(-6.0 + 3.0 * i, 0.0, -3.5)
+		game.add_child(cell)
+		shown.append(cell)
+		i += 1
+	await get_tree().create_timer(0.5).timeout
+	await _shoot("forms")
+	for cell in shown:
+		cell.queue_free()
 
 
 ## Where the teaser of this chunk is, if it has one of this class.

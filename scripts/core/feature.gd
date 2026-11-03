@@ -32,18 +32,22 @@ const ALL := {
 
 
 static func label(id: String) -> String:
-	var row: Array = ALL[id]
-	return row[0]
+	return _row(id)[0]
 
 
 static func effect(id: String) -> String:
-	var row: Array = ALL[id]
-	return row[1]
+	return _row(id)[1]
 
 
 static func max_level(id: String) -> int:
-	var row: Array = ALL[id]
-	return row[4]
+	return _row(id)[4]
+
+
+## The organelle's row, or the matching row for a body form level.
+static func _row(id: String) -> Array:
+	if BodyForm.ALL.has(id):
+		return BodyForm.as_feature(id)
+	return ALL[id]
 
 
 ## Features the species could grow now, given its average traits and the
@@ -59,4 +63,8 @@ static func available(averages: Dictionary, template: Genome) -> Array[String]:
 		if template.feature(id) >= max_level(id):
 			continue
 		list.append(id)
+	# Once a species has a body form, its next level is offered like this.
+	var form := BodyForm.of(template)
+	if form != "" and template.feature(form) < BodyForm.MAX_LEVEL:
+		list.append(form)
 	return list

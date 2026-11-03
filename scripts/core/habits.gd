@@ -86,8 +86,7 @@ func trait_hint(trait_name: String) -> float:
 
 
 func feature_hint(id: String) -> float:
-	var habit: String = FEATURE_HABITS.get(id, "")
-	return strength(habit)
+	return strength(_feature_habit(id))
 
 
 ## Plain words for the habit behind a trait's hint, such as "sprinting".
@@ -98,7 +97,15 @@ func trait_reason(trait_name: String) -> String:
 
 
 func feature_reason(id: String) -> String:
-	return _words(FEATURE_HABITS.get(id, ""))
+	return _words(_feature_habit(id))
+
+
+## The habit behind an organelle or a body form (see BodyForm).
+func _feature_habit(id: String) -> String:
+	if BodyForm.ALL.has(id):
+		var row: Array = BodyForm.ALL[id]
+		return row[2]
+	return FEATURE_HABITS.get(id, "")
 
 
 ## Trait averages plus the "sun" and "vent" habits, which unlock the

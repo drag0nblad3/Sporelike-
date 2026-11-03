@@ -18,12 +18,12 @@ const VENT_PER_LEVEL := 0.12
 
 ## Energy per second made by photosynthesis while over sunlit algae.
 static func sun_rate(g: Genome) -> float:
-	return SUN_PER_LEVEL * g.feature("chloroplasts")
+	return SUN_PER_LEVEL * g.feature("chloroplasts") * BodyForm.symbiont(g)
 
 
 ## Energy per second made by vent bacteria while over shell beds.
 static func vent_rate(g: Genome) -> float:
-	return VENT_PER_LEVEL * g.feature("vent_symbionts")
+	return VENT_PER_LEVEL * g.feature("vent_symbionts") * BodyForm.symbiont(g)
 
 
 static func makes_energy(g: Genome) -> bool:
