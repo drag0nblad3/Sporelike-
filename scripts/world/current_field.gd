@@ -17,6 +17,9 @@ static var active: CurrentField
 
 var world_seed := 0
 var _cache := {}
+## Chunk -> the streams whose band reaches into it, so flow_at checks only
+## those instead of every stream within REACH.
+var _touching := {}
 
 
 func _init(seed_value: int) -> void:
@@ -51,10 +54,24 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 
 ## The total push of every current at this point.
 func flow_at(p: Vector2) -> Vector2:
-	var center := ChunkGenerator.chunk_of(p)
 	var total := Vector2.ZERO
+	for stream in _streams_touching(ChunkGenerator.chunk_of(p)):
+		total += stream.flow_at(p)
+	return total
+
+
+func _streams_touching(center: Vector2i) -> Array[CurrentStream]:
+	if _touching.has(center):
+		return _touching[center]
+	if _touching.size() > CACHE_LIMIT:
+		_touching.clear()
+	var size := ChunkGenerator.SIZE
+	var area := Rect2(Vector2(center) * size, Vector2(size, size))
+	var list: Array[CurrentStream] = []
 	for x in range(center.x - REACH, center.x + REACH + 1):
 		for y in range(center.y - REACH, center.y + REACH + 1):
 			for stream in streams_for(Vector2i(x, y)):
-				total += stream.flow_at(p)
-	return total
+				if stream.bounds().intersects(area, true):
+					list.append(stream)
+	_touching[center] = list
+	return list

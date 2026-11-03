@@ -29,6 +29,8 @@ var boost_cooldown := 0.0
 var ambient_rate := 0.0
 var ambient_timer := 0.0
 
+var stats := BodyStats.new()
+
 var _wander_dir := Vector2.ZERO
 var _wander_timer := 0.0
 
@@ -101,9 +103,10 @@ func die(cause: String) -> void:
 func _physics_process(delta: float) -> void:
 	if not alive:
 		return
+	stats.tick(genome, delta)
 	think(delta)
 	_move(delta)
-	energy -= genome.upkeep() * upkeep_scale * delta
+	energy -= stats.upkeep * upkeep_scale * delta
 	if energy <= 0.0:
 		die("starved")
 
@@ -118,8 +121,8 @@ func wander_input(delta: float) -> Vector2:
 
 
 func _move(delta: float) -> void:
-	var top_speed := genome.max_speed() * speed_scale
-	var push := genome.acceleration() * speed_scale
+	var top_speed := stats.top_speed * speed_scale
+	var push := stats.push * speed_scale
 	boost_cooldown = maxf(boost_cooldown - delta, 0.0)
 	if boost_time > 0.0:
 		boost_time -= delta
@@ -137,10 +140,9 @@ func _move(delta: float) -> void:
 	# Water currents carry everything along on top of its own swimming;
 	# some body forms are pushed less (or more), see BodyForm.drift.
 	if CurrentField.active:
-		var flow := CurrentField.active.flow_at(Vector2(position.x, position.z)) \
-			* BodyForm.drift(genome)
+		var flow := CurrentField.active.flow_at(Vector2(position.x, position.z)) * stats.drift
 		position += Vector3(flow.x, 0.0, flow.y) * delta
 
 	if velocity.length() > 0.1:
 		var target := atan2(velocity.x, velocity.z)
-		rotation.y = lerp_angle(rotation.y, target, minf(genome.turn_rate() * delta, 1.0))
+		rotation.y = lerp_angle(rotation.y, target, minf(stats.turn * delta, 1.0))

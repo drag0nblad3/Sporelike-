@@ -12,6 +12,9 @@ var stream: CurrentStream
 var _multimesh: MultiMesh
 var _offsets := PackedFloat32Array()
 var _lanes := PackedFloat32Array()
+## Per streak: 12 transform floats then 4 colour floats, sent in one call.
+var _buffer := PackedFloat32Array()
+var _screen: VisibleOnScreenNotifier3D
 
 
 func _init(s: CurrentStream) -> void:
@@ -22,6 +25,12 @@ func _ready() -> void:
 	var strength := stream.strength()
 	_add_ribbon(0.09 + 0.1 * strength)
 	_add_streaks(strength)
+	# Only animate streaks while some of the stream is on screen.
+	var box := stream.bounds()
+	_screen = VisibleOnScreenNotifier3D.new()
+	_screen.aabb = AABB(Vector3(box.position.x, RIBBON_Y, box.position.y),
+		Vector3(box.size.x, STREAK_Y - RIBBON_Y + 0.5, box.size.y))
+	add_child(_screen)
 
 
 ## A strip along the path, clear at both edges and the ends, tinted in the middle.
@@ -71,6 +80,7 @@ func _add_streaks(strength: float) -> void:
 	for i in count:
 		_offsets.append(rng.randf() * stream.length())
 		_lanes.append(rng.randf_range(-0.42, 0.42) * stream.width)
+	_buffer.resize(count * 16)
 	var instance := MultiMeshInstance3D.new()
 	instance.multimesh = _multimesh
 	var mat := _material(Color(0.85, 0.97, 1.0, 0.5 + 0.4 * strength))
@@ -81,23 +91,44 @@ func _add_streaks(strength: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_place(delta)
+	if _screen.is_on_screen():
+		_place(delta)
 
 
 ## Slides every streak downstream along the curve and wraps it back to the
-## start, fading it in and out near the ends so it never pops.
+## start, fading it in and out near the ends so it never pops. Off screen
+## the streaks wait where they are; nobody can see them pause.
 func _place(delta: float) -> void:
 	var total := stream.length()
+	var half := stream.width * 0.5
+	var step := stream.speed * delta
 	for i in _offsets.size():
-		var along := fmod(_offsets[i] + stream.speed * delta, total)
+		var along := fmod(_offsets[i] + step, total)
 		_offsets[i] = along
 		var dir := stream.tangent_at(along)
-		var p := stream.position_at(along) + Vector2(-dir.y, dir.x) * _lanes[i]
-		var turn := Basis(Vector3.UP, atan2(dir.x, dir.y))
-		_multimesh.set_instance_transform(i, Transform3D(turn, Vector3(p.x, STREAK_Y, p.y)))
+		var lane := _lanes[i]
+		var p := stream.position_at(along) + Vector2(-dir.y, dir.x) * lane
 		var fade := smoothstep(0.0, 4.0, along) * smoothstep(0.0, 4.0, total - along)
-		fade *= 1.0 - absf(_lanes[i]) / (stream.width * 0.5)
-		_multimesh.set_instance_color(i, Color(1, 1, 1, fade))
+		fade *= 1.0 - absf(lane) / half
+		# A turn about Y that points the streak along dir, as matrix rows.
+		var k := i * 16
+		_buffer[k] = dir.y
+		_buffer[k + 1] = 0.0
+		_buffer[k + 2] = dir.x
+		_buffer[k + 3] = p.x
+		_buffer[k + 4] = 0.0
+		_buffer[k + 5] = 1.0
+		_buffer[k + 6] = 0.0
+		_buffer[k + 7] = STREAK_Y
+		_buffer[k + 8] = -dir.x
+		_buffer[k + 9] = 0.0
+		_buffer[k + 10] = dir.y
+		_buffer[k + 11] = p.y
+		_buffer[k + 12] = 1.0
+		_buffer[k + 13] = 1.0
+		_buffer[k + 14] = 1.0
+		_buffer[k + 15] = fade
+	_multimesh.buffer = _buffer
 
 
 func _quad(st: SurfaceTool, a: Array, b: Array, c: Array, d: Array, alpha: float) -> void:

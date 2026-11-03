@@ -48,6 +48,14 @@ func _build(tint: Color) -> void:
 			_rim(tint.lightened(0.35))
 
 
+## Merges the parts that never move, and the beads riding on each moving
+## part, so a form costs a few draw calls (see PartBaker).
+func bake_still_parts() -> void:
+	PartBaker.bake(self, _parts)
+	for part in _parts:
+		PartBaker.bake(part)
+
+
 ## A ridge of beads winding around the body; spinning it looks like a screw.
 func _spiral(col: Color) -> void:
 	var screw := Node3D.new()

@@ -25,7 +25,8 @@ func build(genome: Genome, tint: Color) -> void:
 	OrganelleParts.add_all(self, _body, genome)
 	# The body form stretches the whole cell and adds its own parts.
 	scale = FormLook.shape_scale(genome)
-	add_child(FormLook.make(genome, tint))
+	var look := FormLook.make(genome, tint)
+	add_child(look)
 	add_child(VisualParts.eye(lerpf(0.12, 0.3, genome.value_of("sense"))))
 	if genome.value_of("jaw") > 0.25:
 		add_child(VisualParts.mouth(genome.value_of("jaw")))
@@ -36,6 +37,10 @@ func build(genome: Genome, tint: Color) -> void:
 		tail.position.x = 0.0 if i == 0 else (0.35 if i % 2 == 1 else -0.35)
 		add_child(tail)
 		_tails.append(tail)
+	# Merge the still parts into a couple of meshes: far fewer draw calls.
+	PartBaker.bake(_body)
+	PartBaker.bake(self, [_body, look] + _tails)
+	look.bake_still_parts()
 
 
 func _process(delta: float) -> void:

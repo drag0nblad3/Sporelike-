@@ -1,24 +1,45 @@
 class_name FoodGrid
 extends RefCounted
 ## Buckets food by position so eaters only check nearby pieces instead of
-## every piece in the world. Rebuilt each physics frame, since food drifts.
+## every piece in the world. Most food never moves, so it is bucketed once
+## when it grows and taken out when eaten; only food that can drift or dart
+## is re-bucketed each physics frame (update_moving).
 
 const CELL := 8.0
 
-var _buckets := {}
+## Food that stays put, by bucket. Its x/z never change.
+var _still := {}
+## Food that can move, re-bucketed by update_moving().
+var _moving: Array[FoodItem] = []
+var _moving_buckets := {}
 
 
-func rebuild(items: Array[Node]) -> void:
-	_buckets.clear()
-	for child in items:
-		var item := child as FoodItem
-		if item == null or item.is_queued_for_deletion():
-			continue
-		var key := _key(item.flat_pos())
-		if not _buckets.has(key):
-			_buckets[key] = []
-		var bucket: Array = _buckets[key]
-		bucket.append(item)
+## Starts tracking a new piece of food.
+func add(item: FoodItem) -> void:
+	if _can_move(item):
+		_moving.append(item)
+		_put(_moving_buckets, item)
+	else:
+		_put(_still, item)
+
+
+## Stops tracking a piece that is being eaten or removed.
+func remove(item: FoodItem) -> void:
+	if _can_move(item):
+		_moving.erase(item)
+		return
+	var key := _key(item.flat_pos())
+	var bucket: Array = _still.get(key, [])
+	bucket.erase(item)
+	if bucket.is_empty():
+		_still.erase(key)
+
+
+## Re-buckets the food that can move. Called once per physics frame.
+func update_moving() -> void:
+	_moving_buckets.clear()
+	for item in _moving:
+		_put(_moving_buckets, item)
 
 
 ## Food in every bucket that overlaps the circle at pos with this radius.
@@ -28,12 +49,30 @@ func near(pos: Vector2, reach: float) -> Array[FoodItem]:
 	var high := _key(pos + Vector2(reach, reach))
 	for x in range(low.x, high.x + 1):
 		for y in range(low.y, high.y + 1):
-			var bucket: Array = _buckets.get(Vector2i(x, y), [])
-			for item in bucket:
-				var food: FoodItem = item
-				if is_instance_valid(food) and not food.is_queued_for_deletion():
-					found.append(food)
+			var key := Vector2i(x, y)
+			_gather(_still.get(key), found)
+			_gather(_moving_buckets.get(key), found)
 	return found
+
+
+func _gather(bucket: Variant, found: Array[FoodItem]) -> void:
+	if bucket == null:
+		return
+	for item in bucket:
+		if is_instance_valid(item) and not (item as FoodItem).is_queued_for_deletion():
+			found.append(item)
+
+
+func _put(buckets: Dictionary, item: FoodItem) -> void:
+	var key := _key(item.flat_pos())
+	if not buckets.has(key):
+		buckets[key] = []
+	var bucket: Array = buckets[key]
+	bucket.append(item)
+
+
+static func _can_move(item: FoodItem) -> bool:
+	return item.drift_speed > 0.0 or item.flee_speed > 0.0
 
 
 func _key(p: Vector2) -> Vector2i:
