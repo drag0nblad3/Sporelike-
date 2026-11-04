@@ -72,6 +72,8 @@ func _style(icon: GeneIcon) -> void:
 	var id := icon.gene
 	var owned := bank.has(id)
 	icon.lit = id in _chosen
+	icon.linked = owned
+	icon.reach = false
 	icon.check = icon.lit
 	icon.dim = not owned
 	icon.badge = str(GeneCatalog.slots(id)) if owned else ""

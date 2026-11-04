@@ -40,6 +40,8 @@ func _style(icon: GeneIcon) -> void:
 	var needs := GeneCatalog.needs(id)
 	var reachable := needs == "" or bank.has(needs)
 	icon.lit = bank.has(id)
+	icon.linked = icon.lit
+	icon.reach = reachable
 	icon.check = icon.lit
 	icon.dim = not icon.lit and not reachable
 	icon.badge = str(GeneCatalog.cost(id))

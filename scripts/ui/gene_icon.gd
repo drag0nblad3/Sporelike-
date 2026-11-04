@@ -10,8 +10,12 @@ const NATIVE := 115.0
 
 var gene := ""
 var ring := UiTheme.DIM
-## Owned (gene trees) or taken (creator): lights the line up to the next tier.
+## Owned (gene trees) or taken (creator): a thicker ring.
 var lit := false
+## Owned: lights the line down to the next tier.
+var linked := false
+## Can be unlocked once the tier above is owned: the line to it shows teal.
+var reach := false
 var dim := false
 var check := false
 var badge := ""

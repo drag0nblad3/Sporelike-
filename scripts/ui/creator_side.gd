@@ -13,21 +13,21 @@ var _slots: Label
 
 
 func build(screen: SubspeciesCreator) -> void:
-	screen.label("Found a subspecies", 28, UiTheme.ACCENT)
+	screen.label("Found a subspecies", 18, UiTheme.DIM)
 	var names := screen.row()
-	_name = screen.label("", 26, UiTheme.GOLD, names)
-	_side_button(screen.button("New name", func() -> void: screen.reroll(), names))
+	_name = screen.label("", 25, UiTheme.GOLD, names)
+	_side_button(screen.button("New name", func() -> void: screen.reroll(), names, 44.0))
 	var seas := screen.row()
-	_sea = screen.label("", 22, UiTheme.ACCENT, seas)
-	_side_button(screen.button("Other sea", func() -> void: screen.next_sea(), seas))
-	_blurb = screen.label("", 16, UiTheme.DIM)
-	_favors = screen.label("", 16, UiTheme.GAIN)
-	_slots = screen.label("", 21)
+	_sea = screen.label("", 20, UiTheme.ACCENT, seas)
+	_side_button(screen.button("Other sea", func() -> void: screen.next_sea(), seas, 44.0))
+	_blurb = screen.label("", 15, UiTheme.DIM)
+	_favors = screen.label("", 15, UiTheme.GAIN)
+	_slots = screen.label("", 20)
 
 
 func show(subspecies: String, sea: Sea, used: int, bank: GeneBank) -> void:
 	_name.text = subspecies
-	_sea.text = "Sea: %s" % sea.title
+	_sea.text = sea.title
 	_blurb.text = sea.blurb
 	_favors.text = "Does well here: %s" % sea.favors
 	_slots.text = "Gene slots used: %d of %d" % [used, bank.slots()]
@@ -40,4 +40,5 @@ func show(subspecies: String, sea: Sea, used: int, bank: GeneBank) -> void:
 ## Buttons beside a label keep their width instead of sharing the row.
 func _side_button(b: Button) -> void:
 	b.size_flags_horizontal = Control.SIZE_SHRINK_END
-	b.custom_minimum_size.x = 150
+	b.custom_minimum_size.x = 140
+	b.add_theme_font_size_override("font_size", 18)

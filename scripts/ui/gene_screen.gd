@@ -18,7 +18,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	theme = UiTheme.shared()
 	var shade := ColorRect.new()
-	shade.color = UiTheme.SHADE
+	shade.color = Color(UiTheme.SHADE, 1.0)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	var margin := MarginContainer.new()
@@ -40,7 +40,7 @@ func _ready() -> void:
 	card.custom_minimum_size.x = SIDE_WIDTH
 	columns.add_child(card)
 	side = VBoxContainer.new()
-	side.add_theme_constant_override("separation", 8)
+	side.add_theme_constant_override("separation", 6)
 	card.add_child(side)
 	_build_side()
 	detail = GeneDetail.new()
@@ -74,12 +74,13 @@ func label(text: String, font_size: int, tint: Color = UiTheme.INK,
 	return l
 
 
-func button(text: String, action: Callable, parent: Control = null) -> Button:
+func button(text: String, action: Callable, parent: Control = null,
+		height: float = 52.0) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size = Vector2(0, 56)
+	b.custom_minimum_size = Vector2(0, height)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 22)
+	b.add_theme_font_size_override("font_size", 21)
 	b.pressed.connect(action)
 	(parent if parent else side).add_child(b)
 	return b

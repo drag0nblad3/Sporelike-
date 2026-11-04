@@ -81,21 +81,21 @@ func _draw() -> void:
 		var branches: Array = GeneCatalog.BRANCHES[tree]
 		for b in branches.size():
 			draw_string(font, Vector2(_column_x(t, b) - pitch.x / 2.0, 48.0),
-				str(branches[b][0]), HORIZONTAL_ALIGNMENT_CENTER, pitch.x, 17, UiTheme.DIM)
+				str(branches[b][0]), HORIZONTAL_ALIGNMENT_CENTER, pitch.x, 15, UiTheme.DIM)
 			_draw_links(branches[b][1])
 
 
-## Lines between tiers: green once both ends are lit, teal when the next
-## one is reachable, faint otherwise.
+## Lines between tiers: green once both ends are owned, teal when the
+## next one can be unlocked, faint otherwise.
 func _draw_links(ids: Array) -> void:
 	for i in ids.size() - 1:
 		var a: GeneIcon = icons[str(ids[i])]
 		var b: GeneIcon = icons[str(ids[i + 1])]
 		var tint := Color(UiTheme.DIM, 0.25)
-		if a.lit and b.lit:
+		if a.linked and b.linked:
 			tint = UiTheme.GAIN
-		elif a.lit:
+		elif a.linked and b.reach:
 			tint = Color(UiTheme.ACCENT, 0.7)
 		var from := a.position + Vector2(a.size.x / 2.0, a.size.y * 0.93)
 		var to := b.position + Vector2(b.size.x / 2.0, b.size.y * 0.07)
-		draw_line(from, to, tint, 4.0 if a.lit else 2.5, true)
+		draw_line(from, to, tint, 4.0 if a.linked else 2.5, true)
