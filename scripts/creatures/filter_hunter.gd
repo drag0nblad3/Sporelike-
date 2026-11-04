@@ -7,7 +7,7 @@ extends Predator
 
 const VORTEX := 6.0
 ## Drag at the mouth, in units per second, fading to 0 at the vortex edge.
-const PULL := 2.6
+const PULL := 3.0
 
 var _prey_cache: Array[Organism] = []
 var _cache_timer := 0.0

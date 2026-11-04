@@ -6,7 +6,7 @@ extends Organism
 ## and teaches it to avoid prey at least that toxic from then on. Never
 ## starves; instead its kind's HunterLineage evolves when it goes hungry.
 
-const BITE_COOLDOWN := 2.5
+const BITE_COOLDOWN := 2.0
 const STUNG_COOLDOWN := 6.0
 
 var ecosystem: Ecosystem

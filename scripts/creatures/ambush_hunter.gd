@@ -5,8 +5,8 @@ extends Predator
 ## when prey comes within its axopods' reach it lunges. Moves to another
 ## field after a long wait with no catch.
 
-const STRIKE_RANGE := 4.0
-const STRIKE_RECHARGE := 4.0
+const STRIKE_RANGE := 4.5
+const STRIKE_RECHARGE := 3.5
 const RELOCATE_AFTER := 25.0
 ## Food fields further than this are ignored when picking a spot.
 const SEARCH := 30.0

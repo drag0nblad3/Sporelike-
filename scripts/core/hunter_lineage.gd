@@ -5,9 +5,9 @@ extends RefCounted
 ## of their own upgrades, which every hunter shares.
 
 ## Fewer catches than this per hunter in a generation counts as hungry.
-const HUNGRY_BELOW := 1.0
+const HUNGRY_BELOW := 1.5
 ## Chance a hungry generation brings an upgrade, so they evolve slowly.
-const EVOLVE_CHANCE := 0.5
+const EVOLVE_CHANCE := 0.65
 ## id -> [label, effect per level, max level]
 const UPGRADES := {
 	"lunge": ["Lunge flagella", "+10% top speed", 3],
