@@ -13,16 +13,16 @@ var _slots: Label
 
 
 func build(screen: SubspeciesCreator) -> void:
-	screen.label("Found a subspecies", 18, UiTheme.DIM)
+	screen.label("Found a subspecies", 20, UiTheme.DIM)
 	var names := screen.row()
 	_name = screen.label("", 25, UiTheme.GOLD, names)
 	_side_button(screen.button("New name", func() -> void: screen.reroll(), names, 44.0))
 	var seas := screen.row()
 	_sea = screen.label("", 20, UiTheme.ACCENT, seas)
 	_side_button(screen.button("Other sea", func() -> void: screen.next_sea(), seas, 44.0))
-	_blurb = screen.label("", 15, UiTheme.DIM)
-	_favors = screen.label("", 15, UiTheme.GAIN)
-	_slots = screen.label("", 20)
+	_blurb = screen.label("", 19, UiTheme.DIM)
+	_favors = screen.label("", 19, UiTheme.GAIN)
+	_slots = screen.label("", 22)
 
 
 func show(subspecies: String, sea: Sea, used: int, bank: GeneBank) -> void:
@@ -41,4 +41,4 @@ func show(subspecies: String, sea: Sea, used: int, bank: GeneBank) -> void:
 func _side_button(b: Button) -> void:
 	b.size_flags_horizontal = Control.SIZE_SHRINK_END
 	b.custom_minimum_size.x = 140
-	b.add_theme_font_size_override("font_size", 18)
+	b.add_theme_font_size_override("font_size", 20)

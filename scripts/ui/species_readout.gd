@@ -15,11 +15,11 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 2)
 	add_child(column)
 	_title = Label.new()
-	_title.add_theme_font_size_override("font_size", 24)
+	_title.add_theme_font_size_override("font_size", 26)
 	_title.add_theme_color_override("font_color", UiTheme.ACCENT)
 	column.add_child(_title)
 	_traits = Label.new()
-	_traits.add_theme_font_size_override("font_size", 19)
+	_traits.add_theme_font_size_override("font_size", 22)
 	_traits.add_theme_color_override("font_color", UiTheme.DIM)
 	column.add_child(_traits)
 

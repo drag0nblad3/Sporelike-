@@ -23,7 +23,7 @@ func _init(title: String, effect: String) -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(column)
 
-	var heading := _line(title, 26, UiTheme.ACCENT)
+	var heading := _line(title, 28, UiTheme.ACCENT)
 	column.add_child(heading)
 	var rule := ColorRect.new()
 	rule.color = Color(UiTheme.ACCENT, 0.3)
@@ -34,7 +34,7 @@ func _init(title: String, effect: String) -> void:
 		var tint := UiTheme.COST if line.begins_with("Energy use") else UiTheme.INK
 		if line.begins_with(MutationChoice.REASON_PREFIX):
 			tint = UiTheme.GOLD
-		column.add_child(_line(line, 20, tint))
+		column.add_child(_line(line, 23, tint))
 
 
 ## Puts a drawing of the pick (UpgradeIcon) above the name.
