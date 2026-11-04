@@ -30,6 +30,10 @@ var hunters := HunterLineages.new()
 var others_pace := 1.0
 
 var _founder: Genome
+## prey_list() is built once per physics frame and shared: every hunter
+## asks for it, and a fresh list each time was a lot of work.
+var _prey: Array[Organism] = []
+var _prey_frame := -1
 
 
 func setup(founder: Genome) -> void:
@@ -144,11 +148,14 @@ func _hunt(targets: Array[Organism]) -> void:
 	for hunter in predators:
 		if hunter.cooldown > 0.0 or hunter.stun_time > 0.0:
 			continue
+		var at := hunter.flat_pos()
+		var size := hunter.radius()
 		for prey in targets:
-			if not prey.alive or not hunter.wants(prey):
+			# Distance first: it is cheap and rules out almost everyone.
+			var reach := size + prey.radius() * 0.5
+			if at.distance_squared_to(prey.flat_pos()) > reach * reach:
 				continue
-			var reach := hunter.radius() + prey.radius() * 0.5
-			if hunter.flat_pos().distance_to(prey.flat_pos()) <= reach:
+			if prey.alive and hunter.wants(prey):
 				hunter.try_bite(prey, rng)
 				break
 
@@ -166,8 +173,13 @@ func _reproduce() -> void:
 
 
 ## Every living organism a predator might hunt: the player's species, the
-## rival species and the player.
+## rival species and the player. Built once per physics frame; callers
+## should still skip any that died since (alive is false).
 func prey_list() -> Array[Organism]:
+	var frame := Engine.get_physics_frames()
+	if frame == _prey_frame:
+		return _prey
+	_prey_frame = frame
 	var list: Array[Organism] = []
 	for member in species:
 		if member.alive and not member.dormant:
@@ -178,6 +190,7 @@ func prey_list() -> Array[Organism]:
 				list.append(member)
 	if is_instance_valid(player) and player.alive:
 		list.append(player)
+	_prey = list
 	return list
 
 

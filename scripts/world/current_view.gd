@@ -15,6 +15,11 @@ var _lanes := PackedFloat32Array()
 ## Per streak: 12 transform floats then 4 colour floats, sent in one call.
 var _buffer := PackedFloat32Array()
 var _screen: VisibleOnScreenNotifier3D
+## Streaks move every other frame, half the views on even frames and half on
+## odd ones, so a screen full of currents costs half as much. They move
+## slowly enough that the steps don't show.
+var _odd := false
+var _held := 0.0
 
 
 func _init(s: CurrentStream) -> void:
@@ -73,10 +78,11 @@ func _add_streaks(strength: float) -> void:
 	_multimesh.use_colors = true
 	_multimesh.mesh = quad
 	var area := stream.width * stream.length()
-	var count := clampi(roundi(area / (10.0 - 6.0 * strength)), 10, 150)
+	var count := clampi(roundi(area / (10.0 - 6.0 * strength)), 10, 120)
 	_multimesh.instance_count = count
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([stream.points[0], stream.length()])
+	_odd = rng.randf() < 0.5
 	for i in count:
 		_offsets.append(rng.randf() * stream.length())
 		_lanes.append(rng.randf_range(-0.42, 0.42) * stream.width)
@@ -91,8 +97,12 @@ func _add_streaks(strength: float) -> void:
 
 
 func _process(delta: float) -> void:
+	_held += delta
+	if (Engine.get_process_frames() % 2 == 1) != _odd:
+		return
 	if _screen.is_on_screen():
-		_place(delta)
+		_place(_held)
+	_held = 0.0
 
 
 ## Slides every streak downstream along the curve and wraps it back to the

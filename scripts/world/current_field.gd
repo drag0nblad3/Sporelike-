@@ -20,6 +20,7 @@ var _cache := {}
 ## Chunk -> the streams whose band reaches into it, so flow_at checks only
 ## those instead of every stream within REACH.
 var _touching := {}
+var _grid := FlowGrid.new()
 
 
 func _init(seed_value: int) -> void:
@@ -53,8 +54,14 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 	return list
 
 
-## The total push of every current at this point.
+## The total push of every current at this point, from the cached grid.
 func flow_at(p: Vector2) -> Vector2:
+	return _grid.flow_at(p, self)
+
+
+## The exact total push at this point: checks every nearby stream's path,
+## so FlowGrid calls it only once per sample.
+func exact_flow(p: Vector2) -> Vector2:
 	var total := Vector2.ZERO
 	for stream in _streams_touching(ChunkGenerator.chunk_of(p)):
 		total += stream.flow_at(p)
