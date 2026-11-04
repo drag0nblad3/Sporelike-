@@ -14,6 +14,9 @@ const FORAGE_GIVE_UP := 12.0
 const SEARCH_INTERVAL := 0.25
 ## Seconds between rereading the body into a ForageStyle (picks change it).
 const STYLE_INTERVAL := 5.0
+## Seconds between looking around for hunters; fleeing from the one already
+## seen happens every frame.
+const THREAT_INTERVAL := 0.1
 
 var ecosystem: Ecosystem
 var style: ForageStyle
@@ -23,6 +26,9 @@ var _forage_timer := 0.0
 var _food: FoodItem
 var _search_timer := randf() * SEARCH_INTERVAL
 var _style_timer := 0.0
+var _threat: Predator
+var _has_threat := false
+var _threat_timer := randf() * THREAT_INTERVAL
 
 
 func think(delta: float) -> void:
@@ -32,7 +38,7 @@ func think(delta: float) -> void:
 		style = ForageStyle.of(genome)
 	var me := flat_pos()
 
-	var threat := ecosystem.nearest_predator(me, style.flee_range)
+	var threat := _look_for_threat(me, delta)
 	if threat and threat.wants(self):
 		_steer((me - threat.flat_pos()).normalized(), delta * 2.0)
 		AbilityCaster.defend(self, ecosystem, threat)
@@ -54,6 +60,17 @@ func think(delta: float) -> void:
 	if _forage_timer <= 0.0 or me.distance_to(_forage_target) < 2.0:
 		_pick_forage_target(me)
 	_steer((_forage_target - me).normalized() * style.cruise, delta)
+
+
+## The hunter to flee from, rechecked every THREAT_INTERVAL seconds.
+func _look_for_threat(me: Vector2, delta: float) -> Predator:
+	_threat_timer -= delta
+	var lost := _has_threat and not is_instance_valid(_threat)
+	if _threat_timer <= 0.0 or lost:
+		_threat_timer = THREAT_INTERVAL
+		_threat = ecosystem.nearest_predator(me, style.flee_range)
+		_has_threat = _threat != null
+	return _threat if _has_threat else null
 
 
 ## Turns the swimming direction toward want at this body's steering pace:

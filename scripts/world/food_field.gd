@@ -21,6 +21,7 @@ var abundance := 1.0
 var _meshes := {}
 var _materials := {}
 var _grid := FoodGrid.new()
+var _bob := FoodBob.new()
 
 
 func setup(random: RandomNumberGenerator) -> void:
@@ -36,6 +37,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_bob.tick(self, delta)
 	for patch in patches:
 		if patch.count >= _stock(patch):
 			continue

@@ -39,6 +39,18 @@ func _ready() -> void:
 	_phase = randf() * TAU
 	# Only runs while something is chewing on it (see chew_for).
 	set_physics_process(false)
+	# Food that stays put is bobbed by FoodField a slice at a time instead,
+	# which saves a call per piece per frame.
+	set_process(can_move())
+
+
+func can_move() -> bool:
+	return drift_speed > 0.0 or flee_speed > 0.0
+
+
+## Bobs gently up and down; `clock` is the field's shared time.
+func bob(clock: float) -> void:
+	position.y = 0.15 * sin((clock + _phase) * 2.0)
 
 
 func roll(food_kind: FoodKind, rng: RandomNumberGenerator) -> void:
@@ -77,7 +89,7 @@ func _physics_process(delta: float) -> void:
 		chew = maxf(chew - delta, 0.0)
 	_chewed_this_frame = false
 	# Shake while being chewed so the player can see it working.
-	var shake := 0.08 * sin(_phase * 40.0) if chew > 0.0 else 0.0
+	var shake := 0.08 * sin(chew * 40.0) if chew > 0.0 else 0.0
 	scale = Vector3.ONE * _base_scale * (1.0 + shake)
 
 
@@ -103,6 +115,7 @@ func paralyze(seconds: float) -> void:
 func _process(delta: float) -> void:
 	_phase += delta
 	position.y = 0.15 * sin(_phase * 2.0)
+	# Only food that can move gets here (see _ready).
 	if stunned > 0.0:
 		stunned -= delta
 		velocity = Vector2.ZERO

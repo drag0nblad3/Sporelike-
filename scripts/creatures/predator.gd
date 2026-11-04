@@ -8,6 +8,7 @@ extends Organism
 
 const BITE_COOLDOWN := 2.0
 const STUNG_COOLDOWN := 6.0
+const SCAN_INTERVAL := 0.2
 
 var ecosystem: Ecosystem
 var kind := HunterKind.CHASER
@@ -15,6 +16,11 @@ var lineage := HunterLineage.new()
 var cooldown := 0.0
 ## Prey with toxin at or above this is left alone. Lowered by bad experiences.
 var avoid_toxin := 1.0
+## nearest_prey() rescans everyone only every SCAN_INTERVAL seconds and
+## keeps chasing the last pick in between.
+var _target: Organism
+var _chasing := false
+var _scan_timer := randf() * SCAN_INTERVAL
 
 
 func _init() -> void:
@@ -71,14 +77,32 @@ func think(delta: float) -> void:
 		move_input = wander_input(delta)
 
 
+## The closest prey in sight, rechecked a few times a second.
 func nearest_prey() -> Organism:
+	_scan_timer -= get_physics_process_delta_time()
+	if _chasing and not (is_instance_valid(_target) and _still_hunting(_target)):
+		_scan_timer = 0.0
+	if _scan_timer > 0.0:
+		return _target if _chasing else null
+	_scan_timer = SCAN_INTERVAL
+	_target = _scan()
+	_chasing = _target != null
+	return _target
+
+
+func _still_hunting(prey: Organism) -> bool:
+	return prey.alive and not prey.dormant and wants(prey) \
+		and flat_pos().distance_squared_to(prey.flat_pos()) < pow(sight_range() * 1.2, 2.0)
+
+
+func _scan() -> Organism:
 	var best: Organism = null
 	var best_d := sight_range()
+	var me := flat_pos()
 	for prey in ecosystem.prey_list():
-		if not wants(prey):
+		var d := me.distance_to(prey.flat_pos())
+		if d >= best_d or not prey.alive or not wants(prey):
 			continue
-		var d := flat_pos().distance_to(prey.flat_pos())
-		if d < best_d:
-			best_d = d
-			best = prey
+		best_d = d
+		best = prey
 	return best
