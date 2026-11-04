@@ -2,7 +2,9 @@ class_name AbilityBar
 extends Control
 ## The round ability buttons in the bottom-right corner: a big Jet button
 ## every cell has, and a smaller one around it for each ability organelle
-## the body has grown. Buttons dim while recharging.
+## the body has grown. Buttons dim while recharging. Buttons read screen
+## touches directly, so they work while another finger steers: Godot's
+## emulated mouse only follows the first finger on the screen.
 
 signal pressed(id: String)
 
@@ -16,6 +18,8 @@ const SLOTS := {
 }
 
 var _buttons := {}
+## Ability id held down by each touch index.
+var _held := {}
 
 
 func _ready() -> void:
@@ -38,6 +42,33 @@ func hide_all() -> void:
 	for id in Ability.ALL:
 		var button: Button = _buttons[id]
 		button.visible = false
+
+
+func _input(event: InputEvent) -> void:
+	if not event is InputEventScreenTouch:
+		return
+	var touch := event as InputEventScreenTouch
+	if touch.pressed:
+		var id := _button_at(touch.position)
+		if id != "":
+			_held[touch.index] = id
+			(_buttons[id] as Button).button_pressed = true
+			get_viewport().set_input_as_handled()
+			pressed.emit(id)
+	elif _held.has(touch.index):
+		var id: String = _held[touch.index]
+		_held.erase(touch.index)
+		if not _held.values().has(id):
+			(_buttons[id] as Button).button_pressed = false
+		get_viewport().set_input_as_handled()
+
+
+func _button_at(pos: Vector2) -> String:
+	for id in Ability.ALL:
+		var button: Button = _buttons[id]
+		if button.is_visible_in_tree() and button.get_global_rect().has_point(pos):
+			return id
+	return ""
 
 
 func _make(id: String) -> Button:
@@ -67,6 +98,9 @@ func _make(id: String) -> Button:
 	button.add_theme_stylebox_override("hover_pressed", lit)
 	button.add_theme_color_override("font_color", tint)
 	button.visible = false
-	button.pressed.connect(func() -> void: pressed.emit(id))
+	# Touches are read in _input; the button itself only draws.
+	button.toggle_mode = true
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.focus_mode = Control.FOCUS_NONE
 	add_child(button)
 	return button
