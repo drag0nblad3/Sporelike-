@@ -31,6 +31,8 @@ var jump_to_stage_two := false
 ## setup for a new run, read from the save otherwise).
 var subspecies_name := ""
 var loadout: Array[String] = []
+## Which Sea this run colonizes (see Sea.ids).
+var sea_id := Sea.DEFAULT
 var run_end: RunEnd
 
 var _save := {}
@@ -40,10 +42,13 @@ var _switch_at := Vector2.ZERO
 
 ## Call before adding to the tree. An empty save starts a new game.
 func setup(save: Dictionary, smoke: bool, new_name: String = "",
-		genes: Array[String] = []) -> void:
+		genes: Array[String] = [], new_sea: String = Sea.DEFAULT) -> void:
 	_save = save
 	smoke_test = smoke
 	subspecies_name = str(save.get("subspecies", new_name))
+	sea_id = str(save.get("sea", new_sea))
+	# The world reads the sea as it is built, so pick it before _ready.
+	Sea.use(sea_id)
 	loadout = genes
 	for raw in save.get("loadout", []):
 		loadout.append(str(raw))
@@ -104,7 +109,7 @@ func _ready() -> void:
 	saver.cycle = cycle
 	saver.progress = progress
 	saver.world_seed = world_seed
-	saver.run_info = {"subspecies": subspecies_name, "loadout": loadout}
+	saver.run_info = {"subspecies": subspecies_name, "loadout": loadout, "sea": sea_id}
 	# A stage 2 test run must not overwrite the player's real save.
 	saver.enabled = not jump_to_stage_two
 	progress.points = float(_save.get("progress", 0.0))
@@ -122,6 +127,7 @@ func _ready() -> void:
 			stage_two.offer_switch(Vector2.ZERO)
 		else:
 			_begin_generation()
+			hud.flash_message("%s arrives in the %s" % [subspecies_name, Sea.current().title], 3.0)
 	else:
 		_resume()
 	_refresh_species()
@@ -182,6 +188,7 @@ func _add_round() -> void:
 func _add_run_end() -> void:
 	run_end = RunEnd.new()
 	run_end.subspecies_name = subspecies_name
+	run_end.sea_title = Sea.current().title
 	run_end.throwaway = jump_to_stage_two
 	run_end.smoke_test = smoke_test
 	run_end.screen = RunSummary.new()
@@ -226,7 +233,7 @@ func _start_cycle() -> void:
 	var upkeep := stage_two.upkeep() if stage_two.active else director.genome.upkeep()
 	cycle.stats.energy_needed = upkeep * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
-	ecosystem.food.abundance = progress.food_abundance()
+	ecosystem.food.abundance = progress.food_abundance() * Sea.current().food
 
 
 func _announce() -> void:

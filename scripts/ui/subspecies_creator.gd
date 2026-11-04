@@ -1,15 +1,18 @@
 class_name SubspeciesCreator
 extends MenuPanel
-## Founding a new subspecies: give it a name, choose genes from the main
-## species' unlocked ones up to the gene slots, open the gene trees to
-## unlock more, then begin the run in a new sea.
+## Founding a new subspecies: give it a name, pick the Sea it colonizes,
+## choose genes from the main species' unlocked ones up to the gene slots,
+## open the gene trees to unlock more, then begin the run.
 
-signal begin(subspecies_name: String, loadout: Array[String])
+signal begin(subspecies_name: String, loadout: Array[String], sea_id: String)
 signal back
 
 var bank: GeneBank
 var _name := ""
 var _chosen: Array[String] = []
+## Seas in a shuffled order; "Other sea" steps through them.
+var _seas: Array[String] = []
+var _sea_at := 0
 var _rng := RandomNumberGenerator.new()
 var _trees: GeneTreeScreen
 
@@ -28,6 +31,9 @@ func open(with_bank: GeneBank) -> void:
 	_name = SubspeciesName.random(_rng)
 	_chosen = bank.last_loadout.duplicate()
 	_trim()
+	_seas = Sea.ids()
+	_seas.shuffle()
+	_sea_at = 0
 	visible = true
 	_refresh()
 
@@ -48,6 +54,7 @@ func _refresh() -> void:
 	label(_name, 30, UiTheme.GOLD, names)
 	var rename := button("New name", func() -> void: _reroll(), names)
 	rename.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_add_sea()
 	label("Gene slots used: %d of %d" % [used_slots(), bank.slots()], 24)
 	if bank.unlocked.is_empty():
 		label("No genes unlocked yet. Runs earn gene points; spend them in the gene trees.",
@@ -59,6 +66,22 @@ func _refresh() -> void:
 	button("Back", func() -> void: _leave(), bottom)
 	var start := button("Begin the run", func() -> void: _begin())
 	start.add_theme_color_override("font_color", UiTheme.ACCENT)
+
+
+## The sea this subspecies heads for, with a button to try another.
+func _add_sea() -> void:
+	var sea := Sea.of(_seas[_sea_at])
+	var top := row()
+	label("New sea: %s" % sea.title, 26, UiTheme.ACCENT, top)
+	var other := button("Other sea", func() -> void: _next_sea(), top)
+	other.size_flags_horizontal = Control.SIZE_SHRINK_END
+	label(sea.blurb, 20, UiTheme.DIM)
+	label("Does well here: %s" % sea.favors, 20, UiTheme.GAIN)
+
+
+func _next_sea() -> void:
+	_sea_at = (_sea_at + 1) % _seas.size()
+	_refresh()
 
 
 func _add_gene(id: String) -> void:
@@ -124,7 +147,7 @@ func _begin() -> void:
 	bank.last_loadout = _chosen.duplicate()
 	bank.save()
 	visible = false
-	begin.emit(_name, _chosen.duplicate())
+	begin.emit(_name, _chosen.duplicate(), _seas[_sea_at])
 
 
 func _leave() -> void:

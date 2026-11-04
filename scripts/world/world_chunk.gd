@@ -4,8 +4,6 @@ extends Node3D
 ## under its food patches, the currents that start here and any giant
 ## teaser of the next stage. The food itself lives in FoodField.
 
-const BASE_COLOR := Color(0.05, 0.2, 0.25)
-
 var coord := Vector2i.ZERO
 var patches: Array[FoodPatch] = []
 var streams: Array[CurrentStream] = []
@@ -26,7 +24,7 @@ func _ready() -> void:
 	tile.size = Vector2(size, size)
 	var ground := MeshInstance3D.new()
 	ground.mesh = tile
-	ground.material_override = _material(BASE_COLOR, 0.0)
+	ground.material_override = _material(Sea.current().floor_color, 0.0)
 	ground.position = Vector3((coord.x + 0.5) * size, -1.4, (coord.y + 0.5) * size)
 	add_child(ground)
 	# Blobs overlap, also across chunk edges, so each gets its own clear

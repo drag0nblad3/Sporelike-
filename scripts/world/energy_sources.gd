@@ -2,8 +2,9 @@ class_name EnergySources
 extends RefCounted
 ## Energy a cell makes without eating: Chloroplasts photosynthesize in
 ## sunlit algae meadows and Vent symbionts run on vent chemicals at shell
-## beds. Which ground a cell is over is checked a few times a second, not
-## every frame, to stay cheap with a big population.
+## beds; the run's Sea makes either stronger or weaker. Which ground a cell
+## is over is checked a few times a second, not every frame, to stay cheap
+## with a big population.
 
 const CHECK_INTERVAL := 0.5
 ## Food kind growing where the light and the vents are.
@@ -18,12 +19,14 @@ const VENT_PER_LEVEL := 0.12
 
 ## Energy per second made by photosynthesis while over sunlit algae.
 static func sun_rate(g: Genome) -> float:
-	return SUN_PER_LEVEL * g.feature("chloroplasts") * BodyForm.symbiont(g)
+	return SUN_PER_LEVEL * g.feature("chloroplasts") * BodyForm.symbiont(g) \
+		* Sea.current().light
 
 
 ## Energy per second made by vent bacteria while over shell beds.
 static func vent_rate(g: Genome) -> float:
-	return VENT_PER_LEVEL * g.feature("vent_symbionts") * BodyForm.symbiont(g)
+	return VENT_PER_LEVEL * g.feature("vent_symbionts") * BodyForm.symbiont(g) \
+		* Sea.current().vents
 
 
 static func makes_energy(g: Genome) -> bool:
