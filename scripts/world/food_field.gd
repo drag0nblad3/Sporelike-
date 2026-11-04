@@ -11,6 +11,12 @@ signal eaten(org: Organism, item: FoodItem, energy: float)
 const STARTLE_RANGE := 2.5
 ## Organisms are never bigger than this, so it bounds the eating reach.
 const MAX_REACH := 3.5
+## Regrowth runs this many times slower than each kind's regrow_interval.
+const REGROW_SLOWDOWN := 1.3
+## A missing piece only grows back if a piece of the same kind is still
+## within this distance (about half the screen width at the starting zoom),
+## so a patch that is eaten out stays empty.
+const SEED_RANGE := 16.0
 
 var rng: RandomNumberGenerator
 var patches: Array[FoodPatch] = []
@@ -43,8 +49,11 @@ func _process(delta: float) -> void:
 			continue
 		patch.regrow_timer -= delta
 		if patch.regrow_timer <= 0.0:
-			patch.regrow_timer = patch.kind.regrow_interval / maxf(abundance, 0.1)
-			_spawn(patch)
+			patch.regrow_timer = patch.kind.regrow_interval * REGROW_SLOWDOWN \
+				/ maxf(abundance, 0.1)
+			var p := patch.random_point(rng)
+			if _grid.has_kind_near(patch.kind, p, SEED_RANGE):
+				_spawn(patch, p)
 
 
 ## Starts growing food in these patches, fully stocked.
@@ -52,7 +61,7 @@ func add_patches(new_patches: Array[FoodPatch]) -> void:
 	for patch in new_patches:
 		patches.append(patch)
 		for _i in _stock(patch) - patch.count:
-			_spawn(patch)
+			_spawn(patch, patch.random_point(rng))
 	refresh()
 
 
@@ -169,7 +178,7 @@ func _stock(patch: FoodPatch) -> int:
 	return maxi(roundi(patch.target * abundance), 2)
 
 
-func _spawn(patch: FoodPatch) -> void:
+func _spawn(patch: FoodPatch, p: Vector2) -> void:
 	var kind := patch.kind
 	var item := FoodItem.new()
 	item.roll(kind, rng)
@@ -180,7 +189,6 @@ func _spawn(patch: FoodPatch) -> void:
 		item.energy *= FoodPatch.HIDDEN_RICHNESS
 	var key := "%s%d%s" % [kind.id, item.tier(), "h" if patch.hidden else ""]
 	item.material_override = _materials[key]
-	var p := patch.random_point(rng)
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)
 	_grid.add(item)

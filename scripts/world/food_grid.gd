@@ -55,6 +55,16 @@ func near(pos: Vector2, reach: float) -> Array[FoodItem]:
 	return found
 
 
+## True if any piece of this kind lies within reach of pos: food only
+## regrows next to food of its own kind (FoodField.SEED_RANGE).
+func has_kind_near(kind: FoodKind, pos: Vector2, reach: float) -> bool:
+	var reach_sq := reach * reach
+	for item in near(pos, reach):
+		if item.kind.id == kind.id and item.flat_pos().distance_squared_to(pos) <= reach_sq:
+			return true
+	return false
+
+
 func _gather(bucket: Variant, found: Array[FoodItem]) -> void:
 	if bucket == null:
 		return
