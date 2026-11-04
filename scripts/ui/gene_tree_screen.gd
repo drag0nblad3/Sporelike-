@@ -1,69 +1,89 @@
 class_name GeneTreeScreen
-extends MenuPanel
+extends GeneScreen
 ## The main species' gene trees: spend gene points from subspecies runs to
-## unlock genes. One tree shows at a time (tabs along the top), as two
-## branches of four tiers; each gene says what it gives, what it costs, and
-## what it needs first. Saves the
-## bank after every unlock.
+## unlock genes. All five trees show at once as rows of icons; tapping one
+## fills the text box with what it gives, what it costs and what it needs,
+## with an Unlock button. Saves the bank after every unlock.
 
 signal closed
 
 var bank: GeneBank
-var _tree := "body"
+var _points: Label
 
 
 func open(with_bank: GeneBank) -> void:
 	bank = with_bank
 	visible = true
-	_refresh()
+	graph.selected = _first_open()
+	redraw_genes()
+	if graph.selected == "":
+		detail.show_hint("Tap a gene to see what it does.")
 
 
-func _refresh() -> void:
-	clear()
-	label("Gene trees", 36, UiTheme.ACCENT)
-	label("%d gene points to spend. %d earned in all, %d gene slots per subspecies." % [
-		bank.points, bank.lifetime, bank.slots()], 22, UiTheme.GOLD)
-	var tabs := row()
-	for tree in GeneCatalog.TREES:
-		var t: String = tree
-		var tab := button(str(GeneCatalog.TREE_NAMES[t]), func() -> void: _show_tree(t), tabs)
-		tab.disabled = t == _tree
-	for branch in GeneCatalog.BRANCHES[_tree]:
-		label(str(branch[0]), 28, UiTheme.ACCENT)
-		for raw in branch[1]:
-			_add_gene(str(raw))
+func _build_side() -> void:
+	label("Gene trees", 34, UiTheme.ACCENT)
+	_points = label("", 20, UiTheme.GOLD)
+
+
+func _build_bottom() -> void:
 	button("Done", func() -> void: _close())
 
 
-func _show_tree(tree: String) -> void:
-	_tree = tree
-	_refresh()
+func redraw_genes() -> void:
+	_points.text = "%d gene points to spend. %d earned in all, %d gene slots per subspecies." \
+		% [bank.points, bank.lifetime, bank.slots()]
+	super()
 
 
-func _add_gene(id: String) -> void:
+func _style(icon: GeneIcon) -> void:
+	var id := icon.gene
 	var needs := GeneCatalog.needs(id)
-	var state := ""
-	if bank.has(id):
-		state = "Unlocked"
-	elif needs != "" and not bank.has(needs):
-		state = "Needs %s first" % GeneText.label(needs)
+	var reachable := needs == "" or bank.has(needs)
+	icon.lit = bank.has(id)
+	icon.linked = icon.lit
+	icon.reach = reachable
+	icon.check = icon.lit
+	icon.dim = not icon.lit and not reachable
+	icon.badge = str(GeneCatalog.cost(id))
+	if icon.lit:
+		icon.ring = UiTheme.GAIN
+	elif bank.can_unlock(id):
+		icon.ring = UiTheme.ACCENT
+		icon.badge_color = UiTheme.GOLD
 	else:
-		state = "Unlock for %d gene points" % GeneCatalog.cost(id)
-	var text := "Tier %d: %s  (%s)\n%s\n%s" % [GeneCatalog.tier(id), GeneText.label(id),
-		GeneText.slot_text(id), GeneText.effect(id), state]
-	var b := button(text, func() -> void: _unlock(id))
-	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.custom_minimum_size.y = 110
-	b.add_theme_font_size_override("font_size", 20)
-	b.disabled = not bank.can_unlock(id)
+		icon.ring = Color(UiTheme.DIM, 0.5)
+		icon.badge_color = UiTheme.COST if reachable else UiTheme.DIM
+
+
+func _describe(id: String) -> void:
+	var cost := GeneCatalog.cost(id)
+	var needs := GeneCatalog.needs(id)
 	if bank.has(id):
-		b.add_theme_color_override("font_disabled_color", UiTheme.GAIN)
+		detail.show_gene(id, _style, "Unlocked. Choose it when founding a subspecies.",
+			UiTheme.GAIN, "", false)
+	elif needs != "" and not bank.has(needs):
+		detail.show_gene(id, _style, "Needs %s first." % GeneText.label(needs),
+			UiTheme.LOSS, "Locked", false)
+	elif bank.points < cost:
+		detail.show_gene(id, _style, "You have %d of %d gene points." % [bank.points, cost],
+			UiTheme.COST, "Need %d gene points" % cost, false)
+	else:
+		detail.show_gene(id, _style, "Ready to unlock.", UiTheme.ACCENT,
+			"Unlock for %d gene points" % cost, true)
 
 
-func _unlock(id: String) -> void:
+func _act(id: String) -> void:
 	if bank.unlock(id):
 		bank.save()
-	_refresh()
+	redraw_genes()
+
+
+## The first gene that can be unlocked now, so the box starts useful.
+func _first_open() -> String:
+	for id in graph.icons:
+		if bank.can_unlock(str(id)):
+			return str(id)
+	return ""
 
 
 func _close() -> void:

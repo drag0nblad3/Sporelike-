@@ -1,7 +1,7 @@
 class_name MenuPanel
 extends Control
-## Base for full-screen menus over a dark shade (subspecies creator, gene
-## trees, run summary): a centred card with a scrolling column, plus
+## Base for full-screen menus over a dark shade (the run summary):
+## a centred card with a scrolling column, plus
 ## helpers for labels and buttons. Clear the column with clear().
 
 const WIDTH := 1000.0

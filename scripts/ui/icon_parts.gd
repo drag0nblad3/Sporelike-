@@ -46,9 +46,7 @@ static func draw_part(ci: CanvasItem, kind: String, direction: float, c: Vector2
 				ci.draw_line(mouth + d * 7.0, mouth + d * 16.0, Color(0.95, 0.9, 0.75), 3.0)
 		"chloroplasts":
 			for p in [Vector2(-11, -8), Vector2(9, -10), Vector2(-4, 8), Vector2(12, 6)]:
-				ci.draw_set_transform(c + p, 0.5, Vector2(1.0, 0.5))
-				ci.draw_circle(Vector2.ZERO, 7.0, col)
-			ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+				ci.draw_colored_polygon(ellipse(c + p, Vector2(7.0, 3.5), 0.5), col)
 		"vent_symbionts":
 			for i in 7:
 				var p := c + Vector2(cos(i * 1.3), sin(i * 1.3)) * (6.0 + 3.0 * (i % 3))
@@ -82,6 +80,16 @@ static func draw_part(ci: CanvasItem, kind: String, direction: float, c: Vector2
 				ci.draw_line(base, tip, col.darkened(0.2), 2.0, true)
 				ci.draw_circle(tip, 3.5, col)
 			ci.draw_arc(c + Vector2(0, -r - 20.0), 6.0, PI * 1.15, PI * 1.85, 8, col, 2.0)
+
+
+## Points around an ellipse, so callers can draw ovals without
+## draw_set_transform (which would undo a transform the caller set).
+static func ellipse(c: Vector2, radii: Vector2, angle: float = 0.0) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for i in 24:
+		var a := TAU * i / 24.0
+		points.append(c + Vector2(cos(a) * radii.x, sin(a) * radii.y).rotated(angle))
+	return points
 
 
 static func _tail(ci: CanvasItem, from: Vector2, col: Color) -> void:
