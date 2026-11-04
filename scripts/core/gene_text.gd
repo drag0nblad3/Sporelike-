@@ -28,3 +28,13 @@ static func label(id: String) -> String:
 static func slot_text(id: String) -> String:
 	var n := GeneCatalog.slots(id)
 	return "%d slot%s" % [n, "" if n == 1 else "s"]
+
+
+## "Defense: Spines", the tree and branch the gene sits in.
+static func place(id: String) -> String:
+	for tree in GeneCatalog.BRANCHES:
+		for branch in GeneCatalog.BRANCHES[tree]:
+			var ids: Array = branch[1]
+			if id in ids:
+				return "%s: %s" % [GeneCatalog.TREE_NAMES[tree], branch[0]]
+	return ""

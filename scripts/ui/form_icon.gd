@@ -36,7 +36,7 @@ static func draw_form(ci: CanvasItem, id: String, c: Vector2, r: float) -> void:
 
 
 static func _oval(ci: CanvasItem, c: Vector2, radii: Vector2) -> void:
-	ci.draw_set_transform(c, 0.0, radii / radii.x)
-	ci.draw_circle(Vector2.ZERO, radii.x, Color(CELL, 0.25))
-	ci.draw_arc(Vector2.ZERO, radii.x, 0.0, TAU, 40, CELL, 2.0, true)
-	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	var points := IconParts.ellipse(c, radii)
+	ci.draw_colored_polygon(points, Color(CELL, 0.25))
+	points.append(points[0])
+	ci.draw_polyline(points, CELL, 2.0, true)
