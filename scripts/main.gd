@@ -28,7 +28,8 @@ func _ready() -> void:
 	layer.add_child(_creator)
 	if smoke_test:
 		SaveGame.delete()
-		_on_begin_run.call_deferred("Smokeus testii", [] as Array[String])
+		# The vent sea differs most from the default, so CI exercises it.
+		_on_begin_run.call_deferred("Smokeus testii", [] as Array[String], "vents")
 	elif "--shot" in OS.get_cmdline_user_args():
 		_start_screenshot_tour.call_deferred()
 	else:
@@ -50,9 +51,9 @@ func _on_new_game() -> void:
 	_creator.open(GeneBank.load_bank())
 
 
-func _on_begin_run(subspecies_name: String, loadout: Array[String]) -> void:
+func _on_begin_run(subspecies_name: String, loadout: Array[String], sea_id: String) -> void:
 	SaveGame.delete()
-	_start({}, false, subspecies_name, loadout)
+	_start({}, false, subspecies_name, loadout, sea_id)
 
 
 func _on_continue() -> void:
@@ -61,11 +62,11 @@ func _on_continue() -> void:
 
 ## jump: a throwaway game that goes straight to the stage 2 switch.
 func _start(save: Dictionary, jump: bool = false, subspecies_name: String = "",
-		loadout: Array[String] = []) -> void:
+		loadout: Array[String] = [], sea_id: String = Sea.DEFAULT) -> void:
 	_close_game()
 	_title.visible = false
 	_game = Game.new()
-	_game.setup(save, smoke_test, subspecies_name, loadout)
+	_game.setup(save, smoke_test, subspecies_name, loadout, sea_id)
 	_game.jump_to_stage_two = jump
 	_game.quit_to_title.connect(_on_quit_to_title)
 	_game.generation_started.connect(_on_generation_started)

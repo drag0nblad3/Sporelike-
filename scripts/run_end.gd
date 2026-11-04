@@ -12,6 +12,7 @@ const PROGRESS_PER_POINT := 20.0
 const ESTABLISH_BONUS := 5
 
 var subspecies_name := ""
+var sea_title := ""
 var throwaway := false
 var smoke_test := false
 var screen: RunSummary
@@ -38,7 +39,7 @@ func conclude(established: bool, generation: int, progress: float, evolved: Geno
 	if smoke_test:
 		print("smoke: run %s, +%d gene points, %d banked" % [
 			"established" if established else "extinct", earned, fresh.size()])
-	screen.open(subspecies_name, established, generation, earned, bank, fresh)
+	screen.open(subspecies_name, sea_title, established, generation, earned, bank, fresh)
 	if not screen.keep_playing.is_connected(_on_keep):
 		screen.keep_playing.connect(_on_keep)
 		screen.end_run.connect(_on_end)

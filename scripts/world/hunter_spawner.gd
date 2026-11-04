@@ -2,7 +2,8 @@ class_name HunterSpawner
 extends RefCounted
 ## Puts every kind of hunter (HunterKind) into the sea around the player:
 ## lone Didinia and Heliozoa, one swarm of dinoflagellates swimming as a
-## HunterPack, and a single giant Stentor.
+## HunterPack, and a single giant Stentor, in the numbers the run's
+## starting Sea sets.
 
 
 static func spawn_all(eco: Ecosystem) -> void:
@@ -10,7 +11,7 @@ static func spawn_all(eco: Ecosystem) -> void:
 		var pack: HunterPack = HunterPack.new() if kind == HunterKind.PACK else null
 		var base := eco.focus + Vector2.from_angle(eco.rng.randf() * TAU) \
 			* eco.rng.randf_range(25.0, 50.0)
-		for _i in HunterKind.count(kind):
+		for _i in Sea.current().hunter_count(kind):
 			var at := base + Vector2.from_angle(eco.rng.randf() * TAU) * 2.0 if pack \
 				else eco.focus + Vector2.from_angle(eco.rng.randf() * TAU) \
 				* eco.rng.randf_range(25.0, 50.0)

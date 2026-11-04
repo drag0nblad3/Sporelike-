@@ -65,6 +65,7 @@ func _run() -> void:
 	title.open(true)
 	await _shoot("title")
 	await _shoot_genes()
+	await _shoot_seas()
 	print("shot: done")
 	get_tree().quit()
 
@@ -170,6 +171,39 @@ func _shoot(shot_name: String) -> void:
 	var data := Marshalls.raw_to_base64(image.save_jpg_to_buffer(0.8))
 	for i in range(0, data.length(), 4000):
 		print("shotb64 %s %s" % [shot_name, data.substr(i, 4000)])
+
+
+## A fresh run in every other kind of sea, zoomed out to show its food mix,
+## water colour and light.
+func _shoot_seas() -> void:
+	title.visible = false
+	for id in Sea.ids():
+		if id == Sea.DEFAULT:
+			continue
+		var run := Game.new()
+		run.setup({}, false, "Tour", [], id)
+		get_parent().add_child(run)
+		run.camera.zoom = 3.0
+		await get_tree().create_timer(2.0).timeout
+		await _shoot("sea_" + id)
+		if id == "lagoon":
+			await _shoot_border(run)
+		run.queue_free()
+		await get_tree().process_frame
+	Sea.use(Sea.DEFAULT)
+
+
+## The edge of the starting sea region, east of the start.
+func _shoot_border(run: Game) -> void:
+	var start := SeaMap.at(Vector2.ZERO).id
+	for d in range(0, 600, 4):
+		var p := Vector2(d, 0.0)
+		if SeaMap.at(p).id != start:
+			run.director.player.position = Vector3(p.x, 0.0, p.y)
+			run.camera.zoom = 5.0
+			await get_tree().create_timer(3.0).timeout
+			await _shoot("sea_border")
+			return
 
 
 ## The subspecies creator and the gene trees, with a made-up gene bank.

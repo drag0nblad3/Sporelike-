@@ -9,16 +9,17 @@ signal end_run
 
 ## established: the subspecies reached the stage goal (it may play on into
 ## the multicellular stage); otherwise it died out.
-func open(subspecies_name: String, established: bool, generation: int, earned: int,
-		bank: GeneBank, fresh: Array[String]) -> void:
+func open(subspecies_name: String, sea_title: String, established: bool, generation: int,
+		earned: int, bank: GeneBank, fresh: Array[String]) -> void:
 	clear()
 	visible = true
 	if established:
 		label("%s is established!" % subspecies_name, 36, UiTheme.ACCENT)
-		label("Your subspecies holds its new sea after %d generations." % generation, 22)
+		label("Your subspecies holds the %s after %d generations." % [sea_title, generation], 22)
 	else:
 		label("%s died out" % subspecies_name, 36, UiTheme.LOSS)
-		label("The last of your subspecies was lost in generation %d." % generation, 22)
+		label("The last of your subspecies was lost in the %s in generation %d." % [
+			sea_title, generation], 22)
 	label("Gene flow: +%d gene points back to the main species (%d to spend)." % [
 		earned, bank.points], 24, UiTheme.GOLD)
 	if not fresh.is_empty():

@@ -2,10 +2,10 @@ class_name CurrentField
 extends RefCounted
 ## All the water currents of the endless sea, decided per chunk from the
 ## world seed so a chunk always gets the same ones back. About half the
-## chunks hold one stream; most are weak, some medium, a few strong.
+## chunks hold one stream; most are weak, some medium, a few strong. The
+## chunk's Sea (SeaMap) changes how many chunks hold one and how fast.
 ## Organisms ask `active` for the flow where they are and drift with it.
 
-const CHANCE := 0.5
 const MAX_LENGTH := 75.0
 ## Streams reach at most this many chunks from the one they start in.
 const REACH := 2
@@ -35,7 +35,8 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 	var list: Array[CurrentStream] = []
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([world_seed, coord.x, coord.y, "current"])
-	if rng.randf() < CHANCE:
+	var sea := SeaMap.at((Vector2(coord) + Vector2(0.5, 0.5)) * ChunkGenerator.SIZE)
+	if rng.randf() < sea.current_chance:
 		var size := ChunkGenerator.SIZE
 		var from := (Vector2(coord) + Vector2(rng.randf(), rng.randf())) * size
 		var roll := rng.randf()
@@ -47,7 +48,7 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 		# Strong currents run in narrower, faster jets.
 		var band := rng.randf_range(5.0, 11.0) * (0.7 if speed == CurrentStream.STRONG else 1.0)
 		list.append(CurrentStream.wind(from, rng.randf() * TAU,
-			rng.randf_range(40.0, MAX_LENGTH), band, speed, rng))
+			rng.randf_range(40.0, MAX_LENGTH), band, speed * sea.current_speed, rng))
 	_cache[coord] = list
 	return list
 

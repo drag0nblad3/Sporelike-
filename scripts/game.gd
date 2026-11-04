@@ -11,6 +11,7 @@ signal generation_started(number: int)
 
 const DEATH_PAUSE := 1.5
 
+var arena: Arena
 var ecosystem: Ecosystem
 var director: PlayerDirector
 var cycle: GenerationCycle
@@ -31,19 +32,26 @@ var jump_to_stage_two := false
 ## setup for a new run, read from the save otherwise).
 var subspecies_name := ""
 var loadout: Array[String] = []
+## The Sea this run starts in (see Sea.ids); the rest of the world is a
+## patchwork of every sea (SeaMap).
+var sea_id := Sea.DEFAULT
 var run_end: RunEnd
 
 var _save := {}
+var _sea_map: SeaMap
 ## Where the subspecies established itself, for the switch to stage 2.
 var _switch_at := Vector2.ZERO
 
 
 ## Call before adding to the tree. An empty save starts a new game.
 func setup(save: Dictionary, smoke: bool, new_name: String = "",
-		genes: Array[String] = []) -> void:
+		genes: Array[String] = [], new_sea: String = Sea.DEFAULT) -> void:
 	_save = save
 	smoke_test = smoke
 	subspecies_name = str(save.get("subspecies", new_name))
+	sea_id = str(save.get("sea", new_sea))
+	# The world reads the sea as it is built, so pick it before _ready.
+	Sea.use(sea_id)
 	loadout = genes
 	for raw in save.get("loadout", []):
 		loadout.append(str(raw))
@@ -52,7 +60,10 @@ func setup(save: Dictionary, smoke: bool, new_name: String = "",
 func _ready() -> void:
 	rng.randomize()
 	var world_seed := int(_save.get("world_seed", randi()))
-	add_child(Arena.new())
+	_sea_map = SeaMap.new(world_seed, sea_id)
+	SeaMap.active = _sea_map
+	arena = Arena.new()
+	add_child(arena)
 	camera = CameraRig.new()
 	add_child(camera)
 	hud = Hud.new()
@@ -104,7 +115,7 @@ func _ready() -> void:
 	saver.cycle = cycle
 	saver.progress = progress
 	saver.world_seed = world_seed
-	saver.run_info = {"subspecies": subspecies_name, "loadout": loadout}
+	saver.run_info = {"subspecies": subspecies_name, "loadout": loadout, "sea": sea_id}
 	# A stage 2 test run must not overwrite the player's real save.
 	saver.enabled = not jump_to_stage_two
 	progress.points = float(_save.get("progress", 0.0))
@@ -122,18 +133,25 @@ func _ready() -> void:
 			stage_two.offer_switch(Vector2.ZERO)
 		else:
 			_begin_generation()
+			hud.flash_message("%s arrives in the %s" % [subspecies_name, Sea.current().title], 3.0)
 	else:
 		_resume()
 	_refresh_species()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if director.is_alive():
 		ecosystem.focus = director.player.flat_pos()
 	elif stage_two.pilot.is_alive():
 		ecosystem.focus = stage_two.center()
 	streamer.update(ecosystem.focus)
+	arena.follow(ecosystem.focus, delta)
 	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.fed_ratio())
+
+
+func _exit_tree() -> void:
+	if SeaMap.active == _sea_map:
+		SeaMap.active = null
 
 
 ## The endless sea floor: chunks load around the player and bring their
@@ -182,6 +200,7 @@ func _add_round() -> void:
 func _add_run_end() -> void:
 	run_end = RunEnd.new()
 	run_end.subspecies_name = subspecies_name
+	run_end.sea_title = Sea.current().title
 	run_end.throwaway = jump_to_stage_two
 	run_end.smoke_test = smoke_test
 	run_end.screen = RunSummary.new()
