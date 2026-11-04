@@ -83,6 +83,11 @@ static func cone(base_radius: float, height: float, color: Color) -> MeshInstanc
 	return inst
 
 
+## The nucleus shows diet: green for plant eaters, red for meat eaters.
+static func diet_color(genome: Genome) -> Color:
+	return Color(0.3, 0.85, 0.35).lerp(Color(0.9, 0.25, 0.25), genome.value_of("diet"))
+
+
 static func sphere(r: float, color: Color, glow: float, see_through := false) -> MeshInstance3D:
 	var mesh := SphereMesh.new()
 	mesh.radius = r

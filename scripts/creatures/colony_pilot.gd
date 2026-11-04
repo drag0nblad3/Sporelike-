@@ -23,7 +23,8 @@ var bed := SeaweedBed.new()
 ## When not zero, steers instead of the player (the screenshot tour).
 var autopilot := Vector2.ZERO
 ## The species' colour, carried over from its single-celled days.
-var tint := Color(0.55, 0.9, 0.8)
+var tint := Color(0.55, 0.9, 0.8, 0.6)
+var nucleus := Color(0.3, 0.85, 0.35)
 var _starved := false
 
 
@@ -35,6 +36,7 @@ func spawn(plan: BodyPlan, at: Vector2, energy: float) -> void:
 	retire()
 	colony = Colony.new()
 	colony.tint = tint
+	colony.nucleus = nucleus
 	colony.build(plan, Vector3(at.x, 0.0, at.y))
 	colony.energy = minf(energy, colony.max_energy())
 	colony.limbs.food_finder = bed.nearest_food

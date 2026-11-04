@@ -74,6 +74,7 @@ func resume(data: Dictionary, at: Vector2) -> void:
 	var saved: Dictionary = data.get("colony", {})
 	plan = BodyPlan.from_dict(saved)
 	pilot.tint = director.genome.color()
+	pilot.nucleus = VisualParts.diet_color(director.genome)
 	director.retire()
 	director.hide_hint()
 	pilot.spawn(plan, at, float(data.get("colony_energy", 0.0)))
@@ -124,5 +125,6 @@ func _on_cell_chosen(role: String) -> void:
 
 func _spawn(at: Vector2) -> void:
 	pilot.tint = director.genome.color()
+	pilot.nucleus = VisualParts.diet_color(director.genome)
 	var full := Colony.MAX_ENERGY_PER_CELL * plan.parts.size()
 	pilot.spawn(plan, at, full * START_ENERGY)
