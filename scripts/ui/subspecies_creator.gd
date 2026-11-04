@@ -1,6 +1,6 @@
 class_name SubspeciesCreator
 extends MenuPanel
-## Founding a new subspecies: give it a name, pick the Sea it colonizes,
+## Founding a new subspecies: give it a name, pick the Sea it starts in,
 ## choose genes from the main species' unlocked ones up to the gene slots,
 ## open the gene trees to unlock more, then begin the run.
 
@@ -70,16 +70,17 @@ func _refresh() -> void:
 	start.add_theme_color_override("font_color", UiTheme.ACCENT)
 
 
-## The sea this subspecies heads for, with a button to try another.
+## The sea this subspecies starts in, with a button to try another.
 func _add_sea() -> void:
 	var sea := Sea.of(_seas[_sea_at])
 	var top := row()
-	label("New sea: %s" % sea.title, 26, UiTheme.ACCENT, top)
+	label("Starting sea: %s" % sea.title, 26, UiTheme.ACCENT, top)
 	var other := button("Other sea", func() -> void: _next_sea(), top)
 	other.size_flags_horizontal = Control.SIZE_SHRINK_END
 	other.custom_minimum_size.x = 200
 	label(sea.blurb, 20, UiTheme.DIM)
 	label("Does well here: %s" % sea.favors, 20, UiTheme.GAIN)
+	label("Regions of the other seas lie further out.", 20, UiTheme.DIM)
 
 
 func _next_sea() -> void:

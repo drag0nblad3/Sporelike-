@@ -59,7 +59,9 @@ and faster and nimbler at dodging. Small pale pieces are slow, sluggish and \
 soft: easy pickings.
 
 [font_size=28][b]Seas[/b][/font_size]
-Each subspecies colonizes one kind of sea, chosen when you found it. \
+The sea is a patchwork of big regions of five kinds; the water and floor \
+change colour as you cross into a new one. You choose which kind your \
+subspecies starts in, which also sets how many of each hunter there are. \
 [b]Coastal shelf[/b]: a bit of everything. [b]Sunlit lagoon[/b]: algae, \
 bright light (Chloroplasts 2.5x), still water, more Heliozoa. \
 [b]Hydrothermal vents[/b]: dark shell beds (Vent symbionts 2.5x, light \

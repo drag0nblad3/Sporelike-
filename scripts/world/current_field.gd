@@ -3,7 +3,7 @@ extends RefCounted
 ## All the water currents of the endless sea, decided per chunk from the
 ## world seed so a chunk always gets the same ones back. About half the
 ## chunks hold one stream; most are weak, some medium, a few strong. The
-## run's Sea changes how many chunks hold one and how fast they run.
+## chunk's Sea (SeaMap) changes how many chunks hold one and how fast.
 ## Organisms ask `active` for the flow where they are and drift with it.
 
 const MAX_LENGTH := 75.0
@@ -16,7 +16,6 @@ const CACHE_LIMIT := 400
 static var active: CurrentField
 
 var world_seed := 0
-var sea := Sea.current()
 var _cache := {}
 ## Chunk -> the streams whose band reaches into it, so flow_at checks only
 ## those instead of every stream within REACH.
@@ -36,6 +35,7 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 	var list: Array[CurrentStream] = []
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([world_seed, coord.x, coord.y, "current"])
+	var sea := SeaMap.at((Vector2(coord) + Vector2(0.5, 0.5)) * ChunkGenerator.SIZE)
 	if rng.randf() < sea.current_chance:
 		var size := ChunkGenerator.SIZE
 		var from := (Vector2(coord) + Vector2(rng.randf(), rng.randf())) * size

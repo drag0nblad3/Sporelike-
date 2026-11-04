@@ -11,6 +11,7 @@ signal generation_started(number: int)
 
 const DEATH_PAUSE := 1.5
 
+var arena: Arena
 var ecosystem: Ecosystem
 var director: PlayerDirector
 var cycle: GenerationCycle
@@ -31,11 +32,13 @@ var jump_to_stage_two := false
 ## setup for a new run, read from the save otherwise).
 var subspecies_name := ""
 var loadout: Array[String] = []
-## Which Sea this run colonizes (see Sea.ids).
+## The Sea this run starts in (see Sea.ids); the rest of the world is a
+## patchwork of every sea (SeaMap).
 var sea_id := Sea.DEFAULT
 var run_end: RunEnd
 
 var _save := {}
+var _sea_map: SeaMap
 ## Where the subspecies established itself, for the switch to stage 2.
 var _switch_at := Vector2.ZERO
 
@@ -57,7 +60,10 @@ func setup(save: Dictionary, smoke: bool, new_name: String = "",
 func _ready() -> void:
 	rng.randomize()
 	var world_seed := int(_save.get("world_seed", randi()))
-	add_child(Arena.new())
+	_sea_map = SeaMap.new(world_seed, sea_id)
+	SeaMap.active = _sea_map
+	arena = Arena.new()
+	add_child(arena)
 	camera = CameraRig.new()
 	add_child(camera)
 	hud = Hud.new()
@@ -133,13 +139,19 @@ func _ready() -> void:
 	_refresh_species()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if director.is_alive():
 		ecosystem.focus = director.player.flat_pos()
 	elif stage_two.pilot.is_alive():
 		ecosystem.focus = stage_two.center()
 	streamer.update(ecosystem.focus)
+	arena.follow(ecosystem.focus, delta)
 	hud.show_generation(cycle.number, cycle.time_left, cycle.stats.fed_ratio())
+
+
+func _exit_tree() -> void:
+	if SeaMap.active == _sea_map:
+		SeaMap.active = null
 
 
 ## The endless sea floor: chunks load around the player and bring their
@@ -233,7 +245,7 @@ func _start_cycle() -> void:
 	var upkeep := stage_two.upkeep() if stage_two.active else director.genome.upkeep()
 	cycle.stats.energy_needed = upkeep * cycle.length
 	camera.progress_zoom = 1.0 + CameraRig.PROGRESS_ZOOM * progress.fraction()
-	ecosystem.food.abundance = progress.food_abundance() * Sea.current().food
+	ecosystem.food.abundance = progress.food_abundance()
 
 
 func _announce() -> void:

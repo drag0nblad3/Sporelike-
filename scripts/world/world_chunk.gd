@@ -24,7 +24,8 @@ func _ready() -> void:
 	tile.size = Vector2(size, size)
 	var ground := MeshInstance3D.new()
 	ground.mesh = tile
-	ground.material_override = _material(Sea.current().floor_color, 0.0)
+	var middle := (Vector2(coord) + Vector2(0.5, 0.5)) * size
+	ground.material_override = _material(SeaMap.at(middle).floor_color, 0.0)
 	ground.position = Vector3((coord.x + 0.5) * size, -1.4, (coord.y + 0.5) * size)
 	add_child(ground)
 	# Blobs overlap, also across chunk edges, so each gets its own clear

@@ -1,9 +1,10 @@
 class_name Sea
 extends RefCounted
-## The kind of sea a subspecies run colonizes. Each one shifts which food
-## regions dominate, how much sunlight and vent chemistry there is to live
-## on, how often and how hard the currents run, how plentiful food is, how
-## many of each hunter swim there, and the colours of the water.
+## One kind of sea. The world is a patchwork of regions of each kind
+## (SeaMap). Each one shifts which food dominates, how much sunlight and
+## vent chemistry there is to live on, how often and how hard the currents
+## run, how plentiful food is, and the colours of the water. The run's
+## starting sea (current) also sets how many of each hunter swim.
 
 const DEFAULT := "shelf"
 
