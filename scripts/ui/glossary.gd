@@ -28,7 +28,9 @@ tail). Catches darting food and outruns hunters. \
 Each step adds a little less than the last, but as your species gets faster \
 the hunters and darting food around it slow down very slightly.
 [b]Agility[/b]: how fast you speed up and turn, from more cilia (tiny beating hairs).
-[b]Sense[/b]: how far away you notice food and hunters, from a bigger eyespot.
+[b]Sense[/b]: how far away you notice food and hunters, from a bigger eyespot. \
+Keen senses also feel past the screen edge: a glow in a food's colour where a \
+food field lies, and a red [b]![/b] toward each hunter.
 [b]Spines[/b]: silica spines that can deflect a hunter's bite.
 [b]Toxin[/b]: toxin vesicles that sting a hunter that bites you. Stung \
 hunters back off for a while and learn to avoid toxic prey.
