@@ -176,6 +176,7 @@ func _shoot(shot_name: String) -> void:
 ## A fresh run in every other kind of sea, zoomed out to show its food mix,
 ## water colour and light.
 func _shoot_seas() -> void:
+	title.visible = false
 	for id in Sea.ids():
 		if id == Sea.DEFAULT:
 			continue

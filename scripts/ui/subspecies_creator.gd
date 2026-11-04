@@ -54,6 +54,8 @@ func _refresh() -> void:
 	label(_name, 30, UiTheme.GOLD, names)
 	var rename := button("New name", func() -> void: _reroll(), names)
 	rename.size_flags_horizontal = Control.SIZE_SHRINK_END
+	# Wrapping buttons in a row shrink to one letter per line without this.
+	rename.custom_minimum_size.x = 200
 	_add_sea()
 	label("Gene slots used: %d of %d" % [used_slots(), bank.slots()], 24)
 	if bank.unlocked.is_empty():
@@ -75,6 +77,7 @@ func _add_sea() -> void:
 	label("New sea: %s" % sea.title, 26, UiTheme.ACCENT, top)
 	var other := button("Other sea", func() -> void: _next_sea(), top)
 	other.size_flags_horizontal = Control.SIZE_SHRINK_END
+	other.custom_minimum_size.x = 200
 	label(sea.blurb, 20, UiTheme.DIM)
 	label("Does well here: %s" % sea.favors, 20, UiTheme.GAIN)
 
