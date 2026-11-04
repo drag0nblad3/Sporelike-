@@ -63,11 +63,11 @@ The sea is a patchwork of big regions of five kinds; the water and floor \
 change colour as you cross into a new one. You choose which kind your \
 subspecies starts in, which also sets how many of each hunter there are. \
 [b]Coastal shelf[/b]: a bit of everything. [b]Sunlit lagoon[/b]: algae, \
-bright light (Chloroplasts 2.5x), still water, more Heliozoa. \
-[b]Hydrothermal vents[/b]: dark shell beds (Vent symbionts 2.5x, light \
-almost none), more Stentors. [b]Upwelling coast[/b]: plankton blooms, \
-strong currents, a big dinoflagellate swarm. [b]Twilight deep[/b]: dim, \
-scarce and faint food, few hunters.
+bright light (Chloroplasts 1.6x), still water, more Heliozoa. \
+[b]Hydrothermal vents[/b]: dim shell beds (Vent symbionts 1.6x, light \
+low), more Stentors. [b]Upwelling coast[/b]: plankton blooms, \
+strong currents, a bigger dinoflagellate swarm. [b]Twilight deep[/b]: dim, \
+scarcer, fainter food, fewer hunters.
 
 [font_size=28][b]Dangers[/b][/font_size]
 [b]Hunters[/b] (red): predatory cells of four kinds. Spines and toxin \

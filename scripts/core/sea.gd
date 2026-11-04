@@ -88,13 +88,13 @@ static func _lagoon(s: Sea) -> void:
 	s.title = "Sunlit lagoon"
 	s.blurb = "Warm, shallow and bright. Algae meadows everywhere, still water, " \
 		+ "and Heliozoa lying in wait among the food."
-	s.favors = "Chloroplasts (2.5x sunlight), grazers"
-	s.cutoffs = [0.25, 0.5, 0.62]
-	s.light = 2.5
-	s.vents = 0.5
-	s.current_chance = 0.25
-	s.current_speed = 0.6
-	s.hunters = {HunterKind.AMBUSHER: 5, HunterKind.CHASER: 3}
+	s.favors = "Chloroplasts (1.6x sunlight), grazers"
+	s.cutoffs = [0.05, 0.4, 0.6]
+	s.light = 1.6
+	s.vents = 0.8
+	s.current_chance = 0.35
+	s.current_speed = 0.8
+	s.hunters = {HunterKind.AMBUSHER: 4, HunterKind.CHASER: 4}
 	s.water = Color(0.04, 0.16, 0.17)
 	s.ambient = Color(0.45, 0.75, 0.65)
 	s.sun = Color(1.0, 0.97, 0.85)
@@ -105,16 +105,16 @@ static func _lagoon(s: Sea) -> void:
 static func _vents(s: Sea) -> void:
 	s.title = "Hydrothermal vents"
 	s.blurb = "Dark, hot water rising from cracks in the floor. Rich shell beds, " \
-		+ "almost no light, and a giant Stentor or two."
-	s.favors = "Vent symbionts (2.5x), strong jaws"
-	s.cutoffs = [-0.6, -0.3, 0.0]
+		+ "dim light, and a giant Stentor or two."
+	s.favors = "Vent symbionts (1.6x), strong jaws"
+	s.cutoffs = [-0.4, -0.05, 0.25]
 	s.start_kind = "motes"
-	s.light = 0.15
-	s.vents = 2.5
-	s.food = 0.85
-	s.current_chance = 0.6
-	s.current_speed = 1.1
-	s.hunters = {HunterKind.CHASER: 3, HunterKind.FILTER: 2}
+	s.light = 0.6
+	s.vents = 1.6
+	s.food = 0.95
+	s.current_chance = 0.55
+	s.current_speed = 1.05
+	s.hunters = {HunterKind.CHASER: 4, HunterKind.FILTER: 2}
 	s.water = Color(0.06, 0.03, 0.04)
 	s.ambient = Color(0.55, 0.32, 0.25)
 	s.sun = Color(1.0, 0.55, 0.35)
@@ -127,13 +127,13 @@ static func _upwelling(s: Sea) -> void:
 	s.blurb = "Cold, nutrient-rich water welling up from below feeds huge plankton " \
 		+ "blooms. Strong currents everywhere, and swarms of dinoflagellates."
 	s.favors = "Speed and agility, catching plankton"
-	s.cutoffs = [-0.35, 0.35, 0.5]
+	s.cutoffs = [-0.3, 0.25, 0.5]
 	s.start_kind = "plankton"
-	s.light = 1.2
-	s.food = 1.15
-	s.current_chance = 0.85
-	s.current_speed = 1.5
-	s.hunters = {HunterKind.PACK: 6, HunterKind.AMBUSHER: 2}
+	s.light = 1.1
+	s.food = 1.05
+	s.current_chance = 0.7
+	s.current_speed = 1.25
+	s.hunters = {HunterKind.PACK: 5, HunterKind.AMBUSHER: 3}
 	s.water = Color(0.03, 0.09, 0.14)
 	s.ambient = Color(0.35, 0.55, 0.75)
 	s.sun = Color(0.85, 0.92, 1.0)
@@ -143,17 +143,17 @@ static func _upwelling(s: Sea) -> void:
 static func _deep(s: Sea) -> void:
 	s.title = "Twilight deep"
 	s.blurb = "Cold and dim, far below the sunlit water. Food is scarce and " \
-		+ "often faint, but hunters are few."
+		+ "often faint, but hunters are fewer."
 	s.favors = "Keen senses, Food scent, low upkeep"
-	s.cutoffs = [-0.6, -0.1, 0.55]
+	s.cutoffs = [-0.45, 0.0, 0.5]
 	s.start_kind = "motes"
-	s.gap_below = -0.2
-	s.hidden_above = 0.3
-	s.light = 0.3
-	s.food = 0.8
-	s.current_chance = 0.35
-	s.current_speed = 0.8
-	s.hunters = {HunterKind.CHASER: 3, HunterKind.AMBUSHER: 2, HunterKind.PACK: 0}
+	s.gap_below = -0.28
+	s.hidden_above = 0.4
+	s.light = 0.6
+	s.food = 0.9
+	s.current_chance = 0.4
+	s.current_speed = 0.9
+	s.hunters = {HunterKind.CHASER: 4, HunterKind.AMBUSHER: 2, HunterKind.PACK: 2}
 	s.water = Color(0.01, 0.02, 0.06)
 	s.ambient = Color(0.2, 0.3, 0.55)
 	s.sun = Color(0.5, 0.6, 1.0)

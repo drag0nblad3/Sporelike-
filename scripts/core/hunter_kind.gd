@@ -12,12 +12,12 @@ const FILTER := "filter"
 ## id -> plural name, how many swim at once, body radius, share of that
 ## radius prey must be under to be swallowed, body tint, and genome traits.
 const KINDS := {
-	CHASER: ["Didinia", 4, 1.2, 0.85, Color(1.0, 0.3, 0.25, 0.7),
-		{"size": 1.0, "speed": 0.45, "agility": 0.3, "sense": 0.55, "jaw": 1.0}],
+	CHASER: ["Didinia", 5, 1.2, 0.85, Color(1.0, 0.3, 0.25, 0.7),
+		{"size": 1.0, "speed": 0.5, "agility": 0.35, "sense": 0.62, "jaw": 1.0}],
 	AMBUSHER: ["Heliozoa", 3, 1.0, 0.95, Color(0.62, 0.2, 0.22, 0.55),
-		{"size": 0.8, "speed": 0.2, "agility": 0.2, "sense": 0.6, "jaw": 0.6}],
+		{"size": 0.8, "speed": 0.2, "agility": 0.25, "sense": 0.66, "jaw": 0.6}],
 	PACK: ["Swarm dinoflagellates", 3, 0.8, 0.85, Color(1.0, 0.5, 0.55, 0.75),
-		{"size": 0.5, "speed": 0.8, "agility": 0.75, "sense": 0.5, "jaw": 0.5}],
+		{"size": 0.5, "speed": 0.85, "agility": 0.8, "sense": 0.56, "jaw": 0.5}],
 	FILTER: ["Stentors", 1, 2.2, 0.45, Color(0.8, 0.25, 0.6, 0.6),
 		{"size": 1.0, "speed": 0.1, "agility": 0.1, "sense": 0.3, "jaw": 0.0}],
 }
