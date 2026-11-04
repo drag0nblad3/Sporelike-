@@ -27,10 +27,12 @@ var smoke_test := false
 var _has_moved := false
 var _smoke_timer := 0.5
 var _scent := ScentArrow.new()
+var _cues := SenseCues.new()
 
 
 func _ready() -> void:
 	add_child(_scent)
+	add_child(_cues)
 	tracker.ecosystem = ecosystem
 	add_child(tracker)
 
@@ -65,8 +67,10 @@ func _process(delta: float) -> void:
 	hud.set_hint_visible(not _has_moved)
 	if not is_alive():
 		_scent.visible = false
+		_cues.clear()
 		return
 	_scent.track(player, ecosystem.food, delta)
+	_cues.track(player, ecosystem, camera, delta)
 	var input := _read_move_input()
 	if input.length() > 0.1:
 		_has_moved = true

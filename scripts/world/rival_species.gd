@@ -34,7 +34,7 @@ func setup(eco: Ecosystem, title: String, tint: Color, genome: Genome) -> void:
 func found(home: Vector2) -> void:
 	var rng := ecosystem.rng
 	for _i in START_POPULATION:
-		var at := home + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(0.0, 6.0)
+		var at := home + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(0.0, 12.0)
 		spawn(template.mutated(rng), at, 6.0)
 
 

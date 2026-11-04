@@ -79,7 +79,7 @@ func _make(index: int, genome: Genome) -> RivalSpecies:
 	group.setup(ecosystem, NAMES[index], colour, genome)
 	add_child(group)
 	var rng := ecosystem.rng
-	group.found(ecosystem.focus + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(20.0, 40.0))
+	group.found(ecosystem.focus + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(24.0, 48.0))
 	return group
 
 

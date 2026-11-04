@@ -52,7 +52,7 @@ func _ready() -> void:
 		spawn_member(saved_genome, saved_at, saved_energy)
 	if saved_members.is_empty():
 		for _i in START_POPULATION:
-			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(2.0, 12.0), 6.0)
+			spawn_member(_founder.mutated(rng).mutated(rng), _random_point(3.0, 24.0), 6.0)
 	rivals = Rivals.new()
 	rivals.ecosystem = self
 	add_child(rivals)
