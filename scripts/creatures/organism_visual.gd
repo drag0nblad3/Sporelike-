@@ -13,9 +13,7 @@ func build(genome: Genome, tint: Color) -> void:
 	_body = VisualParts.sphere(1.0, tint, 0.5, true)
 	add_child(_body)
 
-	# Nucleus colour shows diet: green for plant eaters, red for meat eaters.
-	var diet_color := Color(0.3, 0.85, 0.35).lerp(Color(0.9, 0.25, 0.25), genome.value_of("diet"))
-	var nucleus := VisualParts.sphere(0.35, diet_color, 0.6)
+	var nucleus := VisualParts.sphere(0.35, VisualParts.diet_color(genome), 0.6)
 	nucleus.position = Vector3(0.2, 0.1, -0.15)
 	_body.add_child(nucleus)
 

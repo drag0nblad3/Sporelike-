@@ -22,7 +22,9 @@ var limbs := ColonyLimbs.new()
 var move_input := Vector2.ZERO
 var facing := 0.0
 var energy := 20.0
-var tint := Color(0.55, 0.9, 0.8)
+## Membrane colour (the species' colour) and nucleus colour (its diet).
+var tint := Color(0.55, 0.9, 0.8, 0.6)
+var nucleus := Color(0.3, 0.85, 0.35)
 ## Where the gut cavity and mouth openings sit in the resting shape.
 var hollow_rest := PackedVector3Array()
 var _look := ColonyLook.new()
@@ -33,7 +35,7 @@ func _ready() -> void:
 	add_child(_look)
 	add_child(limbs)
 	if plan:
-		_look.build(plan, tint)
+		_look.build(plan, tint, nucleus)
 
 
 ## Lays the plan's cells out around `at`, facing `facing`.
@@ -58,7 +60,7 @@ func build(new_plan: BodyPlan, at: Vector3) -> void:
 	for spot in plan.hollow:
 		hollow_rest.append(Vector3(spot.x, 0.0, spot.y) - centroid)
 	if is_inside_tree():
-		_look.build(plan, tint)
+		_look.build(plan, tint, nucleus)
 	limbs.build(self)
 
 
@@ -132,7 +134,7 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	if plan == null:
 		return
-	_look.update(body, hollow_rest)
+	_look.update(body, hollow_rest, delta)
 	limbs.update(delta)
 
 

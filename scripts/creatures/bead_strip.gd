@@ -5,8 +5,11 @@ extends MultiMeshInstance3D
 ## ball every frame with place().
 
 
-## `count` balls of `radius`, each tinted with set_color().
-static func make(count: int, radius: float, segments: int = 10) -> BeadStrip:
+## `count` balls of `radius`, each tinted with set_color(). `glow` makes
+## them shine with that colour, and see_through lets the colours' alpha
+## show what is inside, like a stage 1 cell's membrane.
+static func make(count: int, radius: float, segments: int = 10,
+		glow := Color.BLACK, see_through := false) -> BeadStrip:
 	var sphere := SphereMesh.new()
 	sphere.radius = radius
 	sphere.height = radius * 2.0
@@ -20,6 +23,11 @@ static func make(count: int, radius: float, segments: int = 10) -> BeadStrip:
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true
 	mat.roughness = 0.45
+	if see_through:
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	if glow != Color.BLACK:
+		mat.emission_enabled = true
+		mat.emission = glow
 	var strip := BeadStrip.new()
 	strip.multimesh = mm
 	strip.material_override = mat
