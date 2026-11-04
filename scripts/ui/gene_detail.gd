@@ -33,10 +33,10 @@ func _ready() -> void:
 	names.alignment = BoxContainer.ALIGNMENT_CENTER
 	top.add_child(names)
 	_name = _label(names, 25, UiTheme.GOLD)
-	_info = _label(names, 17, UiTheme.DIM)
-	_effect = _label(box, 18, UiTheme.INK)
+	_info = _label(names, 20, UiTheme.DIM)
+	_effect = _label(box, 21, UiTheme.INK)
 	_effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_state = _label(box, 18, UiTheme.DIM)
+	_state = _label(box, 21, UiTheme.DIM)
 	_action = Button.new()
 	_action.custom_minimum_size.y = 50
 	_action.add_theme_font_size_override("font_size", 22)

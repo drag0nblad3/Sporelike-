@@ -58,6 +58,9 @@ func _run() -> void:
 	game.round_end.forms_early = true
 	game.cycle.finish("time")
 	await _shoot("generation")
+	game.screen.open_others()
+	await _shoot("other_species")
+	game.screen.close_others()
 	await _shoot_stage_two()
 	game.queue_free()
 	await get_tree().process_frame

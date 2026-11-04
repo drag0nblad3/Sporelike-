@@ -2,16 +2,17 @@ class_name PopulationScreen
 extends Control
 ## Shown between generations while the game is paused: how the species
 ## changed, what killed it, and three mutations the player can encourage.
+## Rivals and hunters sit behind the "Other species" button (OtherSpeciesPanel).
 
 signal chosen(choice: MutationChoice)
 
-const BAR_WIDTH := 260.0
 const MARGIN := 24.0
-const UP := UiTheme.GAIN
-const DOWN := UiTheme.LOSS
+const NOTES_WIDTH := 520.0
 
 var _card: PanelContainer
 var _box: VBoxContainer
+var _others: OtherSpeciesPanel
+var _stats: GenerationStats
 
 
 func _ready() -> void:
@@ -31,12 +32,16 @@ func _ready() -> void:
 	_box = VBoxContainer.new()
 	_box.add_theme_constant_override("separation", 6)
 	_card.add_child(_box)
+	_others = OtherSpeciesPanel.new()
+	add_child(_others)
 	get_viewport().size_changed.connect(_fit)
 
 
 func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 		heading: String) -> void:
+	_stats = stats
 	for child in _box.get_children():
+		_box.remove_child(child)
 		child.queue_free()
 
 	var title := "Generation %d complete" % stats.number
@@ -44,29 +49,22 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 		title = "You were eaten. Generation %d ends" % stats.number
 	elif stats.ended_by == "starved":
 		title = "You starved. Generation %d ends" % stats.number
-	var title_label := _add_label(title, 36)
+	var title_label := _add_label(title, 40)
 	title_label.add_theme_color_override("font_color",
 		UiTheme.ACCENT if stats.ended_by == "time" else UiTheme.LOSS)
 	_add_label("Population %d to %d   births %d   eaten %d   starved %d" % [
 		stats.start_population, stats.end_population, stats.births,
-		stats.deaths["eaten"], stats.deaths["starved"]], 22)
+		stats.deaths["eaten"], stats.deaths["starved"]], 26)
 
-	var typical := StatSheet.typical(stats.end_averages)
-	for t in Genome.TRAITS:
-		_add_trait_row(t, stats.end_averages.get(t, 0.0), stats.change(t),
-			StatSheet.trait_text(t, typical))
+	var middle := HBoxContainer.new()
+	middle.add_theme_constant_override("separation", 32)
+	middle.alignment = BoxContainer.ALIGNMENT_CENTER
+	_box.add_child(middle)
+	middle.add_child(TraitRows.new(stats))
+	middle.add_child(_notes(stats))
 
-	_add_label("You gathered %d energy, %d%% of what your body burns in a generation:" % [
-		roundi(stats.energy_gained), roundi(stats.fed_ratio() * 100.0)], 22)
-	_add_label("your choice counts x%.1f" % stats.influence(), 22)
-	if stats.progress_text != "":
-		_add_label(stats.progress_text, 22)
-	for line in [stats.habit_text, stats.adapt_text, stats.hunter_text, stats.rival_text]:
-		if line != "":
-			_add_label(line, 22)
-	var ask := _add_label(heading, 26)
+	var ask := _add_label(heading, 30)
 	ask.add_theme_color_override("font_color", UiTheme.GOLD)
-
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 20)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -80,6 +78,40 @@ func open(stats: GenerationStats, choices: Array[MutationChoice], you: Genome,
 	# Wait one frame for the layout to settle, then shrink it onto the screen.
 	await get_tree().process_frame
 	_fit()
+
+
+## The right-hand column: how well the player fed, stage progress, habits,
+## and a button that opens the other species' results.
+func _notes(stats: GenerationStats) -> VBoxContainer:
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	column.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var lines: Array[String] = [
+		"You gathered %d energy, %d%% of what your body burns. Your choice counts x%.1f" % [
+			roundi(stats.energy_gained), roundi(stats.fed_ratio() * 100.0), stats.influence()],
+		stats.progress_text, stats.adapt_text, stats.habit_text]
+	for line in lines:
+		if line != "":
+			var label := _make_label(line, 24)
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			label.custom_minimum_size.x = NOTES_WIDTH
+			column.add_child(label)
+	if stats.rival_text != "" or stats.hunter_text != "":
+		var others := Button.new()
+		others.text = "Other species"
+		others.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		others.pressed.connect(open_others)
+		column.add_child(others)
+	return column
+
+
+## Shows how the rival species and hunters fared this generation.
+func open_others() -> void:
+	_others.open(_stats)
+
+
+func close_others() -> void:
+	_others.close()
 
 
 ## Scales the content down (never up) so all of it, buttons included, fits
@@ -101,37 +133,8 @@ func _fit() -> void:
 
 func _pick(choice: MutationChoice) -> void:
 	visible = false
+	close_others()
 	chosen.emit(choice)
-
-
-func _add_trait_row(trait_name: String, value: float, change: float, detail: String) -> void:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	_box.add_child(row)
-
-	var name_label := _make_label(TraitNames.of(trait_name), 22)
-	name_label.custom_minimum_size = Vector2(110, 0)
-	row.add_child(name_label)
-
-	var track := ColorRect.new()
-	track.color = Color(1, 1, 1, 0.12)
-	track.custom_minimum_size = Vector2(BAR_WIDTH, 22)
-	row.add_child(track)
-	var fill := ColorRect.new()
-	fill.color = Color(0.45, 0.85, 1.0)
-	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fill.size = Vector2(BAR_WIDTH * clampf(value, 0.0, 1.0), 22)
-	track.add_child(fill)
-
-	var shown := change if absf(change) >= 0.005 else 0.0
-	var delta_label := _make_label("%+.2f" % shown, 22)
-	if absf(change) >= 0.005:
-		delta_label.modulate = UP if change > 0.0 else DOWN
-	delta_label.custom_minimum_size = Vector2(70, 0)
-	row.add_child(delta_label)
-	var detail_label := _make_label(detail, 22)
-	detail_label.modulate = Color(1, 1, 1, 0.75)
-	row.add_child(detail_label)
 
 
 func _add_label(text: String, size: int) -> Label:

@@ -60,7 +60,7 @@ func _choice(plan: BodyPlan, role: String) -> Button:
 	var added := trial.grow(role)
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(300, 190)
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 24)
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var row: Array = BodyPart.ROLES.get(role, BodyPart.ROLES["skin"])
 	var about: String = row[1]

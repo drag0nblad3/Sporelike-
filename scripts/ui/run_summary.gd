@@ -15,19 +15,19 @@ func open(subspecies_name: String, sea_title: String, established: bool, generat
 	visible = true
 	if established:
 		label("%s is established!" % subspecies_name, 36, UiTheme.ACCENT)
-		label("Your subspecies holds the %s after %d generations." % [sea_title, generation], 22)
+		label("Your subspecies holds the %s after %d generations." % [sea_title, generation], 26)
 	else:
 		label("%s died out" % subspecies_name, 36, UiTheme.LOSS)
 		label("The last of your subspecies was lost in the %s in generation %d." % [
-			sea_title, generation], 22)
+			sea_title, generation], 26)
 	label("Gene flow: +%d gene points back to the main species (%d to spend)." % [
 		earned, bank.points], 24, UiTheme.GOLD)
 	if not fresh.is_empty():
 		var names := PackedStringArray()
 		for id in fresh:
 			names.append(GeneText.label(id))
-		label("Newly banked genes: %s" % ", ".join(names), 22, UiTheme.GAIN)
-	label("Gene slots for the next subspecies: %d" % bank.slots(), 22)
+		label("Newly banked genes: %s" % ", ".join(names), 26, UiTheme.GAIN)
+	label("Gene slots for the next subspecies: %d" % bank.slots(), 26)
 	if established:
 		button("Keep evolving (multicellular stage)", func() -> void: _choose(true))
 	button("Return to the main species", func() -> void: _choose(false))

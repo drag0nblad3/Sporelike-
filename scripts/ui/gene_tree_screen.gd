@@ -22,7 +22,7 @@ func open(with_bank: GeneBank) -> void:
 
 func _build_side() -> void:
 	label("Gene trees", 34, UiTheme.ACCENT)
-	_points = label("", 20, UiTheme.GOLD)
+	_points = label("", 24, UiTheme.GOLD)
 
 
 func _build_bottom() -> void:
