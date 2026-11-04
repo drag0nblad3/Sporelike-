@@ -5,7 +5,8 @@ extends Organism
 ## swims to the most worthwhile food it can see and likes, otherwise basks
 ## over light or vents if it can make energy there, otherwise heads for a
 ## nearby patch of food that suits it (or, with Chemoreceptors, straight
-## for the nearest one).
+## for the nearest one). Close to a hunter it fires its abilities
+## (AbilityCaster.defend).
 
 const FORAGE_GIVE_UP := 12.0
 ## Seconds between food searches; steering toward the chosen food happens
@@ -34,8 +35,7 @@ func think(delta: float) -> void:
 	var threat := ecosystem.nearest_predator(me, style.flee_range)
 	if threat and threat.wants(self):
 		_steer((me - threat.flat_pos()).normalized(), delta * 2.0)
-		if me.distance_to(threat.flat_pos()) < threat.radius() + radius() + 2.0:
-			try_boost()
+		AbilityCaster.defend(self, ecosystem, threat)
 		return
 
 	_search_timer -= delta

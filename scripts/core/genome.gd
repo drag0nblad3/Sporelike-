@@ -154,7 +154,8 @@ func upkeep() -> float:
 		+ 0.04 * feature("grabbing_cilia") + 0.04 * feature("eye_cluster") \
 		+ 0.04 * feature("jet") + 0.04 * feature("sticky_coat") \
 		+ 0.05 * feature("food_scent") + 0.03 * feature("gut_lining") \
-		+ 0.03 * feature("chloroplasts") + 0.03 * feature("vent_symbionts")
+		+ 0.03 * feature("chloroplasts") + 0.03 * feature("vent_symbionts") \
+		+ 0.05 * (feature("trichocysts") + feature("toxicysts") + feature("flash"))
 	return cost * UPKEEP_RATE * (1.0 - MAX_SAVING * efficiency) * BodyForm.upkeep(self)
 
 

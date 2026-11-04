@@ -26,6 +26,8 @@ var chew := 0.0
 ## The patch it grew in; drifting food stays inside it.
 var home: FoodPatch
 
+## Seconds left paralyzed by Toxicysts: it cannot dart or drift.
+var stunned := 0.0
 var _phase := 0.0
 var _drift_dir := Vector2.ZERO
 var _drift_timer := 0.0
@@ -87,14 +89,24 @@ func flat_pos() -> Vector2:
 ## frame while a threat is close; sluggish pieces take about a second to
 ## turn and get going, nimble ones react almost at once.
 func startle(from: Vector2) -> void:
-	if flee_speed > 0.0:
+	if flee_speed > 0.0 and stunned <= 0.0:
 		var away := (flat_pos() - from).normalized() * flee_speed
 		velocity = velocity.lerp(away, agility * 0.2)
+
+
+## Toxicysts: stop dead for this long.
+func paralyze(seconds: float) -> void:
+	stunned = maxf(stunned, seconds)
+	velocity = Vector2.ZERO
 
 
 func _process(delta: float) -> void:
 	_phase += delta
 	position.y = 0.15 * sin(_phase * 2.0)
+	if stunned > 0.0:
+		stunned -= delta
+		velocity = Vector2.ZERO
+		return
 	if drift_speed <= 0.0 and velocity == Vector2.ZERO:
 		return
 

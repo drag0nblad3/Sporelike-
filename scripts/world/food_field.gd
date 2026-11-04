@@ -90,6 +90,17 @@ func startle_near(movers: Array[Organism]) -> void:
 				item.startle(t)
 
 
+## Darting food within reach of a point, nearest first not guaranteed
+## (Toxicysts sort their own targets).
+func darting_near(pos: Vector2, reach: float) -> Array[FoodItem]:
+	var list: Array[FoodItem] = []
+	for item in _grid.near(pos, reach):
+		if item.flee_speed > 0.0 and not item.is_queued_for_deletion() \
+				and item.flat_pos().distance_to(pos) <= reach:
+			list.append(item)
+	return list
+
+
 ## The most worthwhile food this organism can notice and digest, or null.
 ## appeal (food kind id -> multiplier, see ForageStyle) favours its niche.
 func best_for(org: Organism, appeal: Dictionary = {}) -> FoodItem:

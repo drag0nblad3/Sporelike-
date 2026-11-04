@@ -1,9 +1,10 @@
 class_name TitleScreen
 extends CanvasLayer
 ## The first screen: the game's name, Continue (only when a save exists),
-## New Game and Test stage 2 (a made-up evolved species that goes straight
-## to the multicellular switch, without touching the save). Starting a new
-## game over a save asks to confirm first.
+## New subspecies (opens the SubspeciesCreator) and Test stage 2 (a
+## made-up evolved species that goes straight to the multicellular switch,
+## without touching the save). Starting a new run over a save asks to
+## confirm first.
 
 signal new_game
 signal continue_game
@@ -47,7 +48,7 @@ func _ready() -> void:
 
 	_continue = _button("Continue", func() -> void: continue_game.emit())
 	column.add_child(_continue)
-	_new = _button("New Game", _on_new_pressed)
+	_new = _button("New subspecies", _on_new_pressed)
 	column.add_child(_new)
 	column.add_child(_button("Test stage 2", func() -> void: test_stage_two.emit()))
 
@@ -57,14 +58,14 @@ func open(has_save: bool) -> void:
 	_has_save = has_save
 	_confirming = false
 	_continue.visible = has_save
-	_new.text = "New Game"
+	_new.text = "New subspecies"
 	visible = true
 
 
 func _on_new_pressed() -> void:
 	if _has_save and not _confirming:
 		_confirming = true
-		_new.text = "Tap again: erase save"
+		_new.text = "Tap again: abandon run"
 		return
 	new_game.emit()
 

@@ -73,6 +73,8 @@ static func draw_part(ci: CanvasItem, kind: String, direction: float, c: Vector2
 			ci.draw_arc(c, r + 8.0, 0.0, TAU, 36, Color(col, 0.7), 5.0, true)
 			for a in [0.4, 2.3, 4.1]:
 				ci.draw_circle(c + Vector2.from_angle(a) * (r + 10.0), 3.5, col)
+		"trichocysts", "toxicysts", "flash":
+			AbilityIcons.draw(ci, kind, col, c, r)
 		"food_scent":
 			for s in [-1.0, 1.0]:
 				var base := c + Vector2(6.0 * s, -r + 2.0)

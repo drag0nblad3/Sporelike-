@@ -9,6 +9,9 @@ signal ate(energy: float)
 ## Energy the body made without eating (photosynthesis, chemosynthesis).
 signal made_energy(energy: float)
 
+## Keyboard keys for the abilities, for the Windows build.
+const KEYS := {KEY_SPACE: "jet", KEY_Q: "trichocysts", KEY_E: "toxicysts", KEY_R: "flash"}
+
 var ecosystem: Ecosystem
 var camera: CameraRig
 var hud: Hud
@@ -18,7 +21,11 @@ var genome := Genome.new()
 ## Records what the player does each generation (see Habits).
 var tracker := HabitTracker.new()
 
+## CI ("-- --smoke"): fire every ability's effect now and then, owned or not.
+var smoke_test := false
+
 var _has_moved := false
+var _smoke_timer := 0.5
 var _scent := ScentArrow.new()
 
 
@@ -66,9 +73,12 @@ func _process(delta: float) -> void:
 	player.move_input = input
 	camera.follow(player.position, player.radius(), delta)
 	hud.show_status(player.energy, Genome.FULL_ENERGY, player.genome.max_energy())
-	hud.show_jet(player.genome.feature("jet") > 0, player.boost_cooldown <= 0.0)
-	if Input.is_physical_key_pressed(KEY_SPACE):
-		player.try_boost()
+	hud.show_abilities(player.genome, player.abilities)
+	if smoke_test:
+		_smoke_abilities(delta)
+	for key in KEYS:
+		if Input.is_physical_key_pressed(key):
+			use(KEYS[key])
 
 
 ## Stops showing the how-to-swim hint (the player has moved on).
@@ -76,10 +86,19 @@ func hide_hint() -> void:
 	_has_moved = true
 
 
-## Called from the HUD's Jet button.
-func boost() -> void:
+## Called from the HUD's ability buttons (and the keys in KEYS).
+func use(id: String) -> void:
 	if is_alive():
-		player.try_boost()
+		AbilityCaster.fire(player, id, ecosystem)
+
+
+func _smoke_abilities(delta: float) -> void:
+	_smoke_timer -= delta
+	if _smoke_timer > 0.0:
+		return
+	_smoke_timer = 1.5
+	for id in Ability.ALL:
+		AbilityCaster.apply(player, id, ecosystem, 2)
 
 
 func _on_player_died(_org: Organism, cause: String) -> void:

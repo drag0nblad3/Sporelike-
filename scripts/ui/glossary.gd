@@ -12,6 +12,13 @@ to refill it. When it runs out you starve.
 [b]Units[/b]: lengths are in micrometres (µm, thousandths of a millimetre), \
 speeds in µm per second, and energy is the same energy shown on the bar.
 
+[b]Subspecies runs[/b]: each game is a subspecies of your main species \
+colonizing a new sea. It ends if every cell dies out, or it establishes \
+itself when it reaches the multicellular stage. Either way its genes flow \
+back: gene points to spend in the gene trees, and any organelle it evolved \
+is banked for free. Found the next subspecies with banked genes, up to your \
+gene slots (more slots as you earn more points).
+
 [font_size=28][b]Traits[/b][/font_size] (0 to 1; higher is stronger but costs more upkeep)
 [b]Size[/b]: a bigger body with a longer reach that chews faster, but slower \
 to turn and costlier to run. Grow big enough and hunters can no longer \
@@ -23,7 +30,7 @@ the hunters and darting food around it slow down very slightly.
 [b]Agility[/b]: how fast you speed up and turn, from more cilia (tiny beating hairs).
 [b]Sense[/b]: how far away you notice food and hunters, from a bigger eyespot.
 [b]Spines[/b]: silica spines that can deflect a hunter's bite.
-[b]Toxin[/b]: toxicysts, tiny darts that sting a hunter that bites you. Stung \
+[b]Toxin[/b]: toxin vesicles that sting a hunter that bites you. Stung \
 hunters back off for a while and learn to avoid toxic prey.
 [b]Diet[/b]: 0 digests plant food (algae, motes) best, 1 digests prey \
 (plankton, shells) best. In between gets less from both.
@@ -96,9 +103,17 @@ your cell, each with its own shape and colour (the pick card shows a drawing):
   [b]Grabbing cilia[/b] (from high agility): snatch food that is very close.
   [b]Second flagellum[/b] (from high speed): another whip-like tail; faster, but costs more.
   [b]Eyespot cluster[/b] (from high sense): spot food from farther away.
-  [b]Contractile jet[/b] (from speed): tap the Jet button and a vacuole \
-squirts water for a quick burst. Cells of your species jet away from hunters \
+  [b]Contractile jet[/b] (from speed): every cell is born with a Jet button \
+(Space on a keyboard): a vacuole squirts water for a quick burst. This \
+upgrade makes it recharge faster. Cells of your species jet away from hunters \
 on their own.
+  [b]Trichocysts[/b] (from spines): a Shove button (Q). Spindles shoot out, \
+pushing nearby hunters away and stunning them.
+  [b]Toxicysts[/b] (from toxin): a Harpoon button (E). Poison darts paralyze \
+the nearest hunters or darting food, so you can escape or catch it.
+  [b]Scintillons[/b] (from sense): a Flash button (R). A burst of \
+bioluminescence dazzles nearby hunters, and none can find you for a few seconds.
+  Your species' cells use these on their own when a hunter gets close.
   [b]Mucus coat[/b] (from spines): darting food that comes close gets stuck.
   [b]Chemoreceptors[/b] (from very high sense): you taste the water, and an \
 arrow by your cell points to \

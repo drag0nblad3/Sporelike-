@@ -154,7 +154,7 @@ func _feed(org: Organism, delta: float) -> void:
 
 func _hunt(targets: Array[Organism]) -> void:
 	for hunter in predators:
-		if hunter.cooldown > 0.0:
+		if hunter.cooldown > 0.0 or hunter.stun_time > 0.0:
 			continue
 		for prey in targets:
 			if not prey.alive or not hunter.wants(prey):

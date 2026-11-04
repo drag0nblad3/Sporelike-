@@ -27,6 +27,7 @@ const TRAIT_HABITS := {
 }
 const FEATURE_HABITS := {
 	"chloroplasts": "sun", "vent_symbionts": "vent", "jet": "danger",
+	"trichocysts": "danger", "toxicysts": "danger", "flash": "danger",
 	"sticky_coat": "darting", "grabbing_cilia": "darting", "tail_bud": "sprint",
 	"eye_cluster": "faint", "food_scent": "faint", "fat_store": "fed", "gut_lining": "fed",
 }

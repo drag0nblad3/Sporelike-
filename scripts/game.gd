@@ -2,7 +2,9 @@ class_name Game
 extends Node3D
 ## One play session: wires the world together and runs the generation loop
 ## (play a generation, see the population screen, pick a mutation, be reborn
-## as one of your kind). Starts fresh or from a save. Rules live elsewhere.
+## as one of your kind). Each game is one subspecies run, founded with genes
+## from the GeneBank; RunEnd pays out when it dies out or establishes.
+## Starts fresh or from a save. Rules live elsewhere.
 
 signal quit_to_title
 signal generation_started(number: int)
@@ -25,14 +27,26 @@ var rng := RandomNumberGenerator.new()
 var smoke_test := false
 ## Set from the title screen's "Test stage 2": skip straight to the switch.
 var jump_to_stage_two := false
+## The subspecies this run founds and the genes it starts with (set by
+## setup for a new run, read from the save otherwise).
+var subspecies_name := ""
+var loadout: Array[String] = []
+var run_end: RunEnd
 
 var _save := {}
+## Where the subspecies established itself, for the switch to stage 2.
+var _switch_at := Vector2.ZERO
 
 
 ## Call before adding to the tree. An empty save starts a new game.
-func setup(save: Dictionary, smoke: bool) -> void:
+func setup(save: Dictionary, smoke: bool, new_name: String = "",
+		genes: Array[String] = []) -> void:
 	_save = save
 	smoke_test = smoke
+	subspecies_name = str(save.get("subspecies", new_name))
+	loadout = genes
+	for raw in save.get("loadout", []):
+		loadout.append(str(raw))
 
 
 func _ready() -> void:
@@ -49,6 +63,8 @@ func _ready() -> void:
 	hud.pause_menu.save_cell_requested.connect(_on_save_cell)
 
 	var founder := EvolvedSpecies.random(rng) if jump_to_stage_two else Genome.new()
+	if not jump_to_stage_two:
+		GeneCatalog.apply(founder, loadout)
 	ecosystem = Ecosystem.new()
 	ecosystem.setup(founder)
 	if not _save.is_empty():
@@ -73,10 +89,11 @@ func _ready() -> void:
 	director.ecosystem = ecosystem
 	director.camera = camera
 	director.hud = hud
+	director.smoke_test = smoke_test
 	director.died.connect(_on_player_died)
 	director.ate.connect(cycle.record_food)
 	director.made_energy.connect(cycle.record_energy)
-	hud.jet_pressed.connect(director.boost)
+	hud.ability_pressed.connect(director.use)
 	add_child(director)
 
 	_add_stage_two()
@@ -87,6 +104,7 @@ func _ready() -> void:
 	saver.cycle = cycle
 	saver.progress = progress
 	saver.world_seed = world_seed
+	saver.run_info = {"subspecies": subspecies_name, "loadout": loadout}
 	# A stage 2 test run must not overwrite the player's real save.
 	saver.enabled = not jump_to_stage_two
 	progress.points = float(_save.get("progress", 0.0))
@@ -95,6 +113,7 @@ func _ready() -> void:
 		progress.points = EvolutionProgress.GOAL - 1.0
 	add_child(saver)
 	_add_round()
+	_add_run_end()
 
 	if _save.is_empty():
 		director.spawn(founder, Vector2.ZERO)
@@ -160,6 +179,21 @@ func _add_round() -> void:
 	add_child(round_end)
 
 
+func _add_run_end() -> void:
+	run_end = RunEnd.new()
+	run_end.subspecies_name = subspecies_name
+	run_end.throwaway = jump_to_stage_two
+	run_end.smoke_test = smoke_test
+	run_end.screen = RunSummary.new()
+	run_end.screen.visible = false
+	hud.add_child(run_end.screen)
+	run_end.keep_playing.connect(func() -> void: stage_two.offer_switch(_switch_at))
+	run_end.finished.connect(func() -> void:
+		get_tree().paused = false
+		quit_to_title.emit())
+	add_child(run_end)
+
+
 func _resume() -> void:
 	var you := GameSaver.player_from(_save)
 	var you_genome: Genome = you[0]
@@ -219,12 +253,17 @@ func _on_generation_ended(stats: GenerationStats) -> void:
 		round_end.start(stats)
 
 
-## After the picks: take over a random survivor's offspring, or restart the
-## species from your own (picked) genome if none survived.
+## After the picks: take over a random survivor's offspring. If none
+## survived and you are dead too, the subspecies died out and the run ends;
+## if you alone survived, the species restarts from your (picked) genome.
 func _on_round_finished(preview: Genome) -> void:
 	var next_genome: Genome
 	var at := Vector2.ZERO
 	var parent := ecosystem.pick_parent()
+	if parent == null and not director.is_alive() and not jump_to_stage_two:
+		director.retire()
+		run_end.conclude(false, cycle.number, progress.points, preview)
+		return
 	if parent:
 		next_genome = parent.genome.mutated(rng)
 		at = parent.flat_pos() + Vector2.from_angle(rng.randf() * TAU) * 2.0
@@ -232,9 +271,9 @@ func _on_round_finished(preview: Genome) -> void:
 		next_genome = preview
 		ecosystem.reseed(next_genome)
 	if progress.is_ready() and not stage_two.active:
-		var here := director.player.flat_pos() if director.is_alive() else at
+		_switch_at = director.player.flat_pos() if director.is_alive() else at
 		director.retire()
-		stage_two.offer_switch(here)
+		run_end.conclude(true, cycle.number, progress.points, preview)
 		return
 	director.retire()
 	get_tree().paused = false
