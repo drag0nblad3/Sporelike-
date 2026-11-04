@@ -44,7 +44,7 @@ func start(stats: GenerationStats) -> void:
 	stats.habit_text = HabitDrift.describe(_habits, StatSheet.typical(stats.end_averages))
 	HabitDrift.apply_all(_habits, genomes)
 	stats.end_averages = ecosystem.trait_averages()
-	stats.hunter_text = ecosystem.hunters.end_generation(ecosystem.predators.size(), rng)
+	stats.hunter_text = ecosystem.hunters.end_generation(ecosystem.predators, rng)
 	stats.rival_text = ecosystem.rivals.end_generation(director.genome)
 	# Preview picks on the same typical member the screen describes, not on
 	# the player's own body, whose traits differ from the species average.

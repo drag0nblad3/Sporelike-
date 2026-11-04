@@ -47,7 +47,7 @@ func save_now() -> void:
 		"player": you,
 		"species": members,
 		"rivals": ecosystem.rivals.to_save(),
-		"hunters": ecosystem.hunters.levels,
+		"hunters": ecosystem.hunters.to_save(),
 	}
 	data.merge(run_info)
 	if stage_two:

@@ -116,4 +116,4 @@ static func changes(before: Genome, after: Genome) -> PackedStringArray:
 
 ## Bodies at least this big are too large for hunters (see Predator.wants).
 static func hunter_limit() -> float:
-	return Predator.RADIUS * Predator.SWALLOW_RATIO
+	return HunterKind.biggest_meal()

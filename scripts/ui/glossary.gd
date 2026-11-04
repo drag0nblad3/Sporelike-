@@ -59,9 +59,19 @@ and faster and nimbler at dodging. Small pale pieces are slow, sluggish and \
 soft: easy pickings.
 
 [font_size=28][b]Dangers[/b][/font_size]
-[b]Hunters[/b] (red): predators that chase the nearest prey they want. \
-Spines and toxin both make them think twice. Hunters never starve, but after \
-a generation where they caught less than one prey each, they may evolve one \
+[b]Hunters[/b] (red): predatory cells of four kinds. Spines and toxin \
+make all of them think twice.
+  [b]Didinia[/b] (bright red barrels): chase the nearest prey they want.
+  [b]Heliozoa[/b] (dark red, long rays): sit still in food fields, hard to \
+notice until you are close, then lunge.
+  [b]Swarm dinoflagellates[/b] (pink, banded): small and fast; the swarm \
+chases one cell together and fans out to cut it off. Grow and they cannot \
+swallow you.
+  [b]Stentors[/b] (purple trumpets): huge and slow; a faint swirl shows the \
+vortex that drags small cells into their mouths. A flash cannot hide you \
+from it, so swim out.
+Hunters never starve, but after a generation where a kind caught less than \
+one prey each, that kind may evolve one \
 of their own upgrades: [b]Lunge flagella[/b] (+10% speed), [b]Chemosensors[/b] \
 (+20% sight), [b]Thick membrane[/b] (stung 30% less often) or [b]Wide gullet[/b] \
 (swallows prey 8% bigger). Each goes up to level 3.
