@@ -8,7 +8,6 @@ signal member_died(cause: String)
 
 const START_POPULATION := 30
 const MAX_POPULATION := 100
-const PREDATOR_COUNT := 7
 const REPRODUCE_AT := 10.0
 
 ## Where the player is; new members and hunters appear around it.
@@ -26,7 +25,7 @@ var saved_members: Array = []
 ## Saved rival templates (Genome dicts) and hunter upgrade levels.
 var saved_rivals: Array = []
 var rivals: Rivals
-var hunters := HunterLineage.new()
+var hunters := HunterLineages.new()
 ## Speed multiplier for hunters and food; see Pace.
 var others_pace := 1.0
 
@@ -54,8 +53,7 @@ func _ready() -> void:
 	rivals.ecosystem = self
 	add_child(rivals)
 	rivals.start(_founder, saved_rivals)
-	for _i in PREDATOR_COUNT:
-		_spawn_predator(_random_point(25.0, 50.0))
+	HunterSpawner.spawn_all(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -68,12 +66,13 @@ func _physics_process(delta: float) -> void:
 	_reproduce()
 
 
-## Closest predator within max_range of pos, or null.
+## Closest predator within max_range of pos, or null. Hunters lying in
+## wait count as further away (Predator.notice_scale).
 func nearest_predator(pos: Vector2, max_range: float) -> Predator:
 	var best: Predator = null
 	var best_d := max_range
 	for p in predators:
-		var d := pos.distance_to(p.flat_pos())
+		var d := pos.distance_to(p.flat_pos()) / p.notice_scale()
 		if d < best_d:
 			best_d = d
 			best = p
@@ -97,7 +96,7 @@ func start_roster() -> void:
 	others_pace = Pace.others(float(roster.averages().get("speed", 0.0)))
 	FoodItem.pace = others_pace
 	for hunter in predators:
-		hunter.speed_scale = others_pace * hunters.speed_factor()
+		hunter.speed_scale = others_pace * hunter.lineage.speed_factor()
 
 
 ## The player's next body: a random awake member near the player if any,
@@ -130,17 +129,6 @@ func spawn_member(g: Genome, at: Vector2, start_energy: float) -> SpeciesCell:
 	roster.add(g)
 	species_changed.emit()
 	return cell
-
-
-func _spawn_predator(at: Vector2) -> void:
-	var hunter := Predator.new()
-	hunter.setup(Predator.make_genome(), 1.0)
-	hunter.ecosystem = self
-	hunter.lineage = hunters
-	hunter.speed_scale = others_pace * hunters.speed_factor()
-	hunter.position = Vector3(at.x, 0.0, at.y)
-	add_child(hunter)
-	predators.append(hunter)
 
 
 func _feed(org: Organism, delta: float) -> void:

@@ -73,7 +73,7 @@ func _ready() -> void:
 	ecosystem.saved_members = GameSaver.members_from(_save)
 	ecosystem.births = int(_save.get("births", 0))
 	ecosystem.saved_rivals = _save.get("rivals", [])
-	ecosystem.hunters.levels = _save.get("hunters", {})
+	ecosystem.hunters.load_save(_save.get("hunters", {}))
 	ecosystem.species_changed.connect(_refresh_species)
 	add_child(ecosystem)
 	_add_world(world_seed)

@@ -1,6 +1,6 @@
 class_name HunterLineage
 extends RefCounted
-## The hunters as one slowly evolving species. Counts the prey they catch;
+## One kind of hunter (see HunterKind) as a slowly evolving species. Counts the prey they catch;
 ## after a generation where they went hungry they may gain a level of one
 ## of their own upgrades, which every hunter shares.
 
@@ -15,9 +15,9 @@ const UPGRADES := {
 	"thick_hide": ["Thick membrane", "toxin stings 30% less often", 3],
 	"wide_maw": ["Wide gullet", "swallows prey 8% bigger", 3],
 }
-const BASE_SWALLOW := 0.85
-
 var levels := {}
+## Which HunterKind this lineage is; sets its name and base gullet size.
+var kind := HunterKind.CHASER
 ## Prey caught this generation.
 var meals := 0
 
@@ -41,7 +41,7 @@ func sting_factor() -> float:
 
 ## Prey must be smaller than this share of the hunter's radius.
 func swallow_ratio() -> float:
-	return BASE_SWALLOW + 0.07 * level("wide_maw")
+	return HunterKind.swallow(kind) + 0.07 * level("wide_maw")
 
 
 ## Ends the generation for the hunters: maybe evolves, resets the meal
@@ -49,16 +49,18 @@ func swallow_ratio() -> float:
 func end_generation(hunters: int, rng: RandomNumberGenerator) -> String:
 	var caught := meals
 	meals = 0
+	var who := HunterKind.plural(kind)
 	if caught >= hunters * HUNGRY_BELOW:
-		return "Hunters ate well: %d prey caught" % caught
+		return "%s ate well: %d prey caught" % [who, caught]
 	var open: Array[String] = []
 	for id in UPGRADES:
 		var row: Array = UPGRADES[id]
 		if level(id) < int(row[2]):
 			open.append(id)
 	if open.is_empty() or rng.randf() > EVOLVE_CHANCE:
-		return "Hunters went hungry (%d prey caught)" % caught
+		return "%s went hungry (%d prey caught)" % [who, caught]
 	var pick := open[rng.randi() % open.size()]
 	levels[pick] = level(pick) + 1
 	var info: Array = UPGRADES[pick]
-	return "Hungry hunters evolved %s (level %d): %s" % [info[0], level(pick), info[1]]
+	return "Hungry %s evolved %s (level %d): %s" % [
+		who, info[0], level(pick), info[1]]
