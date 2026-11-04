@@ -1,8 +1,9 @@
 class_name GeneTreeScreen
 extends MenuPanel
 ## The main species' gene trees: spend gene points from subspecies runs to
-## unlock genes. One tree shows at a time (tabs along the top); each gene
-## says what it gives, what it costs, and what it needs first. Saves the
+## unlock genes. One tree shows at a time (tabs along the top), as two
+## branches of four tiers; each gene says what it gives, what it costs, and
+## what it needs first. Saves the
 ## bank after every unlock.
 
 signal closed
@@ -27,8 +28,10 @@ func _refresh() -> void:
 		var t: String = tree
 		var tab := button(str(GeneCatalog.TREE_NAMES[t]), func() -> void: _show_tree(t), tabs)
 		tab.disabled = t == _tree
-	for id in GeneCatalog.in_tree(_tree):
-		_add_gene(id)
+	for branch in GeneCatalog.BRANCHES[_tree]:
+		label(str(branch[0]), 28, UiTheme.ACCENT)
+		for raw in branch[1]:
+			_add_gene(str(raw))
 	button("Done", func() -> void: _close())
 
 
@@ -38,17 +41,16 @@ func _show_tree(tree: String) -> void:
 
 
 func _add_gene(id: String) -> void:
-	var row_info := GeneCatalog.info(id)
-	var needs: String = row_info["needs"]
+	var needs := GeneCatalog.needs(id)
 	var state := ""
 	if bank.has(id):
 		state = "Unlocked"
 	elif needs != "" and not bank.has(needs):
 		state = "Needs %s first" % GeneText.label(needs)
 	else:
-		state = "Unlock for %d gene points" % int(row_info["cost"])
-	var text := "%s  (%s)\n%s\n%s" % [GeneText.label(id), GeneText.slot_text(id),
-		GeneText.effect(id), state]
+		state = "Unlock for %d gene points" % GeneCatalog.cost(id)
+	var text := "Tier %d: %s  (%s)\n%s\n%s" % [GeneCatalog.tier(id), GeneText.label(id),
+		GeneText.slot_text(id), GeneText.effect(id), state]
 	var b := button(text, func() -> void: _unlock(id))
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.custom_minimum_size.y = 110

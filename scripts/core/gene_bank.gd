@@ -26,7 +26,7 @@ static func load_bank() -> GeneBank:
 	bank.points = int(data.get("points", 0))
 	bank.lifetime = int(data.get("lifetime", 0))
 	for raw in data.get("unlocked", []):
-		if GeneCatalog.ALL.has(str(raw)):
+		if GeneCatalog.exists(str(raw)):
 			bank.unlocked.append(str(raw))
 	for raw in data.get("last_loadout", []):
 		if bank.has(str(raw)):
@@ -54,17 +54,16 @@ func slots() -> int:
 ## Whether this gene can be bought now: not owned, its parent owned, and
 ## enough points.
 func can_unlock(id: String) -> bool:
-	var row := GeneCatalog.info(id)
-	if row.is_empty() or has(id):
+	if not GeneCatalog.exists(id) or has(id):
 		return false
-	var needs: String = row["needs"]
-	return (needs == "" or has(needs)) and points >= int(row["cost"])
+	var needs := GeneCatalog.needs(id)
+	return (needs == "" or has(needs)) and points >= GeneCatalog.cost(id)
 
 
 func unlock(id: String) -> bool:
 	if not can_unlock(id):
 		return false
-	points -= int(GeneCatalog.info(id)["cost"])
+	points -= GeneCatalog.cost(id)
 	unlocked.append(id)
 	return true
 
@@ -77,8 +76,8 @@ func receive(earned: int, evolved: Genome) -> Array[String]:
 	lifetime += earned
 	var fresh: Array[String] = []
 	for f in evolved.features:
-		var id := GeneCatalog.for_feature(str(f))
-		if id != "" and not has(id):
-			unlocked.append(id)
-			fresh.append(id)
+		for id in GeneCatalog.for_feature(str(f), evolved.feature(str(f))):
+			if not has(id):
+				unlocked.append(id)
+				fresh.append(id)
 	return fresh

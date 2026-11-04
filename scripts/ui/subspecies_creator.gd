@@ -69,15 +69,33 @@ func _add_gene(id: String) -> void:
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.custom_minimum_size.y = 96
 	b.add_theme_font_size_override("font_size", 20)
-	b.disabled = not on and used_slots() + GeneCatalog.slots(id) > bank.slots()
+	b.disabled = not on and used_slots() + GeneCatalog.slots(id) - _form_slots(id) > bank.slots()
 	if on:
 		b.add_theme_color_override("font_color", UiTheme.GAIN)
+
+
+## Slots freed if choosing this gene swaps out the current body form.
+func _form_slots(id: String) -> int:
+	if not GeneCatalog.is_form(id):
+		return 0
+	var freed := 0
+	for other in _chosen:
+		if GeneCatalog.is_form(other):
+			freed += GeneCatalog.slots(other)
+	return freed
 
 
 func _toggle(id: String) -> void:
 	if id in _chosen:
 		_chosen.erase(id)
-	elif used_slots() + GeneCatalog.slots(id) <= bank.slots():
+		_refresh()
+		return
+	# Body forms exclude each other: picking one swaps out any other.
+	if GeneCatalog.is_form(id):
+		for other in _chosen.duplicate():
+			if GeneCatalog.is_form(other):
+				_chosen.erase(other)
+	if used_slots() + GeneCatalog.slots(id) <= bank.slots():
 		_chosen.append(id)
 	_refresh()
 

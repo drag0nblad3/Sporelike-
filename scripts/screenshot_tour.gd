@@ -177,7 +177,7 @@ func _shoot_genes() -> void:
 	var bank := GeneBank.new()
 	bank.points = 12
 	bank.lifetime = 24
-	for id in ["big_1", "spines_1", "trichocysts", "jet", "gut_lining"]:
+	for id in ["big_1", "spines_1", "spines_2", "trichocysts", "nimble_1", "nimble_2", "jet"]:
 		bank.unlocked.append(id)
 	creator.open(bank)
 	creator.call("_toggle", "trichocysts")

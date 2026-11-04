@@ -1,104 +1,149 @@
 class_name GeneCatalog
 extends RefCounted
-## Every gene a subspecies can be founded with, in four trees. A gene is
-## either a starting stat nudge (1 slot) or an organelle the founders are
-## born with (2 slots). Each gene costs gene points to unlock in the
-## GeneBank and may need another gene in its tree first.
+## Every gene a subspecies can be founded with. Five trees, each with two
+## branches of four tiers, so every tree offers the same choices and value:
+## tiers 1 and 2 are starting stat nudges (1 slot), tiers 3 and 4 are
+## organelles or a body form the founders are born with (2 slots). Each
+## tier costs the same gene points in every tree and needs the tier below.
 
-const TREES := ["body", "defense", "feeding", "motion"]
+const TREES := ["body", "defense", "feeding", "senses", "metabolism"]
 const TREE_NAMES := {"body": "Body", "defense": "Defense", "feeding": "Feeding",
-	"motion": "Motion"}
-
-## id -> {tree, label, cost, needs, and one of trait/amount, feature, efficiency}
-const ALL := {
-	"big_1": {"tree": "body", "label": "Larger founders", "cost": 2, "needs": "",
-		"trait": "size", "amount": 0.06},
-	"big_2": {"tree": "body", "label": "Larger founders II", "cost": 4, "needs": "big_1",
-		"trait": "size", "amount": 0.06},
-	"swift_1": {"tree": "body", "label": "Swift founders", "cost": 2, "needs": "",
-		"trait": "speed", "amount": 0.06},
-	"swift_2": {"tree": "body", "label": "Swift founders II", "cost": 4, "needs": "swift_1",
-		"trait": "speed", "amount": 0.06},
-	"nimble_1": {"tree": "body", "label": "Nimble founders", "cost": 2, "needs": "",
-		"trait": "agility", "amount": 0.06},
-	"keen_1": {"tree": "body", "label": "Keen founders", "cost": 2, "needs": "",
-		"trait": "sense", "amount": 0.06},
-	"spines_1": {"tree": "defense", "label": "Early spines", "cost": 2, "needs": "",
-		"trait": "armor", "amount": 0.08},
-	"venom_1": {"tree": "defense", "label": "Early toxin", "cost": 2, "needs": "",
-		"trait": "toxin", "amount": 0.08},
-	"trichocysts": {"tree": "defense", "label": "Trichocysts", "cost": 5, "needs": "spines_1",
-		"feature": "trichocysts"},
-	"sticky_coat": {"tree": "defense", "label": "Mucus coat", "cost": 4, "needs": "spines_1",
-		"feature": "sticky_coat"},
-	"toxicysts": {"tree": "defense", "label": "Toxicysts", "cost": 5, "needs": "venom_1",
-		"feature": "toxicysts"},
-	"flash": {"tree": "defense", "label": "Scintillons", "cost": 5, "needs": "",
-		"feature": "flash"},
-	"grazer": {"tree": "feeding", "label": "Grazer gut", "cost": 2, "needs": "",
-		"trait": "diet", "amount": -0.1},
-	"hunter_gut": {"tree": "feeding", "label": "Hunter gut", "cost": 2, "needs": "",
-		"trait": "diet", "amount": 0.1},
-	"jaw_1": {"tree": "feeding", "label": "Firm mouth", "cost": 2, "needs": "",
-		"trait": "jaw", "amount": 0.08},
-	"lean_1": {"tree": "feeding", "label": "Lean metabolism", "cost": 3, "needs": "",
-		"efficiency": 0.25},
-	"gut_lining": {"tree": "feeding", "label": "Digestive vacuoles", "cost": 3, "needs": "",
-		"feature": "gut_lining"},
-	"fat_store": {"tree": "feeding", "label": "Lipid droplets", "cost": 3, "needs": "",
-		"feature": "fat_store"},
-	"chloroplasts": {"tree": "feeding", "label": "Chloroplasts", "cost": 6, "needs": "grazer",
-		"feature": "chloroplasts"},
-	"vent_symbionts": {"tree": "feeding", "label": "Vent symbionts", "cost": 6,
-		"needs": "gut_lining", "feature": "vent_symbionts"},
-	"food_scent": {"tree": "feeding", "label": "Chemoreceptors", "cost": 5,
-		"needs": "gut_lining", "feature": "food_scent"},
-	"jet": {"tree": "motion", "label": "Contractile jet", "cost": 3, "needs": "",
-		"feature": "jet"},
-	"tail_bud": {"tree": "motion", "label": "Second flagellum", "cost": 5, "needs": "jet",
-		"feature": "tail_bud"},
-	"grabbing_cilia": {"tree": "motion", "label": "Grabbing cilia", "cost": 4, "needs": "",
-		"feature": "grabbing_cilia"},
-	"eye_cluster": {"tree": "motion", "label": "Eyespot cluster", "cost": 4,
-		"needs": "grabbing_cilia", "feature": "eye_cluster"},
+	"senses": "Senses", "metabolism": "Metabolism"}
+## tree -> two branches of [name, four gene ids from tier 1 to 4].
+const BRANCHES := {
+	"body": [["Size", ["big_1", "big_2", "fat_store", "form_amoeboid"]],
+		["Speed", ["swift_1", "swift_2", "tail_bud", "form_rod"]]],
+	"defense": [["Spines", ["spines_1", "spines_2", "trichocysts", "form_shelled"]],
+		["Toxin", ["venom_1", "venom_2", "toxicysts", "toxicysts_2"]]],
+	"feeding": [["Plants", ["grazer_1", "grazer_2", "chloroplasts", "form_disc"]],
+		["Prey", ["hunter_1", "hunter_2", "sticky_coat", "food_scent"]]],
+	"senses": [["Sight", ["keen_1", "keen_2", "eye_cluster", "flash"]],
+		["Reflexes", ["nimble_1", "nimble_2", "jet", "form_spiral"]]],
+	"metabolism": [["Digestion", ["lean_1", "lean_2", "gut_lining", "vent_symbionts"]],
+		["Chewing", ["jaw_1", "jaw_2", "grabbing_cilia", "gut_lining_2"]]],
+}
+## Gene points and slots by tier (1 to 4).
+const COST := [2, 4, 6, 8]
+const SLOTS := [1, 1, 2, 2]
+## id -> [label, kind ("trait", "feature" or "efficiency"), what, amount].
+## Feature amounts are the level the founders are born with.
+const GENES := {
+	"big_1": ["Larger founders", "trait", "size", 0.06],
+	"big_2": ["Larger founders II", "trait", "size", 0.06],
+	"swift_1": ["Swift founders", "trait", "speed", 0.06],
+	"swift_2": ["Swift founders II", "trait", "speed", 0.06],
+	"spines_1": ["Early spines", "trait", "armor", 0.08],
+	"spines_2": ["Early spines II", "trait", "armor", 0.08],
+	"venom_1": ["Early toxin", "trait", "toxin", 0.08],
+	"venom_2": ["Early toxin II", "trait", "toxin", 0.08],
+	"grazer_1": ["Grazer gut", "trait", "diet", -0.08],
+	"grazer_2": ["Grazer gut II", "trait", "diet", -0.08],
+	"hunter_1": ["Hunter gut", "trait", "diet", 0.08],
+	"hunter_2": ["Hunter gut II", "trait", "diet", 0.08],
+	"keen_1": ["Keen founders", "trait", "sense", 0.06],
+	"keen_2": ["Keen founders II", "trait", "sense", 0.06],
+	"nimble_1": ["Nimble founders", "trait", "agility", 0.06],
+	"nimble_2": ["Nimble founders II", "trait", "agility", 0.06],
+	"jaw_1": ["Firm mouth", "trait", "jaw", 0.08],
+	"jaw_2": ["Firm mouth II", "trait", "jaw", 0.08],
+	"lean_1": ["Lean metabolism", "efficiency", "", 0.15],
+	"lean_2": ["Lean metabolism II", "efficiency", "", 0.15],
+	"fat_store": ["Lipid droplets", "feature", "fat_store", 1],
+	"tail_bud": ["Second flagellum", "feature", "tail_bud", 1],
+	"trichocysts": ["Trichocysts", "feature", "trichocysts", 1],
+	"toxicysts": ["Toxicysts", "feature", "toxicysts", 1],
+	"toxicysts_2": ["Toxicysts II", "feature", "toxicysts", 2],
+	"chloroplasts": ["Chloroplasts", "feature", "chloroplasts", 1],
+	"sticky_coat": ["Mucus coat", "feature", "sticky_coat", 1],
+	"food_scent": ["Chemoreceptors", "feature", "food_scent", 1],
+	"eye_cluster": ["Eyespot cluster", "feature", "eye_cluster", 1],
+	"flash": ["Scintillons", "feature", "flash", 1],
+	"jet": ["Contractile jet", "feature", "jet", 1],
+	"gut_lining": ["Digestive vacuoles", "feature", "gut_lining", 1],
+	"gut_lining_2": ["Digestive vacuoles II", "feature", "gut_lining", 2],
+	"vent_symbionts": ["Vent symbionts", "feature", "vent_symbionts", 1],
+	"grabbing_cilia": ["Grabbing cilia", "feature", "grabbing_cilia", 1],
+	"form_amoeboid": ["Amoeboid form", "feature", "form_amoeboid", 1],
+	"form_rod": ["Rod form", "feature", "form_rod", 1],
+	"form_shelled": ["Shelled form", "feature", "form_shelled", 1],
+	"form_disc": ["Disc form", "feature", "form_disc", 1],
+	"form_spiral": ["Spiral form", "feature", "form_spiral", 1],
 }
 
 
-static func info(id: String) -> Dictionary:
-	return ALL.get(id, {})
+static func exists(id: String) -> bool:
+	return GENES.has(id)
 
 
-static func in_tree(tree: String) -> Array[String]:
+static func count() -> int:
+	return GENES.size()
+
+
+static func label(id: String) -> String:
+	return str(GENES[id][0]) if exists(id) else id
+
+
+## Tier 1 to 4, from the gene's place in its branch.
+static func tier(id: String) -> int:
+	for tree in BRANCHES:
+		for branch in BRANCHES[tree]:
+			var ids: Array = branch[1]
+			if id in ids:
+				return ids.find(id) + 1
+	return 1
+
+
+static func cost(id: String) -> int:
+	return int(COST[tier(id) - 1])
+
+
+static func slots(id: String) -> int:
+	return int(SLOTS[tier(id) - 1])
+
+
+## The gene below this one in its branch, or "" for tier 1.
+static func needs(id: String) -> String:
+	for tree in BRANCHES:
+		for branch in BRANCHES[tree]:
+			var ids: Array = branch[1]
+			var at := ids.find(id)
+			if at > 0:
+				return str(ids[at - 1])
+	return ""
+
+
+static func feature_of(id: String) -> String:
+	return str(GENES[id][2]) if exists(id) and str(GENES[id][1]) == "feature" else ""
+
+
+## Body forms exclude each other: a subspecies takes at most one.
+static func is_form(id: String) -> bool:
+	return feature_of(id).begins_with("form_")
+
+
+## Genes unlocked for free when a subspecies evolves this organelle to
+## this level during its run.
+static func for_feature(feature_id: String, level: int) -> Array[String]:
 	var list: Array[String] = []
-	for id in ALL:
-		if str(ALL[id]["tree"]) == tree:
+	for id in GENES:
+		var row: Array = GENES[id]
+		if str(row[1]) == "feature" and str(row[2]) == feature_id and int(row[3]) <= level:
 			list.append(id)
 	return list
-
-
-## Slots this gene takes in a subspecies: organelles take two.
-static func slots(id: String) -> int:
-	return 2 if info(id).has("feature") else 1
-
-
-## The gene that unlocks for free when a subspecies evolves this organelle
-## during its run, or "" if none.
-static func for_feature(feature_id: String) -> String:
-	for id in ALL:
-		if str(ALL[id].get("feature", "")) == feature_id:
-			return id
-	return ""
 
 
 ## Applies the chosen genes to a founder genome.
 static func apply(genome: Genome, ids: Array) -> void:
 	for raw in ids:
-		var row := info(str(raw))
-		if row.has("trait"):
-			var t: String = row["trait"]
-			genome.values[t] = clampf(float(genome.values[t]) + float(row["amount"]), 0.0, 1.0)
-		elif row.has("feature"):
-			var f: String = row["feature"]
-			genome.features[f] = maxi(genome.feature(f), 1)
-		elif row.has("efficiency"):
-			genome.efficiency = minf(genome.efficiency + float(row["efficiency"]), 1.0)
+		var id := str(raw)
+		if not exists(id):
+			continue
+		var row: Array = GENES[id]
+		var what: String = row[2]
+		match str(row[1]):
+			"trait":
+				genome.values[what] = clampf(float(genome.values[what]) + float(row[3]), 0.0, 1.0)
+			"feature":
+				genome.features[what] = maxi(genome.feature(what), int(row[3]))
+			"efficiency":
+				genome.efficiency = minf(genome.efficiency + float(row[3]), 1.0)

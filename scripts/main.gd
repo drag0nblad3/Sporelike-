@@ -122,6 +122,6 @@ func _check_genes() -> void:
 	var trees := GeneTreeScreen.new()
 	add_child(trees)
 	trees.open(bank)
-	print("smoke: gene trees open, %d genes" % GeneCatalog.ALL.size())
+	print("smoke: gene trees open, %d genes" % GeneCatalog.count())
 	trees.queue_free()
 	_creator.visible = false
