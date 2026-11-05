@@ -40,7 +40,7 @@ func step(player: Colony, delta: float) -> Array:
 		_think_timer = THINK_EVERY
 	var eaten := 0.0
 	var hit := ""
-	for rival in rivals.duplicate():
+	for rival: Colony in rivals.duplicate():
 		if thinking:
 			RivalBrain.think(rival, player, ecosystem, bed)
 		_feed(rival)
@@ -68,7 +68,7 @@ func _feed(rival: Colony) -> void:
 func _refill(player: Colony) -> void:
 	var c := player.center()
 	var center := Vector2(c.x, c.z)
-	for rival in rivals.duplicate():
+	for rival: Colony in rivals.duplicate():
 		var rc := rival.center()
 		if Vector2(rc.x, rc.z).distance_to(center) > DESPAWN:
 			_remove(rival)
