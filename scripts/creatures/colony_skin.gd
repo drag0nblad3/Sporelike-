@@ -21,12 +21,15 @@ func _init() -> void:
 	add_child(_shadow)
 
 
-func build(rest: PackedVector3Array, tint: Color) -> void:
+## `stone` swaps the see-through skin for a solid one (StoneShader) with
+## no shadow of its own, for rocks.
+func build(rest: PackedVector3Array, tint: Color, stone: ShaderMaterial = null) -> void:
 	outline.build(rest)
 	if mesh == null:
 		mesh = _web()
 		_shadow.mesh = mesh
-	_skin_mat = SkinShader.material(tint)
+	_skin_mat = stone if stone else SkinShader.material(tint)
+	_shadow.visible = stone == null
 	_shadow_mat = SkinShader.material(tint, true)
 	_shadow_mat.set_shader_parameter("base", 0.0)
 	# Bigger bodies stand a little taller.
@@ -36,8 +39,8 @@ func build(rest: PackedVector3Array, tint: Color) -> void:
 	var reach := 0.0
 	for p in rest:
 		reach = maxf(reach, Vector2(p.x, p.z).length())
-	var box := AABB(Vector3(-reach - 3.0, -2.0, -reach - 3.0),
-			Vector3(2.0 * reach + 6.0, 4.0, 2.0 * reach + 6.0))
+	var box := AABB(Vector3(-reach - 3.0, -3.0, -reach - 3.0),
+			Vector3(2.0 * reach + 6.0, 7.0, 2.0 * reach + 6.0))
 	custom_aabb = box
 	_shadow.custom_aabb = box
 

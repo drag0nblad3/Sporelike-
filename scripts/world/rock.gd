@@ -4,12 +4,13 @@ extends Node3D
 ## bump into and can shelter against. Its size and colour come from the
 ## sea it sits in: big reef rocks on the upwelling coast, small pebbles in
 ## the lagoon, and dark vent chimneys that give off warm, mineral-rich water.
+## It is drawn as one solid stone (ColonySkin with StoneShader).
 
 const STONE := 0.0
 
 var body := SoftBody.new()
 var chimney := false
-var _look: BeadStrip
+var _look: ColonySkin
 
 
 func build(at: Vector3, sea_id: String, rng: RandomNumberGenerator) -> void:
@@ -59,9 +60,12 @@ func _build_look(sea_id: String, rng: RandomNumberGenerator) -> void:
 			tint = Color(0.35, 0.38, 0.33)
 		"deep":
 			tint = Color(0.2, 0.22, 0.3)
-	_look = BeadStrip.make(body.size(), 0.62, 8, Color(0.6, 0.25, 0.05) if chimney else Color.BLACK)
-	for i in body.size():
-		_look.set_color(i, tint.lightened(rng.randf_range(-0.1, 0.15)))
-		var height := 1.6 if chimney and i == 0 else rng.randf_range(0.6, 0.9)
-		_look.place(i, body.pos[i], rng.randf_range(0.9, 1.15), height)
+	# One lumpy stone rising from the floor, shaped round its points.
+	var glow := Color(0.6, 0.25, 0.05) * 0.5 if chimney else Color.BLACK
+	var stone := StoneShader.material(tint.lightened(rng.randf_range(-0.05, 0.1)), glow)
+	_look = ColonySkin.new()
+	_look.build(body.rest, tint, stone)
+	stone.set_shader_parameter("base", -1.4)
+	stone.set_shader_parameter("height", 3.6 if chimney else 1.4 + rng.randf_range(0.2, 0.6))
 	add_child(_look)
+	_look.update(body, rng.randf() * 10.0)
