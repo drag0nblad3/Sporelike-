@@ -40,13 +40,44 @@ static func run(colony: Colony) -> void:
 				push_error("Feeding style or final body was lost on saving")
 	print("smoke: colony abilities fired, styles and final bodies saved")
 	_check_world(rng)
+	_check_depth(colony, rng)
+
+
+## A comb jelly reaches a colony in open water but not one on the floor.
+static func _check_depth(colony: Colony, rng: RandomNumberGenerator) -> void:
+	var jelly := CombJelly.new()
+	var c := colony.center()
+	jelly.position = Vector3(c.x + 4.0, Depth.height(Depth.SURFACE), c.z)
+	colony.height = 0.0
+	colony.body.height = 0.0
+	var floor_hit := ""
+	for _i in 30:
+		floor_hit += jelly.hunt(colony, rng, 0.1)
+	colony.height = Depth.height(Depth.OPEN)
+	colony.body.height = colony.height
+	for i in colony.body.pos.size():
+		colony.body.pos[i].y = colony.height
+	var open_hit := ""
+	for _i in 60:
+		open_hit = jelly.hunt(colony, rng, 0.1)
+		if open_hit != "":
+			break
+	print("smoke: comb jelly vs floor colony '%s', vs open-water colony '%s'" % [floor_hit, open_hit])
+	if floor_hit != "" or open_hit == "":
+		push_error("Comb jelly depth rules are wrong")
+	jelly.free()
+	colony.height = 0.0
+	colony.body.height = 0.0
 
 
 ## Every sea's plant grows buds, and a heap of remains can be eaten.
 static func _check_world(rng: RandomNumberGenerator) -> void:
+	var kinds: Array[PlantKind] = [PlantKind.raft("lagoon")]
 	for id in Sea.ids():
+		kinds.append(PlantKind.for_sea(id))
+	for kind in kinds:
 		var weed := Seaweed.new()
-		weed.kind = PlantKind.for_sea(id)
+		weed.kind = kind
 		weed.grow_at(Vector3.ZERO, rng)
 		if weed.buds.is_empty() or weed.take_bud(0) <= 0.0:
 			push_error("%s grew no food" % weed.kind.title)

@@ -10,7 +10,7 @@ const BLOCKED := "blocked"
 const STUNG := "stung"
 const BITTEN := "bitten"
 ## Seconds to regrow one cell, and the energy it costs.
-const REGROW_TIME := 5.0
+const REGROW_TIME := 3.5
 const REGROW_COST := 2.0
 ## Dies when this share of its full body has been bitten off.
 const FATAL_SHARE := 0.5

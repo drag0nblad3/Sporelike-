@@ -61,6 +61,10 @@ func step(player: Colony, delta: float) -> Array:
 func _feed(rival: Colony) -> void:
 	world.rocks.push_out(rival)
 	var gained := world.bed.touch(rival) * FeedingStyle.seaweed_factor(rival.plan.style)
+	if not ColonySwim.at_layer(rival, Depth.FLOOR):
+		if gained > 0.0:
+			rival.feed(gained)
+		return
 	var reach := FeedingStyle.mouth_reach(rival.plan.style)
 	for point in rival.eat_points():
 		gained += ecosystem.food.take_near(Vector2(point.x, point.z), reach) \

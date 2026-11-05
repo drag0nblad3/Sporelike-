@@ -39,6 +39,7 @@ func _ready() -> void:
 	pilot.starved.connect(func() -> void: died.emit("starved"))
 	pilot.eaten.connect(func() -> void: died.emit("eaten"))
 	pilot.rng.seed = rng.randi()
+	pilot.smoke_test = smoke_test
 	pilot.rivals.rng.seed = rng.randi()
 	add_child(pilot)
 	_choices.hud = hud

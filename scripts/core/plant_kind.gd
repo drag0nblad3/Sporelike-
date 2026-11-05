@@ -5,6 +5,9 @@ extends RefCounted
 ## stromatolite mounds in the lagoon, sulfur bacteria mats at the vents,
 ## kelp on the upwelling coast and sparse red algae in the deep.
 
+## Multiplies every kind's regrowth time (lower is a faster stage).
+const REGROW_PACE := 0.7
+
 var id := ""
 var title := ""
 var stalk := Color(0.25, 0.6, 0.3)
@@ -56,10 +59,25 @@ static func for_sea(sea_id: String) -> PlantKind:
 	return k
 
 
+## Floating algae rafts at the surface; thickest in the sunlit lagoon,
+## rare in the dark deep.
+static func raft(sea_id: String) -> PlantKind:
+	var k := PlantKind.new()
+	k.id = "raft"
+	_fill(k, "Floating algae raft", Color(0.6, 0.55, 0.2), Color(0.95, 0.75, 0.25), 6.0, 20.0)
+	k.stalk_cells = Vector2i(1, 2)
+	k.branches = Vector2i(4, 6)
+	k.cell_size = 0.5
+	k.sway = 0.3
+	var densities := {"lagoon": 1.6, "shelf": 1.0, "upwelling": 1.2, "vents": 0.5, "deep": 0.25}
+	k.density = float(densities.get(sea_id, 1.0))
+	return k
+
+
 static func _fill(k: PlantKind, label: String, stem: Color, tip: Color, energy: float,
 		wait: float) -> void:
 	k.title = label
 	k.stalk = stem
 	k.bud = tip
 	k.bud_energy = energy
-	k.regrow = wait
+	k.regrow = wait * REGROW_PACE

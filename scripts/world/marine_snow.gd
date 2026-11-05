@@ -4,7 +4,7 @@ extends Node3D
 ## water around the colony. Thickest in the twilight deep and the
 ## upwelling coast, thin in the clear lagoon. Mouths take flakes they touch;
 ## a filter feeder's wide reach sweeps up the most. Flakes left behind or
-## eaten drift in again somewhere nearby.
+## eaten drift in again somewhere nearby. It hangs in open water (Depth).
 
 const SLOTS := 48
 const FLAKE_ENERGY := 0.8
@@ -77,5 +77,5 @@ func _respawn(i: int, low: float, high: float) -> void:
 	var at := Vector2(_center.x, _center.z) + spot
 	var share := float(DENSITY.get(SeaMap.at(at).id, 0.4))
 	_live[i] = 1 if rng.randf() < share else 0
-	_pos[i] = Vector3(at.x, 0.6, at.y)
+	_pos[i] = Vector3(at.x, Depth.height(Depth.OPEN), at.y)
 	_drift[i] = Vector3(rng.randf_range(-0.3, 0.3), 0.0, rng.randf_range(-0.3, 0.3))

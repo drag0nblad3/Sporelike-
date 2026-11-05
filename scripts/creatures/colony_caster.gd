@@ -26,7 +26,7 @@ static func fire(colony: Colony, id: String, eco: Ecosystem, others: Array) -> b
 	return true
 
 
-## Stuns every hunter and other colony within reach of the body's edge.
+## Stuns every hunter, comb jelly and other colony within reach of the body's edge.
 static func _sting(colony: Colony, eco: Ecosystem, others: Array) -> void:
 	var c := colony.center()
 	var center := Vector2(c.x, c.z)
@@ -36,6 +36,13 @@ static func _sting(colony: Colony, eco: Ecosystem, others: Array) -> void:
 			if is_instance_valid(hunter) and hunter.alive \
 					and hunter.flat_pos().distance_to(center) <= reach + hunter.radius():
 				hunter.stun_time = maxf(hunter.stun_time, ColonyAbility.STING_STUN)
+	var jellies: Array = []
+	if colony.is_inside_tree():
+		jellies = colony.get_tree().get_nodes_in_group("comb_jelly")
+	for node in jellies:
+		var jelly := node as CombJelly
+		if jelly and jelly.position.distance_to(c) <= reach + CombJelly.RADIUS:
+			jelly.stun_time = maxf(jelly.stun_time, ColonyAbility.STING_STUN)
 	for item in others:
 		var other := item as Colony
 		if other == null or other == colony or not is_instance_valid(other):

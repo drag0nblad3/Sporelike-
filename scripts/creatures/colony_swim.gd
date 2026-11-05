@@ -5,7 +5,7 @@ extends RefCounted
 ## FinalBody and any Surge, and it turns at a rate its symmetry allows.
 
 ## Swimming push per unit of cell push, shared over the whole body.
-const SWIM_FORCE := 12.0
+const SWIM_FORCE := 17.0
 ## How much each kind of cell helps swimming.
 const PUSH := {"skin": 1.0, "flagellum": 3.0}
 const OTHER_PUSH := 0.3
@@ -23,7 +23,7 @@ static func push(colony: Colony) -> float:
 	var plan := colony.plan
 	var surge := ColonyAbility.surge_push(plan) if colony.surge_time > 0.0 else 1.0
 	return SWIM_FORCE * cell_average(plan) * FeedingStyle.swim_factor(plan.style) \
-		* FinalBody.swim_factor(plan.final_body) * surge
+		* FinalBody.swim_factor(plan.final_body) * Depth.swim_factor(colony.layer) * surge
 
 
 ## Most of the push is shared by the whole body; the rest comes from the
@@ -45,11 +45,22 @@ static func stroke(colony: Colony, dir: Vector3, time: float) -> void:
 		colony.body.push(i, a)
 
 
+## Moves the colony's height toward its chosen Depth.
+static func rise(colony: Colony, delta: float) -> void:
+	colony.height = move_toward(colony.height, Depth.height(colony.layer), Depth.SPEED * delta)
+	colony.body.height = colony.height
+
+
+## Whether the colony is settled at `layer` (not passing through it).
+static func at_layer(colony: Colony, layer: int) -> bool:
+	return Depth.level(colony.height, Depth.height(layer))
+
+
 ## Radians per second; bigger bodies turn slower, radial ones never need to.
 static func turn_rate(plan: BodyPlan) -> float:
 	if plan.symmetry == Symmetry.RADIAL:
 		return 0.0
-	var rate := 2.6 if plan.symmetry == Symmetry.BILATERAL else 1.8
+	var rate := 3.6 if plan.symmetry == Symmetry.BILATERAL else 2.5
 	return rate * sqrt(16.0 / maxf(plan.parts.size(), 16.0))
 
 

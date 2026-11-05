@@ -21,7 +21,8 @@ static func can_bite(eater: Colony, target: Colony) -> bool:
 ## Tries one bite of `eater` on `target`. Returns [outcome, energy eaten];
 ## the outcome is "" when no mouth touched.
 static func attempt(eater: Colony, target: Colony, rng: RandomNumberGenerator) -> Array:
-	if not eater.abilities.ready("bite") or eater.stun_time > 0.0 or not can_bite(eater, target):
+	if not eater.abilities.ready("bite") or eater.stun_time > 0.0 or not can_bite(eater, target) \
+			or not Depth.level(eater.height, target.height):
 		return ["", 0.0]
 	for point in eater.eat_points():
 		var at := Vector2(point.x, point.z)

@@ -5,7 +5,8 @@ extends Node3D
 ## nearby. Pushes plants and colony apart where they touch and lets the
 ## colony's mouths and tentacles graze ripe buds. Each plant is the
 ## PlantKind of the sea region it grows in, so plants change as the colony
-## travels; sparse kinds grow farther apart.
+## travels; sparse kinds grow farther apart. With `raft` set it holds the
+## floating algae rafts of the surface instead.
 
 const COUNT := 16
 const NEAR := 6.0
@@ -20,6 +21,7 @@ const CONTACT_GAP := 1.0
 var plants: Array[Seaweed] = []
 ## False keeps the plants where they first grew (the colony lab).
 var follows := true
+var raft := false
 var rng := RandomNumberGenerator.new()
 
 
@@ -36,7 +38,8 @@ func follow(center: Vector3) -> void:
 	if not follows:
 		return
 	for k in plants.size():
-		if plants[k].body.anchor.distance_to(center) > DROP:
+		var root := plants[k].body.anchor
+		if Vector2(root.x - center.x, root.z - center.z).length() > DROP:
 			plants[k].queue_free()
 			plants[k] = _plant(center, FAR * 0.6, FAR)
 
@@ -72,10 +75,12 @@ func nearest_food(from: Vector3, reach: float) -> Vector3:
 
 func _plant(center: Vector3, low: float, high: float) -> Seaweed:
 	var spot := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
-	var kind := PlantKind.for_sea(SeaMap.at(Vector2(center.x, center.z) + spot).id)
+	var sea_id := SeaMap.at(Vector2(center.x, center.z) + spot).id
+	var kind := PlantKind.raft(sea_id) if raft else PlantKind.for_sea(sea_id)
 	var at := (spot / sqrt(kind.density)).limit_length(DROP * 0.9)
 	var weed := Seaweed.new()
 	weed.kind = kind
-	weed.grow_at(center + Vector3(at.x, 0.0, at.y), rng)
+	var y := Depth.height(Depth.SURFACE) if raft else 0.0
+	weed.grow_at(Vector3(center.x + at.x, y, center.z + at.y), rng)
 	add_child(weed)
 	return weed

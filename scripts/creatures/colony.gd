@@ -25,6 +25,9 @@ var abilities := AbilityTimers.new()
 var surge_time := 0.0
 var curl_time := 0.0
 var stun_time := 0.0
+## The Depth it is swimming toward, and its height above the floor now.
+var layer := Depth.FLOOR
+var height := 0.0
 ## Where the gut cavity and mouth openings sit in the resting shape.
 var hollow_rest := PackedVector3Array()
 var _look := ColonyLook.new()
@@ -52,6 +55,7 @@ func build(new_plan: BodyPlan, at: Vector3) -> void:
 	body.shape_stiffness = 0.1
 	body.spring_stiffness = 0.35
 	body.passes = 2
+	body.height = height
 	for part in plan.parts:
 		var local := part.local_position() - centroid
 		body.add_point(at + local.rotated(Vector3.UP, facing), local)
@@ -163,6 +167,7 @@ func _physics_process(delta: float) -> void:
 	if dir.length() > 0.1:
 		facing = ColonySwim.turn(self, dir, delta)
 	body.heading = facing
+	ColonySwim.rise(self, delta)
 	_time += delta
 	ColonySwim.stroke(self, dir, _time)
 	body.step(delta)
