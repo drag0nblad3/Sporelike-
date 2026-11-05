@@ -48,9 +48,9 @@ func _process(_delta: float) -> void:
 	var count := 0
 	# The prey list is cached per physics frame, so it can still hold cells
 	# freed since; check each one before treating it as an Organism.
-	for item in _ecosystem.prey_list():
+	for item: Variant in _ecosystem.prey_list():
 		count = _place(count, item)
-	for item in _ecosystem.predators:
+	for item: Variant in _ecosystem.predators:
 		count = _place(count, item)
 	multimesh.visible_instance_count = count
 
