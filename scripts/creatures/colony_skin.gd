@@ -18,13 +18,18 @@ var _shadow_mat: ShaderMaterial
 var _shadow := MeshInstance3D.new()
 
 
+func _init() -> void:
+	# A child from the start, so it is freed with the skin even if the skin
+	# is thrown away before it is ever built.
+	add_child(_shadow)
+
+
 func build(rest: PackedVector3Array, tint: Color) -> void:
 	outline.build(rest)
 	if mesh == null:
 		mesh = _web()
 		_shadow.mesh = mesh
 		_shadow.position = SHADOW_AT
-		add_child(_shadow)
 	_skin_mat = SkinShader.material(tint)
 	_shadow_mat = SkinShader.material(tint, true)
 	_shadow_mat.set_shader_parameter("base", 0.0)
