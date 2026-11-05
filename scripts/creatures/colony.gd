@@ -1,20 +1,14 @@
 class_name Colony
 extends Node3D
 ## A multicellular body: a BodyPlan brought to life as a SoftBody. It swims
-## where move_input points (turning at a rate its symmetry allows), feeds
+## where move_input points (ColonySwim), feeds
 ## through its mouth cells and tentacles, digests better with more gut
-## cells, and is drawn by ColonyLook with limbs from ColonyLimbs. The node
-## itself stays put; its cells move in world space.
+## cells (CellEffects), loses cells to bites and regrows them (ColonyWounds),
+## and is drawn by ColonyLook with limbs from ColonyLimbs. The node itself
+## stays put; its cells move in world space.
 
 ## Energy each cell burns per second.
 const UPKEEP_PER_CELL := 0.04
-const MAX_ENERGY_PER_CELL := 2.0
-## Swimming push per unit of cell push, shared over the whole body.
-const SWIM_FORCE := 12.0
-## How much each kind of cell helps swimming: cilia on skin, whips on
-## flagellated cells, a little from everything else.
-const PUSH := {"skin": 1.0, "flagellum": 3.0}
-const OTHER_PUSH := 0.3
 
 var plan: BodyPlan
 var body := SoftBody.new()
@@ -25,6 +19,12 @@ var energy := 20.0
 ## Membrane colour (the species' colour) and nucleus colour (its diet).
 var tint := Color(0.55, 0.9, 0.8, 0.6)
 var nucleus := Color(0.3, 0.85, 0.35)
+var wounds := ColonyWounds.new()
+var abilities := AbilityTimers.new()
+## Seconds left of a Surge, of being curled up, and of being stunned.
+var surge_time := 0.0
+var curl_time := 0.0
+var stun_time := 0.0
 ## Where the gut cavity and mouth openings sit in the resting shape.
 var hollow_rest := PackedVector3Array()
 var _look := ColonyLook.new()
@@ -81,14 +81,53 @@ func reach() -> float:
 	return body.reach() + 0.6
 
 
+## Energy the body burns per second.
+func upkeep() -> float:
+	return UPKEEP_PER_CELL * plan.parts.size() * FinalBody.upkeep_factor(plan.final_body)
+
+
 func max_energy() -> float:
-	return MAX_ENERGY_PER_CELL * plan.parts.size()
+	return CellEffects.max_energy(plan)
 
 
 ## Share of a meal's energy the gut keeps: more digestive cells, more kept,
 ## up to all of it.
 func digest_share() -> float:
-	return minf(0.55 + 0.06 * plan.count("gut"), 1.0)
+	return CellEffects.digest_share(plan)
+
+
+func cell_flat(index: int) -> Vector2:
+	return Vector2(body.pos[index].x, body.pos[index].z)
+
+
+## The cell closest to `at` on the flat sea.
+func nearest_cell(at: Vector2) -> int:
+	var best := 0
+	var best_d := INF
+	for i in body.pos.size():
+		var d := at.distance_squared_to(cell_flat(i))
+		if d < best_d:
+			best_d = d
+			best = i
+	return best
+
+
+## Removes a bitten-off cell and reshapes the body; returns the lost cell.
+func lose_cell(index: int) -> BodyPart:
+	var part := plan.parts[index]
+	plan.parts.remove_at(index)
+	build(plan, body.center())
+	energy = minf(energy, max_energy())
+	return part
+
+
+## Grows a lost cell back in its old spot. False when the spot is taken.
+func regain(part: BodyPart) -> bool:
+	if plan.is_taken(part.offset):
+		return false
+	plan.parts.append(part)
+	build(plan, body.center())
+	return true
 
 
 func feed(amount: float) -> void:
@@ -105,30 +144,29 @@ func eat_points() -> PackedVector3Array:
 
 
 func swim_push() -> float:
-	var sum := 0.0
-	for part in plan.parts:
-		sum += float(PUSH.get(part.role, OTHER_PUSH))
-	return SWIM_FORCE * sum / float(maxi(plan.parts.size(), 1))
-
-
-## Radians per second; bigger bodies turn slower, radial ones never need to.
-func turn_rate() -> float:
-	if plan.symmetry == Symmetry.RADIAL:
-		return 0.0
-	var rate := 2.6 if plan.symmetry == Symmetry.BILATERAL else 1.8
-	return rate * sqrt(16.0 / maxf(plan.parts.size(), 16.0))
+	return ColonySwim.push(self)
 
 
 func _physics_process(delta: float) -> void:
 	if plan == null:
 		return
+	surge_time = maxf(surge_time - delta, 0.0)
+	curl_time = maxf(curl_time - delta, 0.0)
+	stun_time = maxf(stun_time - delta, 0.0)
+	abilities.tick(delta)
+	wounds.tick(self, delta)
 	var dir := Vector3(move_input.x, 0.0, move_input.y).limit_length(1.0)
+	if curl_time > 0.0 or stun_time > 0.0:
+		dir = Vector3.ZERO
+	elif surge_time > 0.0 and dir.length() < 0.1:
+		dir = Vector3(sin(facing), 0.0, cos(facing))
 	if dir.length() > 0.1:
-		_turn_toward(dir, delta)
+		facing = ColonySwim.turn(self, dir, delta)
 	body.heading = facing
-	_swim(dir, delta)
+	_time += delta
+	ColonySwim.stroke(self, dir, _time)
 	body.step(delta)
-	energy = maxf(energy - UPKEEP_PER_CELL * plan.parts.size() * delta, 0.0)
+	energy = maxf(energy - upkeep() * delta, 0.0)
 
 
 func _process(delta: float) -> void:
@@ -136,30 +174,3 @@ func _process(delta: float) -> void:
 		return
 	_look.update(body, hollow_rest, delta)
 	limbs.update(delta)
-
-
-## Most of the push is shared by the whole body; the rest comes from the
-## cells that do the swimming, so a flagellum tail drives and flexes the
-## body, and its whips shove it side to side as they beat.
-func _swim(dir: Vector3, delta: float) -> void:
-	_time += delta
-	var push := swim_push()
-	if dir == Vector3.ZERO or push <= 0.0:
-		return
-	var average := push / SWIM_FORCE
-	var side := dir.cross(Vector3.UP)
-	for i in plan.parts.size():
-		var role := plan.parts[i].role
-		var share := float(PUSH.get(role, OTHER_PUSH)) / average
-		var a := dir * push * (0.6 + 0.4 * share)
-		if role == "flagellum":
-			a += side * sin(_time * 9.0 + i) * push * 0.5
-		body.push(i, a)
-
-
-func _turn_toward(dir: Vector3, delta: float) -> void:
-	var target := atan2(dir.x, dir.z)
-	# A biradial body has two fronts, so it turns whichever end is closer.
-	if plan.symmetry == Symmetry.BIRADIAL and absf(angle_difference(facing, target)) > PI / 2.0:
-		target += PI
-	facing = rotate_toward(facing, target, turn_rate() * delta)

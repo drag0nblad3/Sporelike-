@@ -19,6 +19,10 @@ var symmetry := Symmetry.BILATERAL
 var parts: Array[BodyPart] = []
 ## Grid spots kept open: the gut cavity and the mouth opening.
 var hollow: Array[Vector2] = []
+## The FeedingStyle picked during the stage ("" until then).
+var style := ""
+## The FinalBody picked at the end of the stage ("" until then).
+var final_body := ""
 
 
 ## Rounds a grid position so the same spot always compares equal.
@@ -46,9 +50,15 @@ static func from_dict(data: Dictionary) -> BodyPlan:
 	for item in holes:
 		var pair: Array = item
 		plan.hollow.append(snap(Vector2(float(pair[0]), float(pair[1]))))
+	plan.style = str(data.get("style", ""))
+	plan.final_body = str(data.get("final_body", ""))
 	if plan.parts.is_empty():
 		return starter(kind)
 	return plan
+
+
+func copy() -> BodyPlan:
+	return from_dict(to_dict())
 
 
 func to_dict() -> Dictionary:
@@ -58,7 +68,8 @@ func to_dict() -> Dictionary:
 	var holes: Array = []
 	for spot in hollow:
 		holes.append([spot.x, spot.y])
-	return {"symmetry": symmetry, "parts": list, "hollow": holes}
+	return {"symmetry": symmetry, "parts": list, "hollow": holes, "style": style,
+		"final_body": final_body}
 
 
 func count(role: String) -> int:

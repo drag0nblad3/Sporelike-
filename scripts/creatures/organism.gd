@@ -29,6 +29,9 @@ var abilities := AbilityTimers.new()
 var stun_time := 0.0
 ## Seconds hunters cannot find this cell (Scintillons flash).
 var hidden_time := 0.0
+## Set each frame by ColonyThreat: a colony cell to swim at instead of
+## thinking. Cleared once used.
+var lure := Vector2.INF
 ## Energy per second this cell is making from light or vents, rechecked by
 ## EnergySources every ambient_timer seconds.
 var ambient_rate := 0.0
@@ -109,6 +112,9 @@ func _physics_process(delta: float) -> void:
 	if stun_time > 0.0:
 		stun_time -= delta
 		move_input = Vector2.ZERO
+	elif lure != Vector2.INF:
+		move_input = (lure - flat_pos()).normalized()
+		lure = Vector2.INF
 	else:
 		think(delta)
 	_move(delta)

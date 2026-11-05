@@ -180,6 +180,9 @@ func _add_stage_two() -> void:
 	stage_two.smoke_test = smoke_test
 	stage_two.died.connect(_on_player_died)
 	stage_two.ready_to_play.connect(_on_stage_two_ready)
+	stage_two.stage_finished.connect(func() -> void:
+		run_end.screen.final_body = FinalBody.title(stage_two.plan.final_body)
+		run_end.conclude(true, cycle.number, progress.points, director.genome))
 	stage_two.pilot.ate.connect(cycle.record_food)
 	add_child(stage_two)
 
@@ -206,7 +209,11 @@ func _add_run_end() -> void:
 	run_end.screen = RunSummary.new()
 	run_end.screen.visible = false
 	hud.add_child(run_end.screen)
-	run_end.keep_playing.connect(func() -> void: stage_two.offer_switch(_switch_at))
+	run_end.keep_playing.connect(func() -> void:
+		if stage_two.active:
+			stage_two.play_on()
+		else:
+			stage_two.offer_switch(_switch_at))
 	run_end.finished.connect(func() -> void:
 		get_tree().paused = false
 		quit_to_title.emit())

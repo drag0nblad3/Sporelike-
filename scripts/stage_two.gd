@@ -2,12 +2,14 @@ class_name StageTwo
 extends Node
 ## The multicellular stage inside Game. It runs the switch from a single
 ## cell, a symmetry choice once stage 1's goal is reached. It owns the
-## player's colony (through ColonyPilot), the cell picks between
-## generations, and the colony's part of the save.
+## player's colony (through ColonyPilot), the choices between generations
+## (ColonyChoices), and the colony's part of the save.
 
 ## A generation can begin: the switch or this round's pick is done.
 signal ready_to_play
 signal died(cause: String)
+## The colony picked its final body: the multicellular stage is complete.
+signal stage_finished
 
 ## Share of a full belly a colony starts each generation with.
 const START_ENERGY := 0.6
@@ -21,9 +23,11 @@ var smoke_test := false
 var active := false
 var plan: BodyPlan
 var pilot := ColonyPilot.new()
+## Multicellular generations ended so far.
+var generations := 0
 
 var _picker: SymmetryPicker
-var _picks: CellPickScreen
+var _choices := ColonyChoices.new()
 
 
 func _ready() -> void:
@@ -33,10 +37,16 @@ func _ready() -> void:
 	pilot.hud = hud
 	pilot.process_mode = Node.PROCESS_MODE_PAUSABLE
 	pilot.starved.connect(func() -> void: died.emit("starved"))
+	pilot.eaten.connect(func() -> void: died.emit("eaten"))
+	pilot.rng.seed = rng.randi()
+	pilot.rivals.rng.seed = rng.randi()
 	add_child(pilot)
-	_picks = CellPickScreen.new()
-	_picks.chosen.connect(_on_cell_chosen)
-	hud.add_child(_picks)
+	_choices.hud = hud
+	_choices.rng = rng
+	_choices.smoke_test = smoke_test
+	_choices.done.connect(_on_choices_done)
+	_choices.stage_finished.connect(func() -> void: stage_finished.emit())
+	add_child(_choices)
 
 
 ## Stage 1 is done: ask which symmetry the colony evolves.
@@ -73,6 +83,7 @@ func resume(data: Dictionary, at: Vector2) -> void:
 	active = true
 	var saved: Dictionary = data.get("colony", {})
 	plan = BodyPlan.from_dict(saved)
+	generations = int(data.get("colony_generations", 0))
 	pilot.tint = director.genome.color()
 	pilot.nucleus = VisualParts.diet_color(director.genome)
 	director.retire()
@@ -86,39 +97,31 @@ func save_data() -> Dictionary:
 	if not active:
 		return {}
 	var energy := pilot.colony.energy if pilot.is_alive() else 0.0
-	return {"stage": 2, "colony": plan.to_dict(), "colony_energy": energy}
+	return {"stage": 2, "colony": plan.to_dict(), "colony_energy": energy,
+		"colony_generations": generations}
 
 
 ## What the colony burns per second, for the generation's Fed score.
 func upkeep() -> float:
-	return Colony.UPKEEP_PER_CELL * plan.parts.size()
+	return Colony.UPKEEP_PER_CELL * plan.parts.size() * FinalBody.upkeep_factor(plan.final_body)
 
 
 func center() -> Vector2:
 	return pilot.flat_center()
 
 
-## Between generations: offer three kinds of cell to grow.
+## Between generations: a new cell, and now and then a bigger choice.
 func end_generation(stats: GenerationStats) -> void:
-	var roles: Array[String] = []
-	for role in LabHud.GROWABLE:
-		roles.append(role)
-	for i in range(roles.size() - 1, 0, -1):
-		var j := rng.randi_range(0, i)
-		var swap := roles[i]
-		roles[i] = roles[j]
-		roles[j] = swap
-	roles.resize(3)
-	if smoke_test:
-		_on_cell_chosen.call_deferred(roles[0])
-		return
-	_picks.open(stats, plan, roles)
+	generations += 1
+	_choices.open(stats, plan, generations)
 
 
-func _on_cell_chosen(role: String) -> void:
-	_picks.visible = false
-	if role != "":
-		plan.grow(role)
+## After the stage is complete and its summary shown: play on.
+func play_on() -> void:
+	_on_choices_done()
+
+
+func _on_choices_done() -> void:
 	_spawn(center())
 	ready_to_play.emit()
 
@@ -126,5 +129,4 @@ func _on_cell_chosen(role: String) -> void:
 func _spawn(at: Vector2) -> void:
 	pilot.tint = director.genome.color()
 	pilot.nucleus = VisualParts.diet_color(director.genome)
-	var full := Colony.MAX_ENERGY_PER_CELL * plan.parts.size()
-	pilot.spawn(plan, at, full * START_ENERGY)
+	pilot.spawn(plan, at, CellEffects.max_energy(plan) * START_ENERGY)

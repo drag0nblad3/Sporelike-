@@ -78,6 +78,10 @@ func show_abilities(g: Genome, timers: AbilityTimers) -> void:
 	_abilities.show_for(g, timers)
 
 
+func show_colony_abilities(plan: BodyPlan, timers: AbilityTimers) -> void:
+	_abilities.show_colony(plan, timers)
+
+
 func hide_abilities() -> void:
 	_abilities.hide_all()
 

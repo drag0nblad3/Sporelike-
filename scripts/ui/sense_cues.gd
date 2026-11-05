@@ -39,23 +39,29 @@ func clear() -> void:
 
 ## Called every frame by PlayerDirector while the player is alive.
 func track(player: Organism, eco: Ecosystem, camera: Camera3D, delta: float) -> void:
+	track_reach(SenseReach.beyond_screen(player.genome), player.genome.feature("food_scent") > 0,
+		eco, camera, delta)
+
+
+## The same for any body (a colony): reach is how far past the screen edge
+## it feels, tastes whether it finds hidden food fields.
+func track_reach(reach: float, tastes: bool, eco: Ecosystem, camera: Camera3D,
+		delta: float) -> void:
 	_camera = camera
 	_timer -= delta
 	if _timer <= 0.0:
 		_timer = RECHECK
-		_scan(player, eco)
+		_scan(reach, tastes, eco)
 	queue_redraw()
 
 
-func _scan(player: Organism, eco: Ecosystem) -> void:
+func _scan(reach: float, tastes: bool, eco: Ecosystem) -> void:
 	_glows.clear()
 	_marks.clear()
-	var reach := SenseReach.beyond_screen(player.genome)
 	if reach <= 0.0:
 		return
 	_keen = clampf(reach / KEEN_REACH, 0.0, 1.0)
 	_view.update(_camera)
-	var tastes := player.genome.feature("food_scent") > 0
 	var found: Array = []
 	for patch in eco.food.patches:
 		if patch.count < FoodScent.MIN_PIECES or (patch.hidden and not tastes):
