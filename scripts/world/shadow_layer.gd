@@ -2,37 +2,17 @@ class_name ShadowLayer
 extends MultiMeshInstance3D
 ## Soft shadows on the sea floor under every swimming cell and hunter, so
 ## they read as floating above it. All shadows are one MultiMesh (one draw
-## call), placed each frame from the ecosystem's lists.
+## call) of FloorShadow's disc, placed each frame from the ecosystem's lists.
 
 const MAX_SHADOWS := 256
-## The sea floor is at y = -1.4; shadows lie just above it, pushed away
-## from the sun (see ColonySkin).
-const FLOOR := -1.35
-const SUN_SHIFT := Vector2(-0.4, -0.7)
-
-const CODE := """shader_type spatial;
-render_mode blend_mix, depth_draw_never, unshaded, cull_disabled;
-
-void fragment() {
-	float d = length(UV - vec2(0.5)) * 2.0;
-	ALBEDO = vec3(0.0);
-	ALPHA = 0.35 * (1.0 - smoothstep(0.35, 1.0, d));
-}
-"""
 
 var _ecosystem: Ecosystem
 
 
 func _init(ecosystem: Ecosystem) -> void:
 	_ecosystem = ecosystem
-	var disc := PlaneMesh.new()
-	disc.size = Vector2(2.0, 2.0)
-	var shader := Shader.new()
-	shader.code = CODE
-	var mat := ShaderMaterial.new()
-	mat.shader = shader
-	mat.render_priority = -1
-	disc.material = mat
+	var disc := FloorShadow.disc()
+	disc.material = FloorShadow.material()
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.mesh = disc
@@ -63,6 +43,8 @@ func _place(count: int, item: Variant) -> int:
 		return count
 	var size := org.radius() * 1.15
 	var p := org.global_position
-	var at := Vector3(p.x + SUN_SHIFT.x, FLOOR, p.z + SUN_SHIFT.y)
+	var lift := maxf(p.y - FloorShadow.FLOOR, 0.0)
+	var shift := FloorShadow.SUN_SHIFT * lift
+	var at := Vector3(p.x + shift.x, FloorShadow.FLOOR, p.z + shift.y)
 	multimesh.set_instance_transform(count, Transform3D(Basis.from_scale(Vector3.ONE * size), at))
 	return count + 1

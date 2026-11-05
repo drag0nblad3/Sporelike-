@@ -8,9 +8,6 @@ extends MeshInstance3D
 ## How far the web's rings sit from the centre (0) to the outline (1);
 ## closer together near the edge, where the dome curves most.
 const RINGS := [0.0, 0.35, 0.6, 0.78, 0.9, 0.97, 1.0]
-## The sea floor is at y = -1.4; the shadow lies just above it, pushed
-## away from the sun.
-const SHADOW_AT := Vector3(-0.4, -1.35, -0.7)
 
 var outline := ColonyOutline.new()
 var _skin_mat: ShaderMaterial
@@ -29,7 +26,6 @@ func build(rest: PackedVector3Array, tint: Color) -> void:
 	if mesh == null:
 		mesh = _web()
 		_shadow.mesh = mesh
-		_shadow.position = SHADOW_AT
 	_skin_mat = SkinShader.material(tint)
 	_shadow_mat = SkinShader.material(tint, true)
 	_shadow_mat.set_shader_parameter("base", 0.0)
@@ -50,8 +46,13 @@ func update(body: SoftBody, time: float) -> void:
 	if _skin_mat == null:
 		return
 	outline.update(body, time)
+	# The skin rides at the body's depth; its shadow stays on the floor,
+	# further from the sun and fainter the higher the body swims.
 	position = body.center()
-	position.y = 0.0
+	var lift := maxf(position.y - FloorShadow.FLOOR, 0.0)
+	var shift := FloorShadow.SUN_SHIFT * lift
+	_shadow.position = Vector3(shift.x, FloorShadow.FLOOR - position.y, shift.y)
+	_shadow_mat.set_shader_parameter("shade", 0.4 / (1.0 + 0.12 * lift))
 	_skin_mat.set_shader_parameter("ring", outline.ring)
 	_shadow_mat.set_shader_parameter("ring", outline.ring)
 

@@ -135,6 +135,10 @@ func _shoot_stage_two() -> void:
 	game.stage_two.pilot.autopilot = Vector2(0.6, -1.0)
 	await get_tree().create_timer(3.0).timeout
 	await _shoot("stage2")
+	# Up to the surface, among algae rafts and comb jellies.
+	game.stage_two.pilot.colony.layer = Depth.SURFACE
+	await get_tree().create_timer(2.5).timeout
+	await _shoot("stage2_surface")
 	game.cycle.finish("time")
 	await _shoot("cell_picks")
 

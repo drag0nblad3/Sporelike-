@@ -24,6 +24,7 @@ var _wander := Vector2.ZERO
 var _wander_timer := 0.0
 var _time := 0.0
 var _combs: BeadStrip
+var _shadow := FloorShadow.new(RADIUS * 1.1)
 
 
 func _ready() -> void:
@@ -33,13 +34,10 @@ func _ready() -> void:
 	ball.radius = RADIUS
 	ball.height = RADIUS * 1.6
 	bell.mesh = ball
-	var mat := StandardMaterial3D.new()
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.75, 0.85, 1.0, 0.25)
-	mat.emission_enabled = true
-	mat.emission = Color(0.15, 0.2, 0.35)
-	bell.material_override = mat
+	# A clear jelly bell, lit and rimmed like every other skin (CellSkin).
+	bell.material_override = CellSkin.material(Color(0.75, 0.85, 1.0, 0.2), 0.35)
 	add_child(bell)
+	add_child(_shadow)
 	_combs = BeadStrip.make(COMBS, 0.18, 6, Color(0.4, 0.8, 1.0))
 	add_child(_combs)
 
@@ -96,6 +94,7 @@ func _rise(delta: float) -> void:
 func _process(_delta: float) -> void:
 	if _combs == null:
 		return
+	_shadow.follow(global_position)
 	for k in COMBS:
 		var a := TAU * k / COMBS
 		var shimmer := 0.6 + 0.4 * sin(_time * 8.0 + k)

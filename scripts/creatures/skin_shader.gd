@@ -17,6 +17,7 @@ uniform float base = -0.25;
 uniform vec4 skin : source_color = vec4(0.5, 0.9, 0.8, 1.0);
 uniform vec4 glow : source_color = vec4(0.3, 0.6, 0.55, 1.0);
 uniform bool shadow = false;
+uniform float shade = 0.4;
 varying float edge_t;
 varying float sunlit;
 
@@ -39,7 +40,7 @@ void vertex() {
 void fragment() {
 	if (shadow) {
 		ALBEDO = vec3(0.0);
-		ALPHA = 0.4 * (1.0 - smoothstep(0.6, 1.0, edge_t));
+		ALPHA = shade * (1.0 - smoothstep(0.6, 1.0, edge_t));
 	} else {
 		float rim = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
 		float edge = smoothstep(0.82, 1.0, edge_t);
