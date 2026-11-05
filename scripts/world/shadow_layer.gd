@@ -46,16 +46,20 @@ func _init(ecosystem: Ecosystem) -> void:
 
 func _process(_delta: float) -> void:
 	var count := 0
-	for org in _ecosystem.prey_list():
-		count = _place(count, org)
-	for hunter in _ecosystem.predators:
-		if is_instance_valid(hunter) and hunter.alive:
-			count = _place(count, hunter)
+	# The prey list is cached per physics frame, so it can still hold cells
+	# freed since; check each one before treating it as an Organism.
+	for item in _ecosystem.prey_list():
+		count = _place(count, item)
+	for item in _ecosystem.predators:
+		count = _place(count, item)
 	multimesh.visible_instance_count = count
 
 
-func _place(count: int, org: Organism) -> int:
-	if count >= MAX_SHADOWS or not org.visible:
+func _place(count: int, item: Variant) -> int:
+	if count >= MAX_SHADOWS or not is_instance_valid(item):
+		return count
+	var org := item as Organism
+	if org == null or not org.alive or not org.visible or not org.is_inside_tree():
 		return count
 	var size := org.radius() * 1.15
 	var p := org.global_position
