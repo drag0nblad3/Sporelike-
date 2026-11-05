@@ -45,6 +45,7 @@ func _ready() -> void:
 	food = FoodField.new()
 	food.setup(rng)
 	add_child(food)
+	add_child(ShadowLayer.new(self))
 	for entry in saved_members:
 		var saved_genome: Genome = entry[0]
 		var saved_at: Vector2 = entry[1]

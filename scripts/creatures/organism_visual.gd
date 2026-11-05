@@ -39,6 +39,8 @@ func build(genome: Genome, tint: Color) -> void:
 	PartBaker.bake(_body)
 	PartBaker.bake(self, [_body, look] + _tails)
 	look.bake_still_parts()
+	# A lit, rim-glowing membrane like a stage 2 colony's skin.
+	_body.material_override = CellSkin.material(tint)
 
 
 func _process(delta: float) -> void:
