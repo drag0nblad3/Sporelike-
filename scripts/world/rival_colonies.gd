@@ -17,7 +17,7 @@ const TINTS := [Color(0.95, 0.6, 0.35, 0.6), Color(0.6, 0.55, 1.0, 0.6),
 	Color(0.9, 0.85, 0.4, 0.6)]
 
 var ecosystem: Ecosystem
-var bed: SeaweedBed
+var world: ColonyWorld
 var rng := RandomNumberGenerator.new()
 var rivals: Array[Colony] = []
 var _think_timer := 0.0
@@ -42,7 +42,7 @@ func step(player: Colony, delta: float) -> Array:
 	var hit := ""
 	for rival: Colony in rivals.duplicate():
 		if thinking:
-			RivalBrain.think(rival, player, ecosystem, bed)
+			RivalBrain.think(rival, player, ecosystem, world.bed)
 		_feed(rival)
 		var mine := ColonyBites.attempt(player, rival, rng)
 		eaten += float(mine[1])
@@ -50,13 +50,17 @@ func step(player: Colony, delta: float) -> Array:
 		if str(theirs[0]) != "":
 			hit = str(theirs[0])
 			rival.feed(float(theirs[1]))
-		if rival.wounds.is_fatal(rival) or rival.energy <= 0.0:
+		if rival.wounds.is_fatal(rival):
+			world.drop_carrion(rival.center(), rival.wounds.full_size(rival))
+			_remove(rival)
+		elif rival.energy <= 0.0:
 			_remove(rival)
 	return [eaten, hit]
 
 
 func _feed(rival: Colony) -> void:
-	var gained := bed.touch(rival) * FeedingStyle.seaweed_factor(rival.plan.style) if bed else 0.0
+	world.rocks.push_out(rival)
+	var gained := world.bed.touch(rival) * FeedingStyle.seaweed_factor(rival.plan.style)
 	var reach := FeedingStyle.mouth_reach(rival.plan.style)
 	for point in rival.eat_points():
 		gained += ecosystem.food.take_near(Vector2(point.x, point.z), reach) \

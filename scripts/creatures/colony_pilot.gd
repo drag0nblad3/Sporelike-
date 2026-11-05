@@ -14,7 +14,7 @@ var ecosystem: Ecosystem
 var camera: CameraRig
 var hud: Hud
 var colony: Colony
-var bed := SeaweedBed.new()
+var world := ColonyWorld.new()
 var rivals := RivalColonies.new()
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player (the screenshot tour).
@@ -24,12 +24,14 @@ var tint := Color(0.55, 0.9, 0.8, 0.6)
 var nucleus := Color(0.3, 0.85, 0.35)
 var _dead := false
 var _cues := SenseCues.new()
+var _sea_id := ""
+var _sea_timer := 0.0
 
 
 func _ready() -> void:
-	add_child(bed)
+	add_child(world)
 	rivals.ecosystem = ecosystem
-	rivals.bed = bed
+	rivals.world = world
 	add_child(rivals)
 	hud.add_child(_cues)
 	hud.ability_pressed.connect(use)
@@ -44,10 +46,10 @@ func spawn(plan: BodyPlan, at: Vector2, energy: float) -> void:
 	colony.nucleus = nucleus
 	colony.build(plan.copy(), Vector3(at.x, 0.0, at.y))
 	colony.energy = minf(energy, colony.max_energy())
-	colony.limbs.food_finder = bed.nearest_food
+	colony.limbs.food_finder = world.bed.nearest_food
 	add_child(colony)
 	_dead = false
-	bed.plant_around(colony.center())
+	world.spread_around(colony.center())
 	camera.snap_to(colony.center())
 	hud.hide_abilities()
 
@@ -80,13 +82,14 @@ func _physics_process(delta: float) -> void:
 	if not is_alive():
 		return
 	colony.move_input = autopilot if autopilot != Vector2.ZERO else TouchSteer.read(hud.joystick)
-	bed.follow(colony.center())
+	world.follow(colony.center())
 	var fight := rivals.step(colony, delta)
-	var meal := ColonyFeeding.eat(colony, ecosystem, bed) + float(fight[0])
+	var meal := world.feed(colony, delta) + ColonyFeeding.eat(colony, ecosystem) + float(fight[0])
 	if meal > 0.0:
 		colony.feed(meal)
 		ate.emit(meal * colony.digest_share())
-	_report(ColonyThreat.hunt(ecosystem, colony, rng))
+	var sight := RockField.SHELTER_SIGHT if world.rocks.sheltered(colony) else 1.0
+	_report(ColonyThreat.hunt(ecosystem, colony, rng, sight))
 	_report(str(fight[1]))
 	if colony.wounds.is_fatal(colony):
 		_die(eaten)
@@ -101,8 +104,24 @@ func _process(delta: float) -> void:
 	camera.follow(colony.center(), colony.reach() * 0.6 + eyes * 0.05, delta)
 	hud.show_status(colony.energy, colony.max_energy(), colony.max_energy())
 	if is_alive():
+		_note_region(delta)
 		hud.show_colony_abilities(colony.plan, colony.abilities)
 		_cues.track_reach(eyes, false, ecosystem, camera, delta)
+
+
+## Names the sea region and what grows there whenever the colony enters a new one.
+func _note_region(delta: float) -> void:
+	_sea_timer -= delta
+	if _sea_timer > 0.0:
+		return
+	_sea_timer = 1.0
+	var sea := SeaMap.at(flat_center())
+	if sea.id == _sea_id:
+		return
+	var first := _sea_id == ""
+	_sea_id = sea.id
+	if not first:
+		hud.flash_message("%s: %s" % [sea.title, PlantKind.for_sea(sea.id).title.to_lower()], 3.0)
 
 
 func _report(outcome: String) -> void:

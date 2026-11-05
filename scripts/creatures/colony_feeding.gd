@@ -1,14 +1,15 @@
 class_name ColonyFeeding
 extends RefCounted
 ## What the player's colony eats each frame through its mouth cells and
-## tentacle tips: seaweed buds, loose food and single cells small enough to
-## swallow, each weighed by its FeedingStyle.
+## tentacle tips from the open water: loose food and single cells small
+## enough to swallow, each weighed by its FeedingStyle. (ColonyWorld feeds
+## it plants, marine snow and remains.)
 
 
 ## Returns the energy taken in this frame, before digestion.
-static func eat(colony: Colony, eco: Ecosystem, bed: SeaweedBed) -> float:
+static func eat(colony: Colony, eco: Ecosystem) -> float:
 	var style := colony.plan.style
-	var gained := bed.touch(colony) * FeedingStyle.seaweed_factor(style)
+	var gained := 0.0
 	var reach := FeedingStyle.mouth_reach(style) + FinalBody.reach_bonus(colony.plan.final_body)
 	var largest := FeedingStyle.prey_radius(style)
 	var prey := eco.prey_list()

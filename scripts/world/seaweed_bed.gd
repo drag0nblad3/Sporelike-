@@ -3,7 +3,9 @@ extends Node3D
 ## A scatter of Seaweed around a colony. In the open sea it replants
 ## seaweed left far behind somewhere ahead, so there is always some
 ## nearby. Pushes plants and colony apart where they touch and lets the
-## colony's mouths and tentacles graze ripe buds.
+## colony's mouths and tentacles graze ripe buds. Each plant is the
+## PlantKind of the sea region it grows in, so plants change as the colony
+## travels; sparse kinds grow farther apart.
 
 const COUNT := 16
 const NEAR := 6.0
@@ -69,8 +71,11 @@ func nearest_food(from: Vector3, reach: float) -> Vector3:
 
 
 func _plant(center: Vector3, low: float, high: float) -> Seaweed:
-	var at := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
+	var spot := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
+	var kind := PlantKind.for_sea(SeaMap.at(Vector2(center.x, center.z) + spot).id)
+	var at := (spot / sqrt(kind.density)).limit_length(DROP * 0.9)
 	var weed := Seaweed.new()
+	weed.kind = kind
 	weed.grow_at(center + Vector3(at.x, 0.0, at.y), rng)
 	add_child(weed)
 	return weed

@@ -39,3 +39,22 @@ static func run(colony: Colony) -> void:
 			if again.style != style or again.final_body != final:
 				push_error("Feeding style or final body was lost on saving")
 	print("smoke: colony abilities fired, styles and final bodies saved")
+	_check_world(rng)
+
+
+## Every sea's plant grows buds, and a heap of remains can be eaten.
+static func _check_world(rng: RandomNumberGenerator) -> void:
+	for id in Sea.ids():
+		var weed := Seaweed.new()
+		weed.kind = PlantKind.for_sea(id)
+		weed.grow_at(Vector3.ZERO, rng)
+		if weed.buds.is_empty() or weed.take_bud(0) <= 0.0:
+			push_error("%s grew no food" % weed.kind.title)
+		weed.free()
+	var heap := Carrion.new()
+	heap.lay(Vector3.ZERO, 12, rng)
+	var bite := heap.bite(PackedVector3Array([Vector3.ZERO]))
+	print("smoke: plants in %d seas grew buds, remains gave %.1f per bite" % [Sea.ids().size(), bite])
+	if bite <= 0.0:
+		push_error("Remains could not be eaten")
+	heap.free()

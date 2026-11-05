@@ -50,6 +50,11 @@ static func food_factor(id: String) -> float:
 	return 0.5 if id == HUNTER else 1.0
 
 
+## Multiplies energy from the remains of dead colonies.
+static func carrion_factor(id: String) -> float:
+	return 1.5 if id == HUNTER else 1.0
+
+
 ## Largest single cell (radius) the mouth can swallow; 0 means none.
 static func prey_radius(id: String) -> float:
 	match id:
@@ -81,5 +86,5 @@ static func card_text(id: String) -> String:
 		GRAZER:
 			return "%s\nSeaweed buds give 2x energy. Can no longer swallow single cells." % about
 	return ("%s\nSwallows cells up to %d µm across with +%d bonus energy, and bites colonies "
-		+ "up to 25%% bigger than you. Seaweed gives half, loose food gives half.") % [
+		+ "up to 25%% bigger than you. Remains give 1.5x. Seaweed and loose food give half.") % [
 			about, prey_radius(id) * 2.0 * um, prey_bonus(id)]

@@ -17,7 +17,10 @@ const FULL_COOLDOWN := 6.0
 
 ## Steers hunters and resolves their bites. Returns the outcome of a bite
 ## on the colony this frame, or "" when there was none.
-static func hunt(eco: Ecosystem, colony: Colony, rng: RandomNumberGenerator) -> String:
+## sight: share of each hunter's range it can see the colony from (less
+## while it shelters against a rock).
+static func hunt(eco: Ecosystem, colony: Colony, rng: RandomNumberGenerator,
+		sight: float = 1.0) -> String:
 	var center := Vector2(colony.center().x, colony.center().z)
 	var reach := colony.reach()
 	var near: Array = []
@@ -27,7 +30,7 @@ static func hunt(eco: Ecosystem, colony: Colony, rng: RandomNumberGenerator) -> 
 		if hunter.cooldown > 0.0 or hunter.stun_time > 0.0:
 			continue
 		var d := hunter.flat_pos().distance_to(center) - reach
-		if d < hunter.sight_range():
+		if d < hunter.sight_range() * sight:
 			near.append([d, hunter])
 	near.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
 	var outcome := ""
