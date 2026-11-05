@@ -24,7 +24,7 @@ var _wander := Vector2.ZERO
 var _wander_timer := 0.0
 var _time := 0.0
 var _combs: BeadStrip
-var _shadow := FloorShadow.new(RADIUS * 1.1)
+var _shadow: FloorShadow
 
 
 func _ready() -> void:
@@ -37,6 +37,9 @@ func _ready() -> void:
 	# A clear jelly bell, lit and rimmed like every other skin (CellSkin).
 	bell.material_override = CellSkin.material(Color(0.75, 0.85, 1.0, 0.2), 0.35)
 	add_child(bell)
+	# Made here, not at declaration, so a jelly never added to the tree
+	# leaves nothing behind.
+	_shadow = FloorShadow.new(RADIUS * 1.1)
 	add_child(_shadow)
 	_combs = BeadStrip.make(COMBS, 0.18, 6, Color(0.4, 0.8, 1.0))
 	add_child(_combs)
