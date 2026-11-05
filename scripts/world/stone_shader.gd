@@ -7,8 +7,9 @@ extends RefCounted
 
 const FRAGMENT := """void fragment() {
 	// Darker toward the floor, where the stone meets it.
-	ALBEDO = skin.rgb * (0.55 + 0.45 * sunlit) * (0.65 + 0.35 * (1.0 - edge_t));
-	EMISSION = glow.rgb * 0.3;
+	ALBEDO = skin.rgb * (0.8 + 0.5 * sunlit) * (0.75 + 0.25 * (1.0 - edge_t));
+	// The deep sea is dim, so the stone gives back a little of its own colour.
+	EMISSION = skin.rgb * 0.18 + glow.rgb * 0.3;
 	ROUGHNESS = 0.95;
 	SPECULAR = 0.2;
 }
