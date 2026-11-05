@@ -59,8 +59,8 @@ func _choice(plan: BodyPlan, role: String) -> Button:
 	var trial := BodyPlan.from_dict(plan.to_dict())
 	var added := trial.grow(role)
 	var button := Button.new()
-	button.custom_minimum_size = Vector2(300, 190)
-	button.add_theme_font_size_override("font_size", 24)
+	button.custom_minimum_size = Vector2(300, 250)
+	button.add_theme_font_size_override("font_size", 21)
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var row: Array = BodyPart.ROLES.get(role, BodyPart.ROLES["skin"])
 	var about: String = row[1]
@@ -68,8 +68,12 @@ func _choice(plan: BodyPlan, role: String) -> Button:
 		button.text = "%s\nNo room left on the body" % BodyPart.label(role)
 		button.disabled = true
 	else:
-		button.text = "+%d %s\n%s\nEnergy use +%.2f/s" % [added, BodyPart.label(role), about,
-			Colony.UPKEEP_PER_CELL * added]
+		var effect := CellEffects.card_line(role, plan, added)
+		var ability := ColonyAbility.card_line(role, trial)
+		if ability != "":
+			effect += "\n" + ability
+		button.text = "+%d %s\n%s\n%s\nEnergy use +%.2f/s" % [added, BodyPart.label(role), about,
+			effect, Colony.UPKEEP_PER_CELL * added]
 	button.add_theme_color_override("font_color", BodyPart.color(role).lightened(0.35))
 	button.pressed.connect(func() -> void: chosen.emit(role))
 	return button

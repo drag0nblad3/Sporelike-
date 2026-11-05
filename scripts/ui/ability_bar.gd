@@ -4,7 +4,8 @@ extends Control
 ## every cell has, and a smaller one around it for each ability organelle
 ## the body has grown. Buttons dim while recharging. Buttons read screen
 ## touches directly, so they work while another finger steers: Godot's
-## emulated mouse only follows the first finger on the screen.
+## emulated mouse only follows the first finger on the screen. A colony's
+## abilities (ColonyAbility) use the same spots.
 
 signal pressed(id: String)
 
@@ -15,6 +16,9 @@ const SLOTS := {
 	"trichocysts": [-350, -160, -230, -40],
 	"toxicysts": [-160, -350, -40, -230],
 	"flash": [-330, -330, -220, -220],
+	"surge": [-200, -200, -40, -40],
+	"curl": [-350, -160, -230, -40],
+	"sting": [-160, -350, -40, -230],
 }
 
 var _buttons := {}
@@ -25,21 +29,31 @@ var _held := {}
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for id in Ability.ALL:
+	for id in Ability.ALL + ColonyAbility.ALL:
 		_buttons[id] = _make(id)
 
 
 ## Shows the buttons this body can use, dimmed while recharging.
 func show_for(g: Genome, timers: AbilityTimers) -> void:
 	for id in Ability.ALL:
-		var button: Button = _buttons[id]
-		button.visible = Ability.has(g, id)
-		if button.visible:
-			button.modulate.a = 1.0 if timers.ready(id) else 0.35 + 0.3 * (1.0 - timers.fraction(id))
+		_show(id, Ability.has(g, id), timers)
+
+
+## The same for a colony's abilities.
+func show_colony(plan: BodyPlan, timers: AbilityTimers) -> void:
+	for id in ColonyAbility.ALL:
+		_show(id, ColonyAbility.has(plan, id), timers)
+
+
+func _show(id: String, owned: bool, timers: AbilityTimers) -> void:
+	var button: Button = _buttons[id]
+	button.visible = owned
+	if owned:
+		button.modulate.a = 1.0 if timers.ready(id) else 0.35 + 0.3 * (1.0 - timers.fraction(id))
 
 
 func hide_all() -> void:
-	for id in Ability.ALL:
+	for id in _buttons:
 		var button: Button = _buttons[id]
 		button.visible = false
 
@@ -64,7 +78,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _button_at(pos: Vector2) -> String:
-	for id in Ability.ALL:
+	for id in _buttons:
 		var button: Button = _buttons[id]
 		if button.is_visible_in_tree() and button.get_global_rect().has_point(pos):
 			return id
@@ -73,10 +87,10 @@ func _button_at(pos: Vector2) -> String:
 
 func _make(id: String) -> Button:
 	var rect: Array = SLOTS[id]
-	var big := id == "jet"
+	var big := id == "jet" or id == "surge"
 	var button := Button.new()
 	button.theme = UiTheme.shared()
-	button.text = Ability.BUTTON[id]
+	button.text = Ability.BUTTON[id] if Ability.is_ability(id) else ColonyAbility.BUTTON[id]
 	button.add_theme_font_size_override("font_size", 34 if big else 24)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	button.offset_left = rect[0]
@@ -84,7 +98,9 @@ func _make(id: String) -> Button:
 	button.offset_right = rect[2]
 	button.offset_bottom = rect[3]
 	var tint: Color = UiTheme.GOLD
-	if not big:
+	if id in ColonyAbility.ALL and not big:
+		tint = ColonyAbility.COLORS[id]
+	elif not big:
 		tint = OrganelleParts.COLORS[id]
 	var ring := UiTheme.panel(UiTheme.BUTTON, 0)
 	ring.set_corner_radius_all(80)

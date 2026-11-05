@@ -30,6 +30,8 @@ var drag := 2.5
 ## it overrides the angle the body has drifted to on its own (0 to 1).
 var heading := 0.0
 var steer := 0.0
+## Free bodies: how far above the floor the resting shape floats.
+var height := 0.0
 ## Plants: the resting shape stays at `anchor` and never turns.
 var anchored := false
 var anchor := Vector3.ZERO
@@ -158,5 +160,5 @@ func _match_shape() -> void:
 		var goal := c + rest[i].rotated(Vector3.UP, angle)
 		var p := pos[i]
 		p += (goal - p) * shape_stiffness
-		p.y = c.y + rest[i].y if anchored else rest[i].y
+		p.y = c.y + rest[i].y if anchored else height + rest[i].y
 		pos[i] = p

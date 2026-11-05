@@ -32,4 +32,5 @@ static func run(host: Node) -> void:
 	print("smoke: colony swam %.2f units, energy %.1f" % [moved, lab.colony.energy])
 	if is_nan(moved) or moved < 0.2 or moved > 50.0:
 		push_error("Colony soft body did not swim properly (moved %.2f)" % moved)
+	ColonyFightCheck.run(lab.colony)
 	lab.queue_free()

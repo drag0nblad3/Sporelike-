@@ -173,6 +173,18 @@ func take_near(point: Vector2, reach: float) -> float:
 	return gained
 
 
+## Centre of the nearest patch with food left within `reach`, or Vector2.INF.
+func nearest_patch(point: Vector2, reach: float) -> Vector2:
+	var best := Vector2.INF
+	var best_d := reach * reach
+	for patch in patches:
+		var d := point.distance_squared_to(patch.center)
+		if patch.count > 0 and d < best_d:
+			best_d = d
+			best = patch.center
+	return best
+
+
 ## Pieces this patch grows back to at the current abundance.
 func _stock(patch: FoodPatch) -> int:
 	return maxi(roundi(patch.target * abundance), 2)
