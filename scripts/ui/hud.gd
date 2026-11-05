@@ -4,12 +4,15 @@ extends CanvasLayer
 ## The population screen is added as a child by Game.
 
 signal ability_pressed(id: String)
+## The multicellular stage's Rise (+1) or Sink (-1) button.
+signal depth_pressed(step: int)
 
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
 
 var _energy: EnergyBar
 var _abilities: AbilityBar
+var _depth: DepthControl
 var _generation: GenerationReadout
 var _species: SpeciesReadout
 var _debug: Label
@@ -49,6 +52,9 @@ func _ready() -> void:
 	_abilities = AbilityBar.new()
 	add_child(_abilities)
 	_abilities.pressed.connect(func(id: String) -> void: ability_pressed.emit(id))
+	_depth = DepthControl.new()
+	add_child(_depth)
+	_depth.pressed.connect(func(step: int) -> void: depth_pressed.emit(step))
 	pause_menu = PauseMenu.new()
 	add_child(pause_menu)
 	pause.pressed.connect(pause_menu.open)
@@ -78,8 +84,17 @@ func show_abilities(g: Genome, timers: AbilityTimers) -> void:
 	_abilities.show_for(g, timers)
 
 
+func show_colony_abilities(plan: BodyPlan, timers: AbilityTimers) -> void:
+	_abilities.show_colony(plan, timers)
+
+
 func hide_abilities() -> void:
 	_abilities.hide_all()
+	_depth.visible = false
+
+
+func show_depth(layer: int) -> void:
+	_depth.show_layer(layer)
 
 
 func set_hint_visible(visible_now: bool) -> void:

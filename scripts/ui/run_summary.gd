@@ -6,6 +6,9 @@ extends MenuPanel
 signal keep_playing
 signal end_run
 
+## Set when the multicellular stage was completed: the final body's name.
+var final_body := ""
+
 
 ## established: the subspecies reached the stage goal (it may play on into
 ## the multicellular stage); otherwise it died out.
@@ -13,7 +16,11 @@ func open(subspecies_name: String, sea_title: String, established: bool, generat
 		earned: int, bank: GeneBank, fresh: Array[String]) -> void:
 	clear()
 	visible = true
-	if established:
+	if established and final_body != "":
+		label("%s completed the multicellular stage!" % subspecies_name, 36, UiTheme.ACCENT)
+		label("It settled into a %s body after %d generations in the %s." % [
+			final_body.to_lower(), generation, sea_title], 26)
+	elif established:
 		label("%s is established!" % subspecies_name, 36, UiTheme.ACCENT)
 		label("Your subspecies holds the %s after %d generations." % [sea_title, generation], 26)
 	else:
@@ -29,7 +36,8 @@ func open(subspecies_name: String, sea_title: String, established: bool, generat
 		label("Newly banked genes: %s" % ", ".join(names), 26, UiTheme.GAIN)
 	label("Gene slots for the next subspecies: %d" % bank.slots(), 26)
 	if established:
-		button("Keep evolving (multicellular stage)", func() -> void: _choose(true))
+		button("Keep playing" if final_body != "" else "Keep evolving (multicellular stage)",
+			func() -> void: _choose(true))
 	button("Return to the main species", func() -> void: _choose(false))
 
 
