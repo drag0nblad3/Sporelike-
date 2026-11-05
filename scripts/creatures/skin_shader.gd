@@ -18,6 +18,7 @@ uniform vec4 skin : source_color = vec4(0.5, 0.9, 0.8, 1.0);
 uniform vec4 glow : source_color = vec4(0.3, 0.6, 0.55, 1.0);
 uniform bool shadow = false;
 varying float edge_t;
+varying float sunlit;
 
 void vertex() {
 	int i = int(UV.x + 0.5);
@@ -31,18 +32,22 @@ void vertex() {
 	vec3 n = vec3(edge.x / r * t / r, up / max(h, 0.001), edge.z / r * t / r);
 	NORMAL = shadow ? vec3(0.0, 1.0, 0.0) : normalize(n);
 	edge_t = t;
+	// How squarely this bit of skin faces the sun (see Arena's light).
+	sunlit = max(dot(NORMAL, normalize(vec3(0.25, 0.87, 0.43))), 0.0);
 }
 
 void fragment() {
 	if (shadow) {
 		ALBEDO = vec3(0.0);
-		ALPHA = 0.3 * (1.0 - smoothstep(0.6, 1.0, edge_t));
+		ALPHA = 0.4 * (1.0 - smoothstep(0.6, 1.0, edge_t));
 	} else {
 		float rim = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
 		float edge = smoothstep(0.82, 1.0, edge_t);
-		ALBEDO = skin.rgb;
-		ALPHA = clamp(0.14 + 0.5 * rim + 0.35 * edge, 0.0, 0.9);
-		EMISSION = glow.rgb * (0.12 + 0.9 * rim + 0.6 * edge);
+		// A glossy sheen where the dome faces the sun, shade on its far side.
+		float sheen = pow(sunlit, 24.0);
+		ALBEDO = skin.rgb * (0.55 + 0.45 * sunlit);
+		ALPHA = clamp(0.2 + 0.5 * rim + 0.35 * edge + 0.4 * sheen, 0.0, 0.92);
+		EMISSION = glow.rgb * (0.12 + 0.9 * rim + 0.6 * edge) + vec3(0.55) * sheen;
 		ROUGHNESS = 0.22;
 		SPECULAR = 0.8;
 	}
