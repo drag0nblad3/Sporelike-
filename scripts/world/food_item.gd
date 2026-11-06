@@ -28,6 +28,8 @@ var home: FoodPatch
 
 ## Seconds left paralyzed by Toxicysts: it cannot dart or drift.
 var stunned := 0.0
+## A rare glowing prize morsel (see PrizeFood).
+var prize := false
 var _phase := 0.0
 var _drift_dir := Vector2.ZERO
 var _drift_timer := 0.0
@@ -63,6 +65,12 @@ func roll(food_kind: FoodKind, rng: RandomNumberGenerator) -> void:
 	drift_speed = kind.drift_speed * lerpf(0.25, 1.3, grade)
 	agility = lerpf(0.25, 1.0, grade)
 	_base_scale = lerpf(0.75, 1.35, grade)
+	scale = Vector3.ONE * _base_scale
+
+
+## Draws this piece bigger (prize morsels).
+func enlarge(factor: float) -> void:
+	_base_scale *= factor
 	scale = Vector3.ONE * _base_scale
 
 

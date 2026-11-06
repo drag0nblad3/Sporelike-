@@ -28,11 +28,18 @@ var _has_moved := false
 var _smoke_timer := 0.5
 var _scent := ScentArrow.new()
 var _cues := SenseCues.new()
+var _feel := PlayerFeel.new()
+## Whether the player has been told it can swallow small cells.
+var _told_swallow := false
+var _swallow_check := 1.0
 
 
 func _ready() -> void:
 	add_child(_scent)
 	add_child(_cues)
+	add_child(_feel)
+	ecosystem.food.eaten.connect(_on_food_eaten)
+	ecosystem.player_swallowed.connect(_on_swallowed)
 	tracker.ecosystem = ecosystem
 	add_child(tracker)
 
@@ -47,6 +54,7 @@ func spawn(g: Genome, at: Vector2) -> void:
 	player.setup(g, 8.0)
 	player.position = Vector3(at.x, 0.0, at.y)
 	player.died.connect(_on_player_died)
+	player.bite_blocked.connect(func(how: String) -> void: _feel.bite_blocked(player, how))
 	player.ate.connect(_on_player_ate)
 	player.absorbed.connect(func(amount: float) -> void: made_energy.emit(amount))
 	add_child(player)
@@ -78,6 +86,7 @@ func _process(delta: float) -> void:
 	camera.follow(player.position, player.radius(), delta)
 	hud.show_status(player.energy, Genome.FULL_ENERGY, player.genome.max_energy())
 	hud.show_abilities(player.genome, player.abilities)
+	_hint_swallowing(delta)
 	if smoke_test:
 		_smoke_abilities(delta)
 	for key in KEYS:
@@ -92,8 +101,18 @@ func hide_hint() -> void:
 
 ## Called from the HUD's ability buttons (and the keys in KEYS).
 func use(id: String) -> void:
-	if is_alive():
-		AbilityCaster.fire(player, id, ecosystem)
+	if is_alive() and AbilityCaster.fire(player, id, ecosystem):
+		_feel.ability(id)
+
+
+func _hint_swallowing(delta: float) -> void:
+	_swallow_check -= delta
+	if _told_swallow or _swallow_check > 0.0:
+		return
+	_swallow_check = 1.0
+	if CellEngulf.any_edible_near(ecosystem):
+		_told_swallow = true
+		hud.flash_message("That cell is under half your size: swim into it to swallow it", 4.0)
 
 
 func _smoke_abilities(delta: float) -> void:
@@ -106,11 +125,29 @@ func _smoke_abilities(delta: float) -> void:
 
 
 func _on_player_died(_org: Organism, cause: String) -> void:
+	_feel.died()
 	died.emit(cause)
 
 
 func _on_player_ate(amount: float) -> void:
 	ate.emit(amount)
+
+
+## Food pieces: the streak bonus, and the prize morsel fanfare.
+func _on_food_eaten(org: Organism, item: FoodItem, energy: float) -> void:
+	if org != player or not is_alive():
+		return
+	if item.prize:
+		_feel.prize(player, energy)
+	var extra := _feel.meal(player, energy)
+	if extra > 0.0:
+		# Added straight to the bar so it does not count as another meal.
+		player.energy = minf(player.energy + extra, player.genome.max_energy())
+		ate.emit(extra)
+
+
+func _on_swallowed(energy: float) -> void:
+	_feel.swallowed(player, energy)
 
 
 func _read_move_input() -> Vector2:
