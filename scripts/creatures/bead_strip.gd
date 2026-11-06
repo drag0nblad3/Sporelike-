@@ -45,3 +45,23 @@ func set_color(i: int, color: Color) -> void:
 func place(i: int, at: Vector3, size: float = 1.0, squash: float = 1.0) -> void:
 	var basis := Basis.from_scale(Vector3(size, size * squash, size))
 	multimesh.set_instance_transform(i, Transform3D(basis, at))
+
+
+## Stretches ball `i` into a capsule-ish segment from `from` to `to`, with
+## its ends tucked into the neighbouring balls, so a row of them reads as
+## one continuous stalk rather than a string of beads.
+func place_between(i: int, from: Vector3, to: Vector3,
+		size: float = 1.0, squash: float = 1.0) -> void:
+	var along := to - from
+	var length := along.length()
+	if length < 0.001:
+		place(i, from, size, squash)
+		return
+	var radius := (multimesh.mesh as SphereMesh).radius
+	var z := along / length
+	var x := Vector3.UP.cross(z)
+	x = x.normalized() if x.length() > 0.001 else Vector3.RIGHT
+	var y := z.cross(x)
+	var stretch := maxf((length * 0.5) / radius + 0.35 * size, size)
+	var basis := Basis(x * size, y * size * squash, z * stretch)
+	multimesh.set_instance_transform(i, Transform3D(basis, (from + to) * 0.5))

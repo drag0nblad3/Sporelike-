@@ -4,7 +4,8 @@ extends Node3D
 ## branches, built as an anchored SoftBody so swimmers push the fronds aside
 ## and they spring back, swaying in the current. Buds at the branch tips
 ## are food that grows back after it is eaten. Its PlantKind (from the sea
-## it grows in) sets its shape, colours and food.
+## it grows in) sets its shape, colours and food. Its cells are drawn
+## stretched along each branch, so it reads as one plant.
 
 const CELL_GAP := 0.8
 
@@ -13,8 +14,13 @@ var body := SoftBody.new()
 ## Which body points carry a bud, and seconds until each is ripe again.
 var buds := PackedInt32Array()
 var bud_wait := PackedFloat32Array()
+## Each point's parent along its branch (-1 for the root), so the cells
+## can be drawn as one continuous stalk.
+var _parent := PackedInt32Array()
 var _cells: BeadStrip
 var _bud_look: BeadStrip
+## Floating plants (rafts) cast a shadow on the floor far below.
+var _shadow: FloorShadow
 var _time := 0.0
 
 
@@ -25,6 +31,7 @@ func grow_at(root: Vector3, rng: RandomNumberGenerator) -> void:
 	body.shape_stiffness = 0.06
 	body.drag = 3.0
 	body.add_point(root, Vector3.ZERO, 0.0)
+	_parent = PackedInt32Array([-1])
 	_time = rng.randf() * 10.0
 	var dir := Vector2.from_angle(rng.randf() * TAU)
 	var stalk := _branch(0, dir, rng.randi_range(kind.stalk_cells.x, kind.stalk_cells.y), rng)
@@ -74,10 +81,16 @@ func _process(_delta: float) -> void:
 	if _cells == null:
 		return
 	for i in body.size():
-		_cells.place(i, body.pos[i], lerpf(1.0, 0.6, i / float(body.size())), 0.6)
+		var size := lerpf(1.0, 0.6, i / float(body.size()))
+		if _parent[i] < 0:
+			_cells.place(i, body.pos[i], size, 0.6)
+		else:
+			_cells.place_between(i, body.pos[_parent[i]], body.pos[i], size, 0.6)
 	for k in buds.size():
 		var ripe := 1.0 - bud_wait[k] / kind.regrow
 		_bud_look.place(k, body.pos[buds[k]] + Vector3(0.0, 0.3, 0.0), maxf(ripe, 0.15))
+	if _shadow:
+		_shadow.follow(body.center())
 
 
 func _branch(from: int, dir: Vector2, count: int, rng: RandomNumberGenerator) -> PackedInt32Array:
@@ -88,6 +101,7 @@ func _branch(from: int, dir: Vector2, count: int, rng: RandomNumberGenerator) ->
 		var local := body.rest[last] + Vector3(dir.x, 0.0, dir.y) * CELL_GAP
 		var point := body.add_point(body.anchor + local, local)
 		body.add_spring(last, point)
+		_parent.append(last)
 		made.append(point)
 		last = point
 	buds.append(last)
@@ -104,3 +118,6 @@ func _build_look() -> void:
 	for k in buds.size():
 		_bud_look.set_color(k, kind.bud)
 	add_child(_bud_look)
+	if body.anchor.y > 1.0:
+		_shadow = FloorShadow.new(body.reach() + 0.8)
+		add_child(_shadow)

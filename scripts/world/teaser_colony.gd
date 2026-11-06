@@ -3,7 +3,8 @@ extends Node3D
 ## A huge, ghostly cell colony drifting above the sea floor: a glimpse of
 ## the multicellular stage. A "sphere" is a hollow ball of cells (a few
 ## tinted like the specialised cells to come); a "chain" is a long filament
-## that ripples. Purely for looks: nothing can touch or eat it yet.
+## that ripples. A ball wears one faint shared skin (CellSkin). Purely
+## for looks: nothing can touch or eat it yet.
 
 const CELL := Color(0.45, 0.95, 0.8)
 const FLATTEN := 0.3
@@ -54,6 +55,8 @@ func _ready() -> void:
 	mat.emission = Color(0.1, 0.3, 0.3)
 	view.material_override = mat
 	add_child(view)
+	if shape == "sphere":
+		add_child(_skin(radius + cell.radius))
 	_spin = _rng.randf_range(0.02, 0.06) * (1.0 if _rng.randf() < 0.5 else -1.0)
 	rotation.y = _rng.randf() * TAU
 	_phase = _rng.randf() * TAU
@@ -79,6 +82,20 @@ func _place() -> void:
 			p.z = 5.0 * sin(_phase * 0.5 + i * 0.35)
 			p.y = 0.6 * sin(_phase * 0.4 + i * 0.3)
 		_multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, p))
+
+
+## One faint membrane round the whole ball, so it reads as one creature.
+static func _skin(radius: float) -> MeshInstance3D:
+	var ball := SphereMesh.new()
+	ball.radius = radius
+	ball.height = radius * 2.0
+	ball.radial_segments = 32
+	ball.rings = 12
+	var skin := MeshInstance3D.new()
+	skin.mesh = ball
+	skin.scale = Vector3(1.0, FLATTEN, 1.0)
+	skin.material_override = CellSkin.material(Color(CELL, 0.1), 0.3)
+	return skin
 
 
 ## Evenly spread points on a unit sphere.
