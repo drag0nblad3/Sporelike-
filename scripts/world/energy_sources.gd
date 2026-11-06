@@ -2,7 +2,7 @@ class_name EnergySources
 extends RefCounted
 ## Energy a cell makes without eating: Chloroplasts photosynthesize in
 ## sunlit algae meadows and Vent symbionts run on vent chemicals at shell
-## beds; the Sea a cell is in (SeaMap) makes either stronger or weaker.
+## beds; the seas around a cell (SeaBlend) make either stronger or weaker.
 ## Where a cell is gets checked a few times a second, not every frame, to
 ## stay cheap with a big population.
 
@@ -61,6 +61,6 @@ static func feed(org: Organism, patches: Array[FoodPatch], delta: float) -> void
 	if org.ambient_timer <= 0.0:
 		org.ambient_timer = CHECK_INTERVAL
 		var at := org.flat_pos()
-		org.ambient_rate = rate(org.genome, kind_at(at, patches), SeaMap.at(at))
+		org.ambient_rate = rate(org.genome, kind_at(at, patches), SeaBlend.at(at))
 	if org.ambient_rate > 0.0:
 		org.absorb(org.ambient_rate * delta)

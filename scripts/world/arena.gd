@@ -2,7 +2,8 @@ class_name Arena
 extends Node3D
 ## The ocean around everything: background colour, ambient light and the
 ## sun. They start in the colours of the run's starting Sea and blend
-## toward the sea around the player (follow). The sea floor itself is
+## toward the seas around the player (follow, SeaBlend), fading softly
+## across region borders. The sea floor itself is
 ## drawn chunk by chunk by WorldChunk.
 
 ## How fast the colours blend into a new sea, per second.
@@ -42,7 +43,7 @@ func follow(p: Vector2, delta: float) -> void:
 	_check -= delta
 	if _check <= 0.0:
 		_check = CHECK_INTERVAL
-		_target = SeaMap.at(p)
+		_target = SeaBlend.at(p)
 	var t := clampf(BLEND_RATE * delta, 0.0, 1.0)
 	_env.background_color = _env.background_color.lerp(_target.water, t)
 	_env.ambient_light_color = _env.ambient_light_color.lerp(_target.ambient, t)

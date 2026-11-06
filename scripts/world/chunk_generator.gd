@@ -64,7 +64,7 @@ func patches_for(coord: Vector2i) -> Array[FoodPatch]:
 		for gy in GRID:
 			var at := origin + (Vector2(gx, gy) + Vector2(0.5, 0.5)) * cell
 			at += Vector2(rng.randf_range(-1, 1), rng.randf_range(-1, 1)) * cell * JITTER
-			var sea := SeaMap.at(at)
+			var sea := SeaBlend.mixed(at)
 			if _gaps.get_noise_2d(at.x, at.y) < sea.gap_below:
 				continue
 			var kind := _pick_kind(at, sea, rng)
