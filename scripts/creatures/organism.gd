@@ -7,6 +7,8 @@ signal died(organism: Organism, cause: String)
 signal ate(amount: float)
 ## Energy made without eating (photosynthesis, chemosynthesis).
 signal absorbed(amount: float)
+## A hunter's bite failed: how says why (spines or toxin).
+signal bite_blocked(how: String)
 
 
 var genome: Genome

@@ -56,8 +56,10 @@ func can_swallow(prey: Organism) -> bool:
 func try_bite(prey: Organism, rng: RandomNumberGenerator) -> void:
 	cooldown = BITE_COOLDOWN
 	if rng.randf() < prey.genome.armor():
+		prey.bite_blocked.emit("Spines blocked a bite!")
 		return
 	if rng.randf() < prey.genome.toxin() * lineage.sting_factor():
+		prey.bite_blocked.emit("Your toxin stung a hunter!")
 		cooldown = STUNG_COOLDOWN
 		avoid_toxin = minf(avoid_toxin, prey.genome.value_of("toxin") - 0.05)
 		return
