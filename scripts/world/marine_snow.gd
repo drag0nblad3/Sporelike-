@@ -75,7 +75,7 @@ func _process(_delta: float) -> void:
 func _respawn(i: int, low: float, high: float) -> void:
 	var spot := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
 	var at := Vector2(_center.x, _center.z) + spot
-	var share := float(DENSITY.get(SeaMap.at(at).id, 0.4))
+	var share := float(DENSITY.get(SeaBlend.mixed(at).id, 0.4))
 	_live[i] = 1 if rng.randf() < share else 0
 	_pos[i] = Vector3(at.x, Depth.height(Depth.OPEN), at.y)
 	_drift[i] = Vector3(rng.randf_range(-0.3, 0.3), 0.0, rng.randf_range(-0.3, 0.3))

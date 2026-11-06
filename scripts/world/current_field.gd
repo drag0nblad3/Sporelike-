@@ -36,7 +36,7 @@ func streams_for(coord: Vector2i) -> Array[CurrentStream]:
 	var list: Array[CurrentStream] = []
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([world_seed, coord.x, coord.y, "current"])
-	var sea := SeaMap.at((Vector2(coord) + Vector2(0.5, 0.5)) * ChunkGenerator.SIZE)
+	var sea := SeaBlend.mixed((Vector2(coord) + Vector2(0.5, 0.5)) * ChunkGenerator.SIZE)
 	if rng.randf() < sea.current_chance:
 		var size := ChunkGenerator.SIZE
 		var from := (Vector2(coord) + Vector2(rng.randf(), rng.randf())) * size

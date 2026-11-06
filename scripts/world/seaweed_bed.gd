@@ -75,7 +75,7 @@ func nearest_food(from: Vector3, reach: float) -> Vector3:
 
 func _plant(center: Vector3, low: float, high: float) -> Seaweed:
 	var spot := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
-	var sea_id := SeaMap.at(Vector2(center.x, center.z) + spot).id
+	var sea_id := SeaBlend.mixed(Vector2(center.x, center.z) + spot).id
 	var kind := PlantKind.raft(sea_id) if raft else PlantKind.for_sea(sea_id)
 	var at := (spot / sqrt(kind.density)).limit_length(DROP * 0.9)
 	var weed := Seaweed.new()

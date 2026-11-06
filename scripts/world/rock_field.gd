@@ -60,6 +60,6 @@ func _place(center: Vector3, low: float, high: float) -> Rock:
 	var spot := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(low, high)
 	var at := Vector2(center.x, center.z) + spot
 	var rock := Rock.new()
-	rock.build(Vector3(at.x, 0.0, at.y), SeaMap.at(at).id, rng)
+	rock.build(Vector3(at.x, 0.0, at.y), SeaBlend.mixed(at).id, rng)
 	add_child(rock)
 	return rock
