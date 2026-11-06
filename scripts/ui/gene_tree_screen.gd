@@ -26,7 +26,7 @@ func _build_side() -> void:
 
 
 func _build_bottom() -> void:
-	button("Done", func() -> void: _close())
+	UiTheme.primary(button("Done", func() -> void: _close()))
 
 
 func redraw_genes() -> void:

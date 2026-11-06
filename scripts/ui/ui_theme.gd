@@ -17,6 +17,9 @@ const BUTTON := Color(0.07, 0.2, 0.27, 0.95)
 const BUTTON_HOVER := Color(0.1, 0.28, 0.36, 0.97)
 const BUTTON_DOWN := Color(0.16, 0.42, 0.48, 1.0)
 const EDGE := Color(0.45, 0.85, 0.85, 0.45)
+## The main action on a screen (Begin, Resume, Continue) is filled with this.
+const PRIMARY := Color(0.2, 0.62, 0.58, 0.97)
+const PRIMARY_DOWN := Color(0.3, 0.78, 0.7, 1.0)
 const RADIUS := 18
 
 static var _theme: Theme
@@ -36,7 +39,19 @@ static func panel(fill: Color = PANEL, pad: int = 16) -> StyleBoxFlat:
 	box.set_content_margin_all(pad)
 	box.border_color = Color(EDGE, 0.25)
 	box.set_border_width_all(2)
+	_shadow(box, 10)
 	return box
+
+
+## Marks a button as the screen's main action: filled teal, dark text.
+static func primary(button: Button) -> void:
+	var ink := Color(0.02, 0.1, 0.12)
+	button.add_theme_stylebox_override("normal", _button_box(PRIMARY, Color(ACCENT, 0.9)))
+	button.add_theme_stylebox_override("hover", _button_box(PRIMARY, ACCENT))
+	button.add_theme_stylebox_override("pressed", _button_box(PRIMARY_DOWN, Color.WHITE))
+	button.add_theme_stylebox_override("hover_pressed", _button_box(PRIMARY_DOWN, Color.WHITE))
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		button.add_theme_color_override(state, ink)
 
 
 ## Text with a dark outline so it reads over the busy sea behind it.
@@ -63,6 +78,7 @@ static func _build() -> Theme:
 	t.set_color("font_hover_color", "Button", Color.WHITE)
 	t.set_color("font_pressed_color", "Button", Color.WHITE)
 	t.set_color("font_focus_color", "Button", INK)
+	t.set_color("font_disabled_color", "Button", Color(DIM, 0.45))
 	t.set_font_size("font_size", "Button", 28)
 
 	# A wide, rounded scroll grabber that a thumb can catch.
@@ -93,4 +109,21 @@ static func _button_box(fill: Color, edge: Color) -> StyleBoxFlat:
 	box.content_margin_right = 20.0
 	box.content_margin_top = 10.0
 	box.content_margin_bottom = 10.0
+	_shadow(box, 4)
 	return box
+
+
+## Undoes primary(), back to the theme's ordinary button.
+static func plain(button: Button) -> void:
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		button.remove_theme_stylebox_override(state)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		button.remove_theme_color_override(state)
+
+
+## A soft drop shadow lifts cards and buttons off the busy sea behind them.
+static func _shadow(box: StyleBoxFlat, size: int) -> void:
+	box.shadow_color = Color(0, 0, 0, 0.35)
+	box.shadow_size = size
+	box.shadow_offset = Vector2(0, size * 0.4)
+	box.anti_aliasing = true

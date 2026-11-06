@@ -53,11 +53,11 @@ func _build_side() -> void:
 
 
 func _build_bottom() -> void:
+	CreatorSide.side_button(button("Back", func() -> void: _leave(), _view.header, 44.0))
 	var bottom := row()
 	_view.trees_button = button("", func() -> void: _open_trees(), bottom)
-	button("Back", func() -> void: _leave(), bottom)
-	var start := button("Begin the run", func() -> void: _begin())
-	start.add_theme_color_override("font_color", UiTheme.ACCENT)
+	var start := button("Begin the run", func() -> void: _begin(), bottom)
+	UiTheme.primary(start)
 
 
 func _refresh() -> void:

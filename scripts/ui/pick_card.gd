@@ -7,6 +7,7 @@ extends Button
 const WIDTH := 380.0
 
 var _column: VBoxContainer
+var _heading: Label
 
 
 func _init(title: String, effect: String) -> void:
@@ -23,8 +24,8 @@ func _init(title: String, effect: String) -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(column)
 
-	var heading := _line(title, 28, UiTheme.ACCENT)
-	column.add_child(heading)
+	_heading = _line(title, 28, UiTheme.ACCENT)
+	column.add_child(_heading)
 	var rule := ColorRect.new()
 	rule.color = Color(UiTheme.ACCENT, 0.3)
 	rule.custom_minimum_size = Vector2(0, 2)
@@ -35,6 +36,11 @@ func _init(title: String, effect: String) -> void:
 		if line.begins_with(MutationChoice.REASON_PREFIX):
 			tint = UiTheme.GOLD
 		column.add_child(_line(line, 23, tint))
+
+
+## Colours the name, e.g. in the cell type's own colour.
+func tint_title(tint: Color) -> void:
+	_heading.add_theme_color_override("font_color", tint)
 
 
 ## Puts a drawing of the pick (UpgradeIcon) above the name.
