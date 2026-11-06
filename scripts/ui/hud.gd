@@ -44,6 +44,8 @@ func _ready() -> void:
 	# the ability buttons on the right.
 	_hint = _center_label(-150.0, 24, UiTheme.INK)
 	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
+	_hint.offset_left = -280.0
+	_hint.offset_right = 280.0
 	_hint.add_theme_stylebox_override("normal", UiTheme.panel(Color(UiTheme.PANEL, 0.7), 10))
 	_message = _center_label(-260.0, 40, UiTheme.GOLD)
 

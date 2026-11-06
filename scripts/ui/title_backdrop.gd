@@ -31,13 +31,13 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var w := size.x
 	var h := size.y
-	var bands := 24
+	var bands := 48
 	for i in bands:
 		var y0 := h * i / bands
 		draw_rect(Rect2(0, y0, w, h / bands + 1.0), TOP.lerp(BOTTOM, float(i) / (bands - 1)))
 	# Light from the surface: a soft glow behind the title.
-	for i in 6:
-		draw_circle(Vector2(w * 0.5, h * 0.22), 420.0 - i * 60.0, Color(UiTheme.ACCENT, 0.02))
+	for i in 30:
+		draw_circle(Vector2(w * 0.5, h * 0.22), 450.0 - i * 14.0, Color(UiTheme.ACCENT, 0.005))
 	for c: Vector4 in _cells:
 		var y := fposmod(c.y * (h + 120.0) - _time * c.w, h + 120.0) - 60.0
 		var x := c.x * w + sin(_time * 0.3 + c.x * 9.0) * 12.0

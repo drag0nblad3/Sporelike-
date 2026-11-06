@@ -37,7 +37,8 @@ func _ready() -> void:
 	columns.add_child(graph)
 	var card := PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UiTheme.panel(UiTheme.PANEL, 14))
-	card.custom_minimum_size.x = SIDE_WIDTH
+	# Wider phones give the text box more room, so less of it wraps.
+	card.custom_minimum_size.x = clampf(get_viewport_rect().size.x * 0.36, SIDE_WIDTH, 600.0)
 	columns.add_child(card)
 	side = VBoxContainer.new()
 	side.add_theme_constant_override("separation", 6)

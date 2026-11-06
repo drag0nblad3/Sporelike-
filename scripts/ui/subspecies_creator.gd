@@ -160,7 +160,10 @@ func reroll() -> void:
 
 func next_sea() -> void:
 	_sea_at = (_sea_at + 1) % _seas.size()
+	# The sea's description fills the text box until a gene is tapped.
+	graph.selected = ""
 	_refresh()
+	detail.show_hint(Sea.of(_seas[_sea_at]).blurb)
 
 
 func _open_trees() -> void:
