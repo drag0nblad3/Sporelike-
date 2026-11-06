@@ -50,7 +50,9 @@ func _ready() -> void:
 	_note.add_theme_font_size_override("font_size", 24)
 	_note.add_theme_color_override("font_color", UiTheme.GAIN)
 	column.add_child(_note)
-	buttons.add_child(_button("Resume", close))
+	var resume := _button("Resume", close)
+	UiTheme.primary(resume)
+	buttons.add_child(resume)
 	buttons.add_child(_button("Save this cell", func() -> void: save_cell_requested.emit()))
 	buttons.add_child(_button("Save and quit", _on_quit))
 

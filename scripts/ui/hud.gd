@@ -40,9 +40,14 @@ func _ready() -> void:
 	_debug.modulate = Color(1, 1, 1, 0.35)
 	add_child(_debug)
 
-	_hint = _center_label(-100.0, 26, UiTheme.INK)
+	# Both sit in the middle third so they clear the joystick on the left and
+	# the ability buttons on the right.
+	_hint = _center_label(-150.0, 24, UiTheme.INK)
 	_hint.text = "Drag on the left side to swim. Eat glowing food. Avoid the red hunters."
-	_message = _center_label(-220.0, 44, UiTheme.GOLD)
+	_hint.offset_left = -280.0
+	_hint.offset_right = 280.0
+	_hint.add_theme_stylebox_override("normal", UiTheme.panel(Color(UiTheme.PANEL, 0.7), 10))
+	_message = _center_label(-260.0, 40, UiTheme.GOLD)
 
 	var pause := _corner_button("II  Help", 26, Vector2(170, 76))
 	pause.offset_top = 150.0
@@ -123,8 +128,10 @@ func _center_label(from_bottom: float, font_size: int, tint: Color) -> Label:
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	label.offset_top = from_bottom
-	label.offset_left = -560.0
-	label.offset_right = 560.0
+	label.offset_bottom = from_bottom
+	label.grow_vertical = Control.GROW_DIRECTION_END
+	label.offset_left = -320.0
+	label.offset_right = 320.0
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	UiTheme.outline(label, font_size)
 	label.add_theme_color_override("font_color", tint)

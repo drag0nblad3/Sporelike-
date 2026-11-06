@@ -49,7 +49,9 @@ func _show(id: String, owned: bool, timers: AbilityTimers) -> void:
 	var button: Button = _buttons[id]
 	button.visible = owned
 	if owned:
-		button.modulate.a = 1.0 if timers.ready(id) else 0.35 + 0.3 * (1.0 - timers.fraction(id))
+		var ring: CooldownRing = button.get_child(0)
+		ring.left = 0.0 if timers.ready(id) else timers.fraction(id)
+		button.modulate.a = 1.0 if timers.ready(id) else 0.75
 
 
 func hide_all() -> void:
@@ -113,6 +115,13 @@ func _make(id: String) -> Button:
 	button.add_theme_stylebox_override("pressed", lit)
 	button.add_theme_stylebox_override("hover_pressed", lit)
 	button.add_theme_color_override("font_color", tint)
+	button.add_theme_color_override("font_pressed_color", Color.WHITE)
+	button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
+	button.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	button.add_theme_constant_override("outline_size", 4)
+	var ring_fx := CooldownRing.new()
+	ring_fx.tint = tint
+	button.add_child(ring_fx)
 	button.visible = false
 	# Touches are read in _input; the button itself only draws.
 	button.toggle_mode = true
