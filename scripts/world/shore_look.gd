@@ -28,6 +28,10 @@ func _ready() -> void:
 	sand_mat.vertex_color_is_srgb = true
 	sand_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	sand_mat.roughness = 1.0
+	# Shallow water is bright even where the open sea around it is dim, so
+	# the sand gives back some warm light of its own.
+	sand_mat.emission_enabled = true
+	sand_mat.emission = DRY * 0.35
 	_sand.material_override = sand_mat
 	add_child(_sand)
 	var foam_mat := StandardMaterial3D.new()
