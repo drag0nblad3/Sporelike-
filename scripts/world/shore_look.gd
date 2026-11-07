@@ -27,11 +27,9 @@ func _ready() -> void:
 	sand_mat.vertex_color_use_as_albedo = true
 	sand_mat.vertex_color_is_srgb = true
 	sand_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	sand_mat.roughness = 1.0
 	# Shallow water is bright even where the open sea around it is dim, so
-	# the sand gives back some warm light of its own.
-	sand_mat.emission_enabled = true
-	sand_mat.emission = DRY * 0.35
+	# the sand keeps its own colours, shaded by how steeply it climbs.
+	sand_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_sand.material_override = sand_mat
 	add_child(_sand)
 	var foam_mat := StandardMaterial3D.new()
@@ -74,10 +72,17 @@ func _build_sand(center: float) -> ArrayMesh:
 					Vector2i(0, 0), Vector2i(1, 1), Vector2i(0, 1)]:
 				var d := low + (r + corner.y) * ROW
 				var s := center - LENGTH * 0.5 + (c + corner.x) * step
-				st.set_color(_sand_color(d))
+				st.set_color(_sand_color(d) * _shade(d))
 				st.set_normal(_normal(d))
 				st.add_vertex(_vertex(s, d))
 	return st.commit()
+
+
+## Steeper sand faces the camera more and catches more light.
+func _shade(d: float) -> Color:
+	var slope := ShoreLine.rise(d + 0.5) - ShoreLine.rise(d - 0.5)
+	var light := 0.85 + 0.35 * slope
+	return Color(light, light, light, 1.0)
 
 
 ## Faces up and tilts seaward as steeply as the sand climbs.
