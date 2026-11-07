@@ -71,9 +71,15 @@ func _build_sand(center: float) -> ArrayMesh:
 				var d := low + (r + corner.y) * ROW
 				var s := center - LENGTH * 0.5 + (c + corner.x) * step
 				st.set_color(_sand_color(d))
+				st.set_normal(_normal(d))
 				st.add_vertex(_vertex(s, d))
-	st.generate_normals()
 	return st.commit()
+
+
+## Faces up and tilts seaward as steeply as the sand climbs.
+func _normal(d: float) -> Vector3:
+	var slope := (ShoreLine.rise(d + 0.5) - ShoreLine.rise(d - 0.5))
+	return (Vector3.UP - _line.inland3() * slope).normalized()
 
 
 func _vertex(s: float, d: float) -> Vector3:
