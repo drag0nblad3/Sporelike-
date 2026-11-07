@@ -7,7 +7,7 @@ extends Node3D
 ## along the shore, so a few meshes are moved to the ones near the colony.
 
 const GAP := 24.0
-const INLAND := 2.0
+const INLAND := 3.0
 const RADIUS := 3.2
 const SHOWN := 7
 const FOOD_MAX := 30.0
@@ -81,7 +81,7 @@ func follow(focus: Vector2, delta: float) -> void:
 	for i in SHOWN:
 		var k := _first + i
 		var at := center(k)
-		var y := ShoreLook.FLOOR_Y + ShoreLine.rise(INLAND) + 0.05
+		var y := ShoreLook.FLOOR_Y + ShoreLine.rise(INLAND + RADIUS) + 0.05
 		_meshes[i].position = Vector3(at.x, y, at.y)
 		var mat := _meshes[i].material_override as StandardMaterial3D
 		mat.albedo_color = EMPTY.lerp(FULL, float(_food.get(k, FOOD_MAX)) / FOOD_MAX)

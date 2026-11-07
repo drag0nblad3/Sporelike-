@@ -8,7 +8,9 @@ extends Node3D
 const FLOOR_Y := -1.4
 const LENGTH := 240.0
 const RECENTER := 40.0
-const ROW := 2.0
+const ROW := 3.0
+## How far inland the sand reaches, past the edge of any view.
+const INLAND := 90.0
 const COLUMNS := 24
 const DRY := Color(0.84, 0.77, 0.58)
 const WET := Color(0.52, 0.48, 0.38)
@@ -60,7 +62,7 @@ func _build_sand(center: float) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var low := -ShoreLine.SLOPE - ROW
-	var rows := int((ShoreLine.BEACH_TOP + ShoreLine.SLOPE + 2.0 * ROW) / ROW)
+	var rows := int((INLAND + ShoreLine.SLOPE + ROW) / ROW)
 	var step := LENGTH / COLUMNS
 	for r in rows:
 		for c in COLUMNS:

@@ -10,9 +10,13 @@ const SLOPE := 30.0
 ## How far the tide moves the waterline either way, and how long a cycle lasts.
 const TIDE_RANGE := 5.0
 const TIDE_PERIOD := 60.0
-## The beach keeps rising this much per unit inland, past the waterline.
-const BEACH_RISE := 0.08
-const BEACH_TOP := 30.0
+## A nearly flat shelf just inland of the mean waterline holds the tide
+## pools; past it the beach climbs steeply, burying anything that floats,
+## up to BEACH_TOP inland.
+const SHELF := 6.0
+const SHELF_RISE := 0.05
+const BEACH_RISE := 0.4
+const BEACH_TOP := 20.0
 
 var origin := Vector2.ZERO
 var inland := Vector2(0.0, -1.0)
@@ -53,7 +57,9 @@ static func rise(d: float) -> float:
 		return 0.0
 	if d <= 0.0:
 		return surface * (d + SLOPE) / SLOPE
-	return surface + minf(d, BEACH_TOP) * BEACH_RISE
+	if d <= SHELF:
+		return surface + d * SHELF_RISE
+	return surface + SHELF * SHELF_RISE + (minf(d, BEACH_TOP) - SHELF) * BEACH_RISE
 
 
 ## How far inland the water reaches at `time` seconds into the tide.
