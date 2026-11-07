@@ -45,9 +45,10 @@ static func stroke(colony: Colony, dir: Vector3, time: float) -> void:
 		colony.body.push(i, a)
 
 
-## Moves the colony's height toward its chosen Depth.
+## Moves the colony's height toward its chosen Depth, never below the floor.
 static func rise(colony: Colony, delta: float) -> void:
-	colony.height = move_toward(colony.height, Depth.height(colony.layer), Depth.SPEED * delta)
+	var goal := move_toward(colony.height, Depth.height(colony.layer), Depth.SPEED * delta)
+	colony.height = maxf(goal, colony.floor_height)
 	colony.body.height = colony.height
 
 

@@ -8,7 +8,7 @@ extends RefCounted
 
 const SPACING := 1.0
 ## Largest body, so the soft body stays cheap on a phone.
-const MAX_CELLS := 40
+const MAX_CELLS := 60
 ## The six neighbouring grid directions; one points straight forward (+y).
 const DIRS := [
 	Vector2(0.8660254, 0.5), Vector2(0.0, 1.0), Vector2(-0.8660254, 0.5),

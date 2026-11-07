@@ -13,6 +13,10 @@ signal stage_finished
 
 ## Share of a full belly a colony starts each generation with.
 const START_ENERGY := 0.6
+## Seconds per multicellular generation: bigger bodies live longer than cells.
+const GENERATION_SECONDS := 120.0
+## Seconds the colony spends hauling itself onto the beach at the end.
+const HAUL_TIME := 3.0
 
 var ecosystem: Ecosystem
 var camera: CameraRig
@@ -46,7 +50,7 @@ func _ready() -> void:
 	_choices.rng = rng
 	_choices.smoke_test = smoke_test
 	_choices.done.connect(_on_choices_done)
-	_choices.stage_finished.connect(func() -> void: stage_finished.emit())
+	_choices.stage_finished.connect(_haul_out)
 	add_child(_choices)
 
 
@@ -85,6 +89,7 @@ func resume(data: Dictionary, at: Vector2) -> void:
 	var saved: Dictionary = data.get("colony", {})
 	plan = BodyPlan.from_dict(saved)
 	generations = int(data.get("colony_generations", 0))
+	pilot.shallows.load_data(data.get("shore", {}))
 	pilot.tint = director.genome.color()
 	pilot.nucleus = VisualParts.diet_color(director.genome)
 	director.retire()
@@ -99,7 +104,7 @@ func save_data() -> Dictionary:
 		return {}
 	var energy := pilot.colony.energy if pilot.is_alive() else 0.0
 	return {"stage": 2, "colony": plan.to_dict(), "colony_energy": energy,
-		"colony_generations": generations}
+		"colony_generations": generations, "shore": pilot.shallows.to_dict()}
 
 
 ## What the colony burns per second, for the generation's Fed score.
@@ -114,20 +119,35 @@ func center() -> Vector2:
 ## Between generations: a new cell, and now and then a bigger choice.
 func end_generation(stats: GenerationStats) -> void:
 	generations += 1
+	_choices.at_shore = is_instance_valid(pilot.colony) and pilot.shallows.reached(pilot.colony)
 	_choices.open(stats, plan, generations)
 
 
 ## After the stage is complete and its summary shown: play on.
 func play_on() -> void:
+	pilot.autopilot = Vector2.ZERO
 	_on_choices_done()
 
 
 func _on_choices_done() -> void:
-	_spawn(center())
+	_spawn(pilot.shallows.water_spot(center()))
 	ready_to_play.emit()
+
+
+## The final body is picked: the colony crawls out of the sea, then the
+## stage is complete.
+func _haul_out() -> void:
+	get_tree().paused = false
+	pilot.haul_out()
+	hud.flash_message("Your colony hauls itself out onto the sand", HAUL_TIME)
+	await get_tree().create_timer(HAUL_TIME).timeout
+	stage_finished.emit()
 
 
 func _spawn(at: Vector2) -> void:
 	pilot.tint = director.genome.color()
 	pilot.nucleus = VisualParts.diet_color(director.genome)
 	pilot.spawn(plan, at, CellEffects.max_energy(plan) * START_ENERGY)
+	if not pilot.shallows.active and plan.parts.size() >= Shallows.APPEAR_AT:
+		pilot.shallows.place(at)
+		hud.flash_message("The sea grows shallow to the north. A shore lies ahead", 4.0)

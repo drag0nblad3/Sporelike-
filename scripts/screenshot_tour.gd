@@ -139,8 +139,27 @@ func _shoot_stage_two() -> void:
 	game.stage_two.pilot.colony.layer = Depth.SURFACE
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("stage2_surface")
+	await _shoot_shallows()
 	game.cycle.finish("time")
 	await _shoot("cell_picks")
+
+
+## Late in stage 2: the shallows to the north with their beach and tide
+## pools, then the colony hauling itself out at the end of the stage.
+func _shoot_shallows() -> void:
+	var pilot := game.stage_two.pilot
+	pilot.colony.layer = Depth.FLOOR
+	pilot.shallows.place(game.stage_two.center() + Vector2(0.0, 26.0))
+	pilot.autopilot = Vector2(0.0, -1.0)
+	game.camera.zoom = 2.0
+	await get_tree().create_timer(4.0).timeout
+	await _shoot("shallows")
+	pilot.haul_out()
+	await get_tree().create_timer(StageTwo.HAUL_TIME).timeout
+	await _shoot("haul_out")
+	pilot.hauling = false
+	pilot.autopilot = Vector2.ZERO
+	game.camera.zoom = 1.0
 
 
 ## The colony lab: the symmetry choice, then two kinds of colony

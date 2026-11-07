@@ -16,6 +16,9 @@ var hud: Hud
 var colony: Colony
 var world := ColonyWorld.new()
 var rivals := RivalColonies.new()
+var shallows := Shallows.new()
+## Crawling out onto the beach at the end of the stage, beyond harm.
+var hauling := false
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player (the screenshot tour).
 var autopilot := Vector2.ZERO
@@ -35,6 +38,7 @@ func _ready() -> void:
 	rivals.ecosystem = ecosystem
 	rivals.world = world
 	add_child(rivals)
+	add_child(shallows)
 	hud.add_child(_cues)
 	hud.ability_pressed.connect(use)
 	hud.depth_pressed.connect(change_depth)
@@ -52,6 +56,7 @@ func spawn(plan: BodyPlan, at: Vector2, energy: float) -> void:
 	colony.limbs.food_finder = world.nearest_food
 	add_child(colony)
 	_dead = false
+	hauling = false
 	world.spread_around(colony.center())
 	camera.snap_to(colony.center())
 	hud.hide_abilities()
@@ -81,6 +86,12 @@ func use(id: String) -> void:
 		ColonyCaster.fire(colony, id, ecosystem, rivals.rivals)
 
 
+## The stage is over: crawl inland out of the water.
+func haul_out() -> void:
+	hauling = true
+	autopilot = shallows.line.inland if shallows.active else Vector2(0.0, -1.0)
+
+
 ## Rise (+1) or sink (-1) one Depth.
 func change_depth(step: int) -> void:
 	if is_alive():
@@ -92,19 +103,23 @@ func _physics_process(delta: float) -> void:
 		return
 	colony.move_input = autopilot if autopilot != Vector2.ZERO else TouchSteer.read(hud.joystick)
 	world.follow(colony.center())
+	var shore_meal := shallows.step(colony, rivals.rivals, hauling, delta)
+	if hauling:
+		return
 	var fight := rivals.step(colony, delta)
 	if smoke_test:
 		_smoke_timer += delta
 		colony.layer = int(_smoke_timer / 2.0) % 3
 	var on_floor := ColonySwim.at_layer(colony, Depth.FLOOR)
-	var meal := world.feed(colony, delta) + float(fight[0])
+	var meal := world.feed(colony, delta) + float(fight[0]) + shore_meal
 	if on_floor:
 		meal += ColonyFeeding.eat(colony, ecosystem)
 	if meal > 0.0:
 		colony.feed(meal)
 		ate.emit(meal * colony.digest_share())
 	if on_floor:
-		var sight := RockField.SHELTER_SIGHT if world.rocks.sheltered(colony) else 1.0
+		var hidden := world.rocks.sheltered(colony) or shallows.sheltered(colony)
+		var sight := RockField.SHELTER_SIGHT if hidden else 1.0
 		_report(ColonyThreat.hunt(ecosystem, colony, rng, sight))
 	var dive := world.jellies.step(colony, delta)
 	_report(str(dive[0]))
