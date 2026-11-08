@@ -122,6 +122,7 @@ func _check_glossary() -> void:
 	print("smoke: saved cells %d" % OrganismCollection.entries().size())
 	menu.close()
 	ColonyCheck.run(self)
+	LandGoalsCheck.run(self)
 
 
 ## In CI, build the subspecies creator and gene trees with a made-up bank.

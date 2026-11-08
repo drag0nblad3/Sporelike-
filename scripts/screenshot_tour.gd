@@ -174,6 +174,7 @@ func _shoot_animal_lab() -> void:
 	lab.autopilot = Vector2(0.35, -1.0)
 	await get_tree().create_timer(3.0).timeout
 	await _shoot("stage3")
+	await _shoot_goals(lab)
 	lab.new_body()
 	lab.autopilot = Vector2(-0.4, -1.0)
 	await get_tree().create_timer(2.5).timeout
@@ -182,6 +183,20 @@ func _shoot_animal_lab() -> void:
 	await _shoot_zoo(lab)
 	lab.queue_free()
 	await get_tree().process_frame
+
+
+## The stage 3 goals: a nest with eggs just ahead, food carried on the
+## back, and the landmark beams in the distance.
+func _shoot_goals(lab: AnimalLab) -> void:
+	lab.autopilot = Vector2.ZERO
+	await get_tree().create_timer(0.5).timeout
+	lab.goals.nest.move_to(lab.animal.focus() + lab.animal.forward() * 5.0)
+	lab.goals.nest.deliver(LandNest.FOOD_PER_EGG * 3)
+	lab.goals.food.carried = 2
+	lab.hud.flash("An egg! 3 in the nest")
+	print("smoke: landmarks at %s" % [lab.goals.landmarks.spots])
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_goals")
 
 
 ## The body customizer open on an upright biped, a leaning biped and a

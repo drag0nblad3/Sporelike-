@@ -1,10 +1,12 @@
 class_name AnimalLabHud
 extends CanvasLayer
 ## Controls for the stage 3 feel-test lab: the joystick on the left, the
-## look pad on the right, a status line (the body and the frame rate),
-## New body, Customize (opens the AnimalEditor over the look pad) and Back.
+## look pad on the right, a status line (the body, the frame rate and the
+## LandGoals progress), short notices (flash), New body, Customize (opens
+## the AnimalEditor over the look pad), Nest here and Back.
 
 signal new_body_pressed
+signal nest_pressed
 signal back_pressed
 signal recipe_changed(recipe: AnimalRecipe)
 
@@ -14,6 +16,8 @@ var editor := AnimalEditor.new()
 var _corners: Array[Button] = []
 var _status: Label
 var _hint: Label
+var _notice: Label
+var _notice_time := 0.0
 
 
 func _ready() -> void:
@@ -26,7 +30,7 @@ func _ready() -> void:
 	root.add_child(look)
 	_status = Label.new()
 	_status.position = Vector2(24, 18)
-	_status.size = Vector2(720, 80)
+	_status.size = Vector2(900, 140)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UiTheme.outline(_status, 26)
 	root.add_child(_status)
@@ -42,6 +46,16 @@ func _ready() -> void:
 	_corner(root, "Back", 20.0, func() -> void: back_pressed.emit())
 	_corner(root, "New body", 110.0, func() -> void: new_body_pressed.emit())
 	_corner(root, "Customize", 200.0, open_editor)
+	_corner(root, "Nest here", 290.0, func() -> void: nest_pressed.emit())
+	_notice = Label.new()
+	_notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_notice.offset_top = 200.0
+	_notice.offset_left = -380.0
+	_notice.offset_right = 380.0
+	_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	UiTheme.outline(_notice, 30)
+	root.add_child(_notice)
 	editor.visible = false
 	editor.changed.connect(func(recipe: AnimalRecipe) -> void: recipe_changed.emit(recipe))
 	editor.closed.connect(close_editor)
@@ -71,9 +85,21 @@ func steering() -> Vector2:
 	return TouchSteer.read(joystick)
 
 
-func show_status(body: AnimalBody) -> void:
-	_status.text = "Stage 3 test  ·  %d FPS\n%s" % [roundi(Engine.get_frames_per_second()),
-		body.describe()]
+func show_status(body: AnimalBody, goals: String) -> void:
+	_status.text = "Stage 3 test  ·  %d FPS\n%s\n%s" % [roundi(Engine.get_frames_per_second()),
+		body.describe(), goals]
+
+
+## Shows a short notice near the top for a few seconds.
+func flash(text: String) -> void:
+	_notice.text = text
+	_notice.visible = true
+	_notice_time = 3.5
+
+
+func _process(delta: float) -> void:
+	_notice_time -= delta
+	_notice.visible = _notice_time > 0.0
 
 
 func _corner(root: Control, label: String, top: float, action: Callable) -> void:

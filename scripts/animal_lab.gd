@@ -2,8 +2,9 @@ class_name AnimalLab
 extends Node3D
 ## The stage 3 feel test: one land animal on hilly ground (LandTerrain,
 ## LandScatter) under an open sky with haze, the ChaseCamera, the joystick
-## and look pad, New body for a random AnimalBody and the body customizer
-## (AnimalEditor, built by AnimalBuilder). Used from the title
+## and look pad, New body for a random AnimalBody, the body customizer
+## (AnimalEditor, built by AnimalBuilder) and the land goals (LandGoals:
+## food, nest and eggs, landmarks that unlock parts). Used from the title
 ## screen's Test stage 3 and by the screenshot tour.
 
 signal back_requested
@@ -13,6 +14,7 @@ const SKY := Color(0.62, 0.77, 0.88)
 var animal: Animal
 var camera := ChaseCamera.new()
 var hud := AnimalLabHud.new()
+var goals := LandGoals.new()
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player, in screen terms like the
 ## joystick (the screenshot tour).
@@ -25,6 +27,12 @@ func _ready() -> void:
 	add_child(_sun())
 	add_child(LandTerrain.new())
 	add_child(LandScatter.new())
+	add_child(goals)
+	goals.notice.connect(func(text: String) -> void: hud.flash(text))
+	hud.editor.unlocks = goals.unlocks
+	hud.nest_pressed.connect(func() -> void:
+		if is_instance_valid(animal):
+			goals.nest_here(animal))
 	add_child(camera)
 	add_child(hud)
 	hud.look.dragged.connect(camera.drag)
@@ -54,7 +62,7 @@ func set_body(body: AnimalBody) -> void:
 	camera.snap(animal.focus(), heading)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not is_instance_valid(animal):
 		return
 	var stick := autopilot if autopilot != Vector2.ZERO else hud.steering()
@@ -63,6 +71,7 @@ func _physics_process(_delta: float) -> void:
 	var right := ahead.cross(Vector3.UP)
 	var dir := right * stick.x - ahead * stick.y
 	animal.move_input = Vector2(dir.x, dir.z)
+	goals.step(animal, delta)
 
 
 func _process(delta: float) -> void:
@@ -70,7 +79,7 @@ func _process(delta: float) -> void:
 		return
 	camera.showcase = hud.editor.visible
 	camera.follow(animal.focus(), animal.heading, animal.body.radii[0], delta)
-	hud.show_status(animal.body)
+	hud.show_status(animal.body, goals.status_text(animal.focus()))
 
 
 func _environment() -> WorldEnvironment:
