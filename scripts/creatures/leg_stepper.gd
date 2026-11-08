@@ -29,7 +29,7 @@ func update(hip: Vector3, home: Vector3, lead: Vector3, reach: float, delta: flo
 		foot = _from.lerp(_to, _t) + Vector3.UP * sin(_t * PI) * LIFT
 		if _t >= 1.0:
 			stepping = false
-	elif foot.distance_to(home) > reach and not (partner and partner.stepping):
+	elif _should_step(home, reach):
 		stepping = true
 		_t = 0.0
 		_from = foot
@@ -40,6 +40,15 @@ func update(hip: Vector3, home: Vector3, lead: Vector3, reach: float, delta: flo
 	chain.joints[1] = knee_up
 	chain.joints[2] = foot
 	chain.solve(hip, foot, 4)
+
+
+## Steps when the foot has fallen behind, waiting for its partner unless
+## it is so far behind that the leg would stretch out of shape.
+func _should_step(home: Vector3, reach: float) -> bool:
+	var gap := foot.distance_to(home)
+	if gap > reach * 2.0:
+		return true
+	return gap > reach and not (partner and partner.stepping)
 
 
 func plant(at: Vector3) -> void:
