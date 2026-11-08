@@ -3,7 +3,8 @@ extends Node
 ## Steers the player's colony in the main game: steering from the joystick,
 ## the camera, the energy bar, the ability buttons and the edge-of-screen
 ## senses. It feeds the colony (ColonyFeeding), lets hunters and rival
-## colonies bite it (ColonyThreat, RivalColonies), and reports each meal and
+## colonies bite it (ColonyThreat, RivalColonies, the ApexHunt boss), and
+## reports each meal and
 ## when the colony starves or is eaten.
 
 signal ate(energy: float)
@@ -16,6 +17,7 @@ var hud: Hud
 var colony: Colony
 var world := ColonyWorld.new()
 var rivals := RivalColonies.new()
+var apex := ApexHunt.new()
 var shallows := Shallows.new()
 ## Crawling out onto the beach at the end of the stage, beyond harm.
 var hauling := false
@@ -38,6 +40,14 @@ func _ready() -> void:
 	rivals.ecosystem = ecosystem
 	rivals.world = world
 	add_child(rivals)
+	apex.ecosystem = ecosystem
+	apex.world = world
+	apex.appeared.connect(func(title: String) -> void:
+		var note := "A %s hunts these waters! Bite it to death for a feast" % title.to_lower()
+		hud.flash_message(note, 4.0))
+	apex.slain.connect(func(title: String) -> void:
+		hud.flash_message("You killed the %s! Its remains are a feast" % title.to_lower(), 4.0))
+	add_child(apex)
 	add_child(shallows)
 	hud.add_child(_cues)
 	hud.ability_pressed.connect(use)
@@ -67,6 +77,7 @@ func retire() -> void:
 		colony.queue_free()
 	colony = null
 	rivals.clear()
+	apex.clear()
 	_cues.clear()
 
 
@@ -107,11 +118,12 @@ func _physics_process(delta: float) -> void:
 	if hauling:
 		return
 	var fight := rivals.step(colony, delta)
+	var boss := apex.step(colony, delta)
 	if smoke_test:
 		_smoke_timer += delta
 		colony.layer = int(_smoke_timer / 2.0) % 3
 	var on_floor := ColonySwim.at_layer(colony, Depth.FLOOR)
-	var meal := world.feed(colony, delta) + float(fight[0]) + shore_meal
+	var meal := world.feed(colony, delta) + float(fight[0]) + float(boss[0]) + shore_meal
 	if on_floor:
 		meal += ColonyFeeding.eat(colony, ecosystem)
 	if meal > 0.0:
@@ -126,6 +138,7 @@ func _physics_process(delta: float) -> void:
 	if bool(dive[1]):
 		hud.flash_message("A comb jelly is diving at you! Sink to the floor", 2.0)
 	_report(str(fight[1]))
+	_report(str(boss[1]))
 	if colony.wounds.is_fatal(colony):
 		_die(eaten)
 	elif colony.energy <= 0.0:

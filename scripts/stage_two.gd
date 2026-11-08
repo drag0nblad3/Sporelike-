@@ -45,6 +45,7 @@ func _ready() -> void:
 	pilot.rng.seed = rng.randi()
 	pilot.smoke_test = smoke_test
 	pilot.rivals.rng.seed = rng.randi()
+	pilot.apex.rng.seed = rng.randi()
 	add_child(pilot)
 	_choices.hud = hud
 	_choices.rng = rng
@@ -90,6 +91,7 @@ func resume(data: Dictionary, at: Vector2) -> void:
 	plan = BodyPlan.from_dict(saved)
 	generations = int(data.get("colony_generations", 0))
 	pilot.shallows.load_data(data.get("shore", {}))
+	pilot.apex.load_data(data.get("apex", {}))
 	pilot.tint = director.genome.color()
 	pilot.nucleus = VisualParts.diet_color(director.genome)
 	director.retire()
@@ -104,7 +106,8 @@ func save_data() -> Dictionary:
 		return {}
 	var energy := pilot.colony.energy if pilot.is_alive() else 0.0
 	return {"stage": 2, "colony": plan.to_dict(), "colony_energy": energy,
-		"colony_generations": generations, "shore": pilot.shallows.to_dict()}
+		"colony_generations": generations, "shore": pilot.shallows.to_dict(),
+		"apex": pilot.apex.to_dict()}
 
 
 ## What the colony burns per second, for the generation's Fed score.

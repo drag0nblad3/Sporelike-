@@ -19,9 +19,12 @@ static func can_bite(eater: Colony, target: Colony) -> bool:
 
 
 ## Tries one bite of `eater` on `target`. Returns [outcome, energy eaten];
-## the outcome is "" when no mouth touched.
-static func attempt(eater: Colony, target: Colony, rng: RandomNumberGenerator) -> Array:
-	if not eater.abilities.ready("bite") or eater.stun_time > 0.0 or not can_bite(eater, target) \
+## the outcome is "" when no mouth touched. any_size: bite even a bigger
+## colony (the apex, which anyone may bite).
+static func attempt(eater: Colony, target: Colony, rng: RandomNumberGenerator,
+		any_size := false) -> Array:
+	if not eater.abilities.ready("bite") or eater.stun_time > 0.0 \
+			or not (any_size or can_bite(eater, target)) \
 			or not Depth.level(eater.height, target.height):
 		return ["", 0.0]
 	for point in eater.eat_points():
