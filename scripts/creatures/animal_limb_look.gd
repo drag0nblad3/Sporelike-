@@ -23,7 +23,7 @@ func build(body: AnimalBody) -> void:
 	var foot_mat := AnimalParts.material(body.color2().darkened(0.3))
 	if body.foot == "sucker":
 		foot_mat = AnimalParts.material(body.color2().lightened(0.3))
-	for k in _limb_count(body):
+	for k in body.limb_count():
 		for j in _bones:
 			_rods.append(AnimalParts.node(AnimalParts.rod(), limb, self))
 			var joint: MeshInstance3D = null
@@ -64,17 +64,6 @@ func update(animal: Animal, _frames: Array[Transform3D]) -> void:
 		var fwd := animal.segment_forward(i)
 		_feet[k].transform = _foot(joints[_bones], fwd, thick * (0.6 if bendy else 1.3))
 	_pose_tail(animal)
-
-
-## Limbs the body grows: mirrored pairs, or a ring of 2n+1 per segment
-## when radial (as AnimalLegs builds them).
-func _limb_count(body: AnimalBody) -> int:
-	if body.symmetry != "radial":
-		return body.pairs() * 2
-	var n := 0
-	for count in body.leg_pairs:
-		n += count * 2 + 1 if count > 0 else 0
-	return n
 
 
 func _foot(at: Vector3, fwd: Vector3, s: float) -> Transform3D:

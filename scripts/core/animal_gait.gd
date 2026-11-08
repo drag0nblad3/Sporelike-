@@ -56,14 +56,14 @@ static func step_time(body: AnimalBody) -> float:
 
 
 static func verb(body: AnimalBody) -> String:
-	var limbs := body.pairs() * 2
+	var limbs := body.limb_count()
 	match of(body):
 		SLITHER:
 			return "slithers"
 		CREEP:
 			return "creeps on %d tentacles" % limbs
 		HOP:
-			return "hops on 2 legs"
+			return "hops on %d legs" % limbs
 		SCUTTLE:
 			return "scuttles on %d legs" % limbs
 	return "walks on %d legs" % limbs

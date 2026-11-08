@@ -80,6 +80,16 @@ func pairs() -> int:
 	return n
 
 
+## Limbs it walks on: mirrored pairs, or a ring of 2n+1 per segment when radial.
+func limb_count() -> int:
+	if symmetry != "radial":
+		return pairs() * 2
+	var n := 0
+	for count in leg_pairs:
+		n += count * 2 + 1 if count > 0 else 0
+	return n
+
+
 func shape_scale(i: int) -> Vector3:
 	var s: Vector3 = SHAPES.get(shapes[i], SHAPES["round"])
 	return s
