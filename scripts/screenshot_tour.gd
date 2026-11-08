@@ -178,8 +178,28 @@ func _shoot_animal_lab() -> void:
 	lab.autopilot = Vector2(-0.4, -1.0)
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("stage3_body2")
+	await _shoot_zoo(lab)
 	lab.queue_free()
 	await get_tree().process_frame
+
+
+## Six random land animals side by side, facing the camera, to show the
+## spread of body plans.
+func _shoot_zoo(lab: AnimalLab) -> void:
+	lab.animal.queue_free()
+	var spot := Vector3(0.0, 0.0, 30.0)
+	for k in 6:
+		var beast := Animal.new()
+		beast.heading = PI
+		var at := spot + Vector3(-9.0 + 3.6 * k, 0.0, 0.0)
+		beast.build(AnimalRandom.make(lab.rng), at)
+		lab.add_child(beast)
+	spot.y = LandHeight.at(spot.x, spot.z)
+	lab.camera.snap(spot, 0.0)
+	lab.camera.position += (lab.camera.position - spot) * 0.5
+	lab.camera.look_at(spot + Vector3.UP)
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_zoo")
 
 
 ## The colony lab: the symmetry choice, then two kinds of colony

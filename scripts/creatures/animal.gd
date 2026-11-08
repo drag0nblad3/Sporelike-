@@ -1,26 +1,27 @@
 class_name Animal
 extends Node3D
 ## A stage 3 land animal (AnimalBody): its head goes where move_input
-## points, turning at a steady rate, every other segment trails the one in
-## front at a fixed spacing over the ground (LandHeight), and each leg
-## steps on its own (LegStepper). Drawn by AnimalLook.
+## points, turning at a steady rate, and every other segment trails the
+## one in front over the ground (LandHeight), arched by its posture. Limbs
+## step on their own (AnimalLegs); a hopper bounds along in leaps
+## (AnimalGait). Drawn by AnimalLook.
 
 ## Radians per second it can turn.
 const TURN := 2.6
 ## How fast it gets up to speed or stops, in units per second per second.
 const ACCEL := 8.0
+const HOP_RATE := 7.0
 
 var body: AnimalBody
 ## Where to go, in world x and z, length 0 to 1.
 var move_input := Vector2.ZERO
 var heading := 0.0
 var spine := PackedVector3Array()
-var legs: Array[LegStepper] = []
-## Which segment each leg hangs from, and which side (-1 or 1).
-var leg_segment := PackedInt32Array()
-var leg_side := PackedFloat32Array()
+var legs := AnimalLegs.new()
 var speed_now := 0.0
 var time := 0.0
+## Height of the current leap for a hopper.
+var bounce := 0.0
 var _look := AnimalLook.new()
 
 
@@ -33,28 +34,13 @@ func _ready() -> void:
 func build(new_body: AnimalBody, at: Vector3) -> void:
 	body = new_body
 	spine.clear()
-	legs.clear()
-	leg_segment.clear()
-	leg_side.clear()
 	var p := at
 	for i in body.segments():
 		spine.append(p)
 		if i < body.segments() - 1:
 			p -= forward() * spacing(i)
 	_rest_on_ground()
-	for i in body.segments():
-		if body.legs[i] == 0:
-			continue
-		var pair: Array[LegStepper] = []
-		for side: float in [-1.0, 1.0]:
-			var leg := LegStepper.new(body.leg_length)
-			leg.plant(_home(i, side))
-			legs.append(leg)
-			leg_segment.append(i)
-			leg_side.append(side)
-			pair.append(leg)
-		pair[0].partner = pair[1]
-		pair[1].partner = pair[0]
+	legs.build(self)
 	if is_inside_tree():
 		_look.build(body)
 
@@ -65,7 +51,7 @@ func forward() -> Vector3:
 
 ## Gap between segment i and the one behind it.
 func spacing(i: int) -> float:
-	return (body.radii[i] + body.radii[mini(i + 1, body.segments() - 1)]) * 0.85
+	return (body.half_length(i) + body.half_length(mini(i + 1, body.segments() - 1))) * 0.7
 
 
 ## The direction segment i faces (toward the one in front of it).
@@ -75,6 +61,10 @@ func segment_forward(i: int) -> Vector3:
 	var d := spine[i - 1] - spine[i]
 	d.y = 0.0
 	return d.normalized() if d.length_squared() > 0.0001 else forward()
+
+
+func segment_right(i: int) -> Vector3:
+	return segment_forward(i).cross(Vector3.UP)
 
 
 func head() -> Vector3:
@@ -90,7 +80,13 @@ func _physics_process(delta: float) -> void:
 	if amount > 0.05:
 		heading = rotate_toward(heading, atan2(dir.x, dir.z), TURN * delta)
 	speed_now = move_toward(speed_now, body.speed() * amount, ACCEL * delta)
-	spine[0] += forward() * speed_now * delta
+	var pace := speed_now
+	bounce = 0.0
+	if body.gait() == AnimalGait.HOP and speed_now > 0.2:
+		var leap := maxf(sin(time * HOP_RATE), 0.0)
+		pace = speed_now * (0.3 + 1.6 * leap)
+		bounce = leap * body.longest_leg() * 0.35
+	spine[0] += forward() * pace * delta
 	for i in range(1, spine.size()):
 		var back := spine[i] - spine[i - 1]
 		back.y = 0.0
@@ -98,12 +94,7 @@ func _physics_process(delta: float) -> void:
 			back = -forward()
 		spine[i] = spine[i - 1] + back.normalized() * spacing(i - 1)
 	_rest_on_ground()
-	for k in legs.size():
-		var i := leg_segment[k]
-		var side := leg_side[k]
-		var hip := spine[i] + _right(i) * side * body.radii[i] * 0.8
-		var lead := segment_forward(i) * speed_now * 0.22
-		legs[k].update(hip, _home(i, side), lead, body.leg_length * 0.45, delta)
+	legs.update(self, delta)
 
 
 func _process(_delta: float) -> void:
@@ -112,18 +103,10 @@ func _process(_delta: float) -> void:
 
 
 func _rest_on_ground() -> void:
+	var last := maxf(spine.size() - 1, 1)
 	for i in spine.size():
 		var p := spine[i]
-		p.y = LandHeight.at(p.x, p.z) + body.ride_height() + body.radii[i] * 0.7
+		var arch := sin(PI * i / last) * body.arch * (body.ride_height() + body.radii[i])
+		var half_height := body.radii[i] * body.shape_scale(i).y
+		p.y = LandHeight.at(p.x, p.z) + body.ride_height() + half_height * 0.8 + arch + bounce
 		spine[i] = p
-
-
-func _right(i: int) -> Vector3:
-	return segment_forward(i).cross(Vector3.UP)
-
-
-## Where a foot rests under segment i on this side, on the ground.
-func _home(i: int, side: float) -> Vector3:
-	var p := spine[i] + _right(i) * side * (body.radii[i] + body.leg_length * 0.5)
-	p.y = LandHeight.at(p.x, p.z)
-	return p

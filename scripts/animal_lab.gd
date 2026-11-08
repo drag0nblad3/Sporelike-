@@ -42,7 +42,7 @@ func new_body() -> void:
 		animal.queue_free()
 	animal = Animal.new()
 	animal.heading = heading
-	animal.build(AnimalBody.random(rng), at)
+	animal.build(AnimalRandom.make(rng), at)
 	add_child(animal)
 	camera.snap(animal.head(), heading)
 

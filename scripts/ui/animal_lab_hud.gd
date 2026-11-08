@@ -23,6 +23,8 @@ func _ready() -> void:
 	root.add_child(look)
 	_status = Label.new()
 	_status.position = Vector2(24, 18)
+	_status.size = Vector2(900, 80)
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UiTheme.outline(_status, 26)
 	root.add_child(_status)
 	_hint = Label.new()
@@ -43,8 +45,8 @@ func steering() -> Vector2:
 
 
 func show_status(body: AnimalBody) -> void:
-	_status.text = "Stage 3 test  ·  %s  ·  %d FPS" % [body.describe(),
-		roundi(Engine.get_frames_per_second())]
+	_status.text = "Stage 3 test  ·  %d FPS\n%s" % [roundi(Engine.get_frames_per_second()),
+		body.describe()]
 
 
 func _corner(label: String, top: float, action: Callable) -> Button:

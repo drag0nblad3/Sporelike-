@@ -1,39 +1,46 @@
 class_name AnimalBody
 extends RefCounted
-## The body plan of a stage 3 land animal, as the feel-test lab uses it: a
-## chain of segments from the head back, how thick each is, which carry a
-## pair of legs and how long the legs are, and its colours. random() makes
-## a varied one; the full slot-and-part editor comes later.
+## The body plan of a stage 3 land animal: a chain of segments from the
+## head back, each with a shape, a size, 0 to 2 pairs of limbs and maybe a
+## part on top, plus the limbs' build, extras on the head and tail, and its
+## colours. AnimalRandom makes varied ones; AnimalGait reads how it moves.
 
-## Radius of each segment, head first.
+## Width, height and length of each segment shape, per unit of radius.
+const SHAPES := {
+	"round": Vector3(1.0, 0.85, 1.25), "flat": Vector3(1.35, 0.55, 1.2),
+	"keel": Vector3(0.75, 1.3, 1.2), "tube": Vector3(0.8, 0.8, 1.8),
+	"bulb": Vector3(1.25, 1.15, 1.3),
+}
+
 var radii := PackedFloat32Array()
-## 1 where a segment carries a pair of legs.
-var legs := PackedByteArray()
-var leg_length := 1.0
-var hue := 0.3
-var striped := false
-## Eyes on the head: 2, 4 or 6.
+var shapes: Array[String] = []
+## Pairs of limbs on each segment (0 to 2), and how long they are.
+var leg_pairs := PackedByteArray()
+var leg_lengths := PackedFloat32Array()
+## What grows on top of each segment: "", "spikes", "sail" or "plates".
+var tops: Array[String] = []
+## "leg" (jointed, with feet) or "tentacle" (bendy, many joints).
+var limb := "leg"
+## Bones in each limb (2 to 4 for legs).
+var joints := 2
+## "pad", "claw", "spike" or "sucker".
+var foot := "pad"
+## How much the middle of the back arches up (0 = flat).
+var arch := 0.0
+## How far out to the sides the feet stand (low = upright, high = sprawling).
+var sprawl := 0.6
+## A single big claw on one side of the head (-1 or 1), or 0 for none.
+var claw_side := 0
+## "", "fork", "club" or "spike".
+var tail := ""
+var horns := 0
+var feelers := false
+var eye_stalks := false
 var eyes := 2
-
-
-static func random(rng: RandomNumberGenerator) -> AnimalBody:
-	var body := AnimalBody.new()
-	var count := rng.randi_range(3, 8)
-	var thick := rng.randf_range(0.45, 0.8)
-	var taper := rng.randf_range(0.0, 0.5)
-	var legless := rng.randf() < 0.2
-	for i in count:
-		var t := float(i) / float(count - 1)
-		body.radii.append(thick * (1.0 - taper * t) * rng.randf_range(0.9, 1.1))
-		var has_legs := not legless and i > 0 and i < count - 1 and rng.randf() < 0.7
-		body.legs.append(1 if has_legs else 0)
-	if not legless and body.pairs() == 0:
-		body.legs[1] = 1
-	body.leg_length = rng.randf_range(0.8, 2.0) * thick * 2.0
-	body.hue = rng.randf()
-	body.striped = rng.randf() < 0.5
-	body.eyes = [2, 2, 4, 6][rng.randi() % 4]
-	return body
+## "plain", "stripes", "spots" or "bands".
+var pattern := "plain"
+var hue := 0.3
+var hue2 := 0.6
 
 
 func segments() -> int:
@@ -42,27 +49,65 @@ func segments() -> int:
 
 func pairs() -> int:
 	var n := 0
-	for flag in legs:
-		n += flag
+	for count in leg_pairs:
+		n += count
 	return n
+
+
+func shape_scale(i: int) -> Vector3:
+	var s: Vector3 = SHAPES.get(shapes[i], SHAPES["round"])
+	return s
+
+
+## Half the segment's length along the body.
+func half_length(i: int) -> float:
+	return radii[i] * shape_scale(i).z
+
+
+func longest_leg() -> float:
+	var most := 0.0
+	for i in segments():
+		if leg_pairs[i] > 0:
+			most = maxf(most, leg_lengths[i])
+	return most
 
 
 ## How high the body rides above the ground: on its legs, or on its belly.
 func ride_height() -> float:
-	return leg_length * 0.55 if pairs() > 0 else 0.0
-
-
-## World units per second at full stick: legs help, long legs more.
-func speed() -> float:
 	if pairs() == 0:
-		return 3.0
-	return 2.5 + minf(pairs(), 4) * 0.5 + leg_length * 0.8
+		return 0.0
+	var lift := 0.6 if limb == "leg" else 0.3
+	return longest_leg() * lift * (1.15 - sprawl * 0.5)
+
+
+func gait() -> String:
+	return AnimalGait.of(self)
+
+
+func speed() -> float:
+	return AnimalGait.speed(self)
 
 
 func color() -> Color:
 	return Color.from_hsv(hue, 0.55, 0.75)
 
 
+func color2() -> Color:
+	return Color.from_hsv(hue2, 0.6, 0.85)
+
+
 func describe() -> String:
-	var how := "slithers" if pairs() == 0 else "walks on %d legs" % (pairs() * 2)
-	return "%d segments, %d eyes, %s" % [segments(), eyes, how]
+	var parts := PackedStringArray()
+	if horns > 0:
+		parts.append("horns")
+	if claw_side != 0:
+		parts.append("big claw")
+	if eye_stalks:
+		parts.append("eye stalks")
+	if tail != "":
+		parts.append(tail + " tail")
+	for top in tops:
+		if top != "" and not (top + "s" in parts or top in parts):
+			parts.append(top)
+	var text := "%d segments, %s" % [segments(), AnimalGait.verb(self)]
+	return text + (" · " + ", ".join(parts) if not parts.is_empty() else "")
