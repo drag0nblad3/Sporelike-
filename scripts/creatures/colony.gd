@@ -28,6 +28,8 @@ var stun_time := 0.0
 ## The Depth it is swimming toward, and its height above the floor now.
 var layer := Depth.FLOOR
 var height := 0.0
+## The lowest it can be: raised where the sea floor rises (Shallows).
+var floor_height := 0.0
 ## Where the gut cavity and mouth openings sit in the resting shape.
 var hollow_rest := PackedVector3Array()
 var _look := ColonyLook.new()

@@ -3,16 +3,23 @@ extends Node
 ## The choices between multicellular generations, while the game is
 ## paused: a new kind of cell every time (CellPickScreen), the colony's
 ## FeedingStyle once early on, and its FinalBody once the body is full,
-## which ends the stage. Changes the plan it is given.
+## which ends the stage once the colony is in the shallows. Changes the
+## plan it is given. Past FAST_GROWTH_AT cells each pick grows twice.
 
 ## The pick is done; the next generation can start.
 signal done
 ## The final body was picked: the stage is complete.
 signal stage_finished
 
+## Cells after which every pick grows its cells twice, so the bigger
+## body still fills out at a steady pace.
+const FAST_GROWTH_AT := 30
+
 var hud: Hud
 var rng: RandomNumberGenerator
 var smoke_test := false
+## Whether the colony ended the generation in the shallows (Shallows.reached).
+var at_shore := true
 
 var _plan: BodyPlan
 var _stats: GenerationStats
@@ -34,8 +41,13 @@ func open(stats: GenerationStats, plan: BodyPlan, generations: int) -> void:
 	_plan = plan
 	_stats = stats
 	if plan.final_body == "" and plan.parts.size() >= BodyPlan.MAX_CELLS:
-		_offer(FinalBody.ALL, "Your body is fully grown",
-			"Choose the body your species settles into. This completes the stage.", _on_final)
+		if at_shore or smoke_test:
+			_offer(FinalBody.ALL, "Your body is fully grown",
+				"Choose the body your species takes out of the sea. This completes the stage.",
+				_on_final)
+		else:
+			hud.flash_message("Fully grown! Swim north into the shallows to finish the stage", 5.0)
+			done.emit.call_deferred()
 	elif plan.style == "" and generations >= FeedingStyle.OFFER_AT:
 		_offer(FeedingStyle.ALL, "How does your colony feed?",
 			"Your body specializes. This choice is for good.", _on_style)
@@ -90,4 +102,6 @@ func _on_cell_chosen(role: String) -> void:
 	_cells.visible = false
 	if role != "":
 		_plan.grow(role)
+		if _plan.parts.size() >= FAST_GROWTH_AT:
+			_plan.grow(role)
 	done.emit()

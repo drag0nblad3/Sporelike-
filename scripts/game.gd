@@ -246,6 +246,8 @@ func _begin_generation() -> void:
 ## Starts the generation's stats against the current body's running cost,
 ## and pulls the camera back and makes food scarcer as the species progresses.
 func _start_cycle() -> void:
+	if stage_two.active and not smoke_test:
+		cycle.length = StageTwo.GENERATION_SECONDS
 	cycle.begin()
 	director.tracker.reset(cycle.length)
 	StatSheet.shared = director.genome
