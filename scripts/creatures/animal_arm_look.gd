@@ -2,9 +2,8 @@ class_name AnimalArmLook
 extends Node3D
 ## The extra arms of a stage 3 Animal: 1 or 2 pairs held up in front from
 ## the shoulders (the segment behind the head), never walked on, swaying as
-## it moves (a lopsided body has one big arm and one small). Each ends in
-## a hand with fingers, an opening pincer or a long folded blade, by the
-## AnimalBody's arm_tip.
+## it moves. Each ends in a hand with fingers, an opening pincer or a long
+## folded blade, by the AnimalBody's arm_tip.
 
 var _body: AnimalBody
 ## Parts of arm k: upper arm, forearm, then its tip parts.
@@ -45,12 +44,8 @@ func update(animal: Animal, frames: Array[Transform3D]) -> void:
 	for k in _arms.size():
 		var pair := k / 2
 		var side := -1.0 if k % 2 == 0 else 1.0
-		# A lopsided body has one big arm and one small one.
-		var big := 1.0
-		if _body.symmetry == "lopsided":
-			big = 1.35 if side < 0.0 else 0.75
-		var length := reach * big
-		var w := r * big
+		var length := reach
+		var w := r
 		var out := frame.basis.x.normalized() * side
 		var shoulder := frame * Vector3(side * 0.8, 0.35 - 0.3 * pair, 0.6 - 0.7 * pair)
 		var sway := sin(animal.time * 2.5 + pair * 1.7 + side) * 0.12

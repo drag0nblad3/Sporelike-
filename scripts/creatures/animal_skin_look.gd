@@ -3,7 +3,8 @@ extends MeshInstance3D
 ## One smooth skin over a stage 3 Animal's body, for a body that is not
 ## drawn as separate segments: a tube rebuilt every frame through the
 ## segment centres (a Catmull-Rom curve), as wide and tall as each segment
-## and rounded off at both ends. Stripes become coloured rings.
+## and rounded off at both ends (for an upright biped the tube stands up).
+## Stripes become coloured rings.
 
 const SIDES := 12
 const STEPS := 4
@@ -12,6 +13,7 @@ const CAP := [1.0, 0.94, 0.8, 0.55, 0.25]
 
 var _body: AnimalBody
 var _first := 0
+var _upright := false
 var _skin := Color.WHITE
 var _stripe := Color.WHITE
 var _mesh := ArrayMesh.new()
@@ -22,6 +24,7 @@ var _indices := PackedInt32Array()
 func build(body: AnimalBody, first: int) -> void:
 	_body = body
 	_first = first
+	_upright = body.posture == "upright"
 	_skin = body.color()
 	_stripe = body.color2() if body.pattern == "stripes" else body.color()
 	mesh = _mesh
@@ -42,7 +45,9 @@ func update(frames: Array[Transform3D]) -> void:
 	for s in n:
 		var t := centres[mini(s + 1, n - 1)] - centres[maxi(s - 1, 0)]
 		t = t.normalized() if t.length_squared() > 0.000001 else Vector3.BACK
-		var right := t.cross(Vector3.UP).normalized()
+		# A standing body runs straight up, so take its sides from the head.
+		var across := frames[0].basis.z.normalized() if _upright else Vector3.UP
+		var right := t.cross(across).normalized()
 		var up := right.cross(t)
 		var size := sizes[s]
 		var tint := _stripe if segs[s] % 2 == 1 else _skin
@@ -91,12 +96,14 @@ func _samples(frames: Array[Transform3D], centres: PackedVector3Array,
 
 func _cap_ring(frame: Transform3D, f: float, way: float, centres: PackedVector3Array,
 		sizes: PackedVector2Array) -> void:
-	centres.append(frame.origin + frame.basis.z * f * way)
+	var axis := frame.basis.y if _upright else frame.basis.z
+	centres.append(frame.origin + axis * f * way)
 	sizes.append(_size(frame) * sqrt(maxf(1.0 - f * f, 0.0)))
 
 
 func _size(frame: Transform3D) -> Vector2:
-	return Vector2(frame.basis.x.length(), frame.basis.y.length())
+	var depth := frame.basis.z if _upright else frame.basis.y
+	return Vector2(frame.basis.x.length(), depth.length())
 
 
 func _curve(p0: Vector3, p1: Vector3, p2: Vector3, p3: Vector3, t: float) -> Vector3:

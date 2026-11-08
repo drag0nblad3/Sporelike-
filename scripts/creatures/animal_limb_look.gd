@@ -50,7 +50,7 @@ func update(animal: Animal, _frames: Array[Transform3D]) -> void:
 	var bendy := _body.limb == "tentacle"
 	for k in limbs.size():
 		var i := animal.legs.segment[k]
-		# Thicker for a mightier build, and for a lopsided body's bigger side.
+		# Thicker for a mightier build.
 		var thick := _body.radii[0] * 0.15 * _body.leg_build \
 			* animal.legs.length[k] / _body.leg_lengths[i]
 		var joints := limbs[k].chain.joints

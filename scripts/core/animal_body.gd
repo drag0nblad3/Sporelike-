@@ -37,9 +37,12 @@ var tail := ""
 ## the front), "low" (slung under the front) or "middle" (rising from the
 ## middle of the back).
 var head_at := "front"
-## "two-sided" (mirrored), "radial" (limbs and eyes spread all round) or
-## "lopsided" (one side's limbs and eyes bigger than the other's).
+## "two-sided" (mirrored) or "radial" (limbs and eyes spread all round).
 var symmetry := "two-sided"
+## "crawl" (body along the ground on its legs), "leaning" (a biped with
+## the body level over one pair of legs in the middle, like a dinosaur) or
+## "upright" (a biped standing tall on one pair of legs at the bottom).
+var posture := "crawl"
 ## "none", "smile", "beak", "mandibles", "tusks", "trunk" or "sucker".
 var mouth := "smile"
 ## How thick and strong the legs are (1 = thin, up to about 2.6 = mighty).

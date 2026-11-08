@@ -2,7 +2,7 @@ class_name AnimalGait
 extends RefCounted
 ## How a stage 3 animal gets around, read from its body rather than picked:
 ## no limbs means it slithers, tentacles creep, a single pair of long legs
-## hops, many legs scuttle, and anything else walks.
+## hops, many legs scuttle, and bipeds and anything else walk.
 
 const SLITHER := "slither"
 const CREEP := "creep"
@@ -15,6 +15,8 @@ static func of(body: AnimalBody) -> String:
 	var pairs := body.pairs()
 	if pairs == 0:
 		return SLITHER
+	if body.posture != "crawl":
+		return WALK
 	if body.limb == "tentacle":
 		return CREEP
 	if pairs == 1 and body.longest_leg() >= body.radii[0] * 2.4:
@@ -57,6 +59,9 @@ static func step_time(body: AnimalBody) -> float:
 
 static func verb(body: AnimalBody) -> String:
 	var limbs := body.limb_count()
+	if body.posture != "crawl" and body.pairs() > 0:
+		return ("walks upright on %d legs" if body.posture == "upright"
+			else "strides on %d legs") % limbs
 	match of(body):
 		SLITHER:
 			return "slithers"

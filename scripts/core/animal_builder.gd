@@ -2,8 +2,8 @@ class_name AnimalBuilder
 extends RefCounted
 ## Turns the picks of an AnimalRecipe (the body customizer) into an
 ## AnimalBody: segment sizes from the build and taper, leg pairs spread
-## evenly along the body (a single long pair goes at the back, so it hops),
-## and every head, back and tail part as picked.
+## evenly along the body (a single long pair goes at the back, so it hops)
+## or one pair under a biped, and every head, back and tail part as picked.
 
 const THICK := [0.45, 0.6, 0.8]
 const TAPER := [0.0, 0.4, -0.3]
@@ -12,6 +12,7 @@ const STANCE := [0.1, 0.5, 1.0, 0.95, 0.4]
 const KNEE := ["up", "up", "up", "high", "back"]
 const LEG_BUILD := [1.0, 1.7, 2.6]
 const HEAD_AT := ["front", "raised", "low", "middle"]
+const POSTURE := ["crawl", "leaning", "upright"]
 const NECK := [0.0, 0.8, 1.7]
 const ARCH := [0.0, 0.3, 0.6]
 
@@ -30,7 +31,11 @@ static func build(recipe: AnimalRecipe) -> AnimalBody:
 		body.leg_pairs.append(0)
 		body.leg_lengths.append(leg)
 		body.tops.append("" if top == "none" or i == 0 else top)
-	_place_legs(body, recipe.index("legs"), recipe.index("leg_length") == 2)
+	body.posture = POSTURE[recipe.index("posture")]
+	if body.posture == "crawl":
+		_place_legs(body, recipe.index("legs"), recipe.index("leg_length") == 2)
+	else:
+		make_biped(body)
 	body.smooth = recipe.value("skin") == "smooth"
 	body.neck = NECK[recipe.index("neck")]
 	body.sprawl = STANCE[recipe.index("stance")]
@@ -57,6 +62,16 @@ static func build(recipe: AnimalRecipe) -> AnimalBody:
 	body.hue = recipe.index("hue") / float(AnimalRecipe.HUES.size())
 	body.hue2 = recipe.index("hue2") / float(AnimalRecipe.HUES.size())
 	return body
+
+
+## Stands a body on one pair of long legs: at the middle for a leaning
+## biped, at the bottom (the last segment) for an upright one.
+static func make_biped(body: AnimalBody) -> void:
+	var count := body.segments()
+	var at := count / 2 if body.posture == "leaning" else count - 1
+	for i in count:
+		body.leg_pairs[i] = 1 if i == at else 0
+	body.leg_lengths[at] = maxf(body.leg_lengths[at], body.radii[at] * 2.0) * 1.3
 
 
 ## Spreads `pairs` leg pairs over the body behind the head (a second pair

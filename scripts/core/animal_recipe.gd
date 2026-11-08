@@ -9,7 +9,8 @@ const HUES := ["red", "orange", "yellow", "lime", "green", "teal", "blue", "viol
 ## Each row: [key, label, options].
 const ROWS := [
 	["skin", "Body", ["segments", "smooth"]],
-	["symmetry", "Symmetry", ["two-sided", "radial", "lopsided"]],
+	["posture", "Posture", ["crawl", "leaning biped", "upright biped"]],
+	["symmetry", "Symmetry", ["two-sided", "radial"]],
 	["segments", "Segments", ["2", "3", "4", "5", "6", "7", "8"]],
 	["shape", "Shape", ["round", "flat", "keel", "tube", "bulb"]],
 	["size", "Build", ["slim", "medium", "bulky"]],

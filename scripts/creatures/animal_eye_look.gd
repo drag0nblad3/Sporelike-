@@ -3,8 +3,7 @@ extends Node3D
 ## The eyes of a stage 3 Animal: 1 to 8 of them, facing ahead ("front"),
 ## set wide on the sides of the head ("wide") or up on the crown ("top"),
 ## either on the head or raised on stalks. An odd count puts one in the
-## middle. A radial body has its eyes in a ring all round the head; a
-## lopsided one has big eyes on the left and small ones on the right. Each
+## middle. A radial body has its eyes in a ring all round the head. Each
 ## pupil looks the way its eye faces.
 
 var _body: AnimalBody
@@ -13,7 +12,6 @@ var _pupils: Array[MeshInstance3D] = []
 var _stalks: Array[MeshInstance3D] = []
 ## Which way each eye faces in the head's own space (x right, y up, z ahead).
 var _dirs: Array[Vector3] = []
-var _sizes := PackedFloat32Array()
 
 
 func build(body: AnimalBody) -> void:
@@ -27,10 +25,6 @@ func build(body: AnimalBody) -> void:
 		if body.eye_stalks:
 			_stalks.append(AnimalParts.node(AnimalParts.rod(), stalk, self))
 		_dirs.append(_facing(e))
-		var big := 1.0
-		if body.symmetry == "lopsided" and not (body.eyes % 2 == 1 and e == body.eyes - 1):
-			big = 1.45 if e % 2 == 0 else 0.65
-		_sizes.append(big)
 
 
 func update(head: Transform3D) -> void:
@@ -40,7 +34,7 @@ func update(head: Transform3D) -> void:
 		var dir := _dirs[e]
 		var base := head * (dir * 0.88)
 		var out := (head.basis * dir).normalized()
-		var s := size * _sizes[e]
+		var s := size
 		if _body.eye_stalks:
 			var tip := base + (out * 0.5 + Vector3.UP).normalized() * r * 0.9
 			_stalks[e].transform = AnimalParts.span(base, tip, r * 0.06)

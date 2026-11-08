@@ -4,7 +4,8 @@ extends Node3D
 ## points, turning at a steady rate, and every other segment trails the
 ## one in front over the ground (LandHeight), arched by its posture. Limbs
 ## step on their own (AnimalLegs); a hopper bounds along in leaps
-## (AnimalGait). A neck holds the head up and out in front. Drawn by
+## (AnimalGait). An upright biped stacks its segments up from the hips
+## instead. A neck holds the head up and out in front. Drawn by
 ## AnimalLook.
 
 ## Radians per second it can turn.
@@ -89,6 +90,11 @@ func _physics_process(delta: float) -> void:
 		var leap := maxf(sin(time * HOP_RATE), 0.0)
 		pace = speed_now * (0.3 + 1.6 * leap)
 		bounce = leap * body.longest_leg() * 0.35
+	if body.posture == "upright":
+		spine[spine.size() - 1] += forward() * pace * delta
+		_rest_on_ground()
+		legs.update(self, delta)
+		return
 	spine[0] += forward() * pace * delta
 	for i in range(1, spine.size()):
 		var back := spine[i] - spine[i - 1]
@@ -106,6 +112,9 @@ func _process(_delta: float) -> void:
 
 
 func _rest_on_ground() -> void:
+	if body.posture == "upright":
+		_stand_upright()
+		return
 	var last := maxf(spine.size() - 1, 1)
 	for i in spine.size():
 		var p := spine[i]
@@ -115,3 +124,20 @@ func _rest_on_ground() -> void:
 		if i == 0 and body.head_at == "front":
 			p.y += body.neck * body.radii[0] * 1.3
 		spine[i] = p
+
+
+## An upright biped: the hips (the last segment) ride on the legs and the
+## other segments stack up above them, leaning a little forward, with the
+## head on top.
+func _stand_upright() -> void:
+	var last := spine.size() - 1
+	var hips := spine[last]
+	var y := LandHeight.at(hips.x, hips.z) + body.ride_height() \
+		+ body.radii[last] * body.shape_scale(last).y * 0.5 + bounce
+	var lean := body.radii[0] * 0.5
+	var climb := 0.0
+	for k in range(last, -1, -1):
+		if k < last:
+			climb += spacing(k)
+		var ahead := forward() * lean * float(last - k) / maxf(last, 1)
+		spine[k] = Vector3(hips.x, y + climb, hips.z) + ahead

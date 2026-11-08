@@ -47,7 +47,8 @@ func build(body: AnimalBody) -> void:
 		frames.append(Transform3D())
 		_add_pattern(i, second)
 		_add_top(i, second, dark)
-	var first := 1 if body.neck > 0.0 and body.head_at == "front" else 0
+	var apart := (body.neck > 0.0 and body.head_at == "front") or body.posture == "upright"
+	var first := 1 if apart else 0
 	if body.smooth and body.segments() - first >= 1:
 		for i in range(first, body.segments()):
 			_segments[i].visible = false
@@ -72,6 +73,7 @@ func update(animal: Animal) -> void:
 	if _body == null or _segments.size() != _body.segments():
 		return
 	var slither := _body.pairs() == 0
+	var upright := _body.posture == "upright"
 	for i in _body.segments():
 		var r := _body.radii[i]
 		var s := _body.shape_scale(i) * r
@@ -81,7 +83,11 @@ func update(animal: Animal) -> void:
 		if slither:
 			var moving := clampf(animal.speed_now / 2.0, 0.0, 1.0)
 			at += side * sin(animal.time * 9.0 - i * 1.1) * WIGGLE * moving * (0.3 + i * 0.15)
-		frames[i] = Transform3D(Basis(-side * s.x, Vector3.UP * s.y, fwd * s.z), at)
+		if upright and i > 0:
+			# Standing segments run up and down; the belly faces forward.
+			frames[i] = Transform3D(Basis(-side * s.x, Vector3.UP * s.z, fwd * s.y), at)
+		else:
+			frames[i] = Transform3D(Basis(-side * s.x, Vector3.UP * s.y, fwd * s.z), at)
 		_segments[i].transform = frames[i]
 	for k in _extras.size():
 		_extras[k].transform = frames[_extra_segment[k]] * _extra_local[k]

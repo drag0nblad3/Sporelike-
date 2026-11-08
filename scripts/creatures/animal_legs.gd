@@ -4,8 +4,8 @@ extends RefCounted
 ## segment it hangs from, the direction round the body it points (angle 0
 ## is the right side, PI the left), where along the segment it sits and its
 ## length. A two-sided body mirrors each pair; a radial one spreads each
-## segment's limbs all round it; a lopsided one has longer limbs on the
-## left. Low sprawl tucks the legs under the body; high sprawl sets them wide.
+## segment's limbs all round it. Low sprawl tucks the legs under the body;
+## high sprawl sets them wide.
 
 var limbs: Array[LegStepper] = []
 var segment := PackedInt32Array()
@@ -37,9 +37,8 @@ func build(animal: Animal) -> void:
 		else:
 			for p in count:
 				var at := 0.0 if count == 1 else (0.5 - p)
-				var lop := body.symmetry == "lopsided"
-				_add(animal, i, 0.0, at, 0.75 if lop else 1.0, seconds)
-				_add(animal, i, PI, at, 1.3 if lop else 1.0, seconds)
+				_add(animal, i, 0.0, at, 1.0, seconds)
+				_add(animal, i, PI, at, 1.0, seconds)
 				limbs[-1].partner = limbs[-2]
 				limbs[-2].partner = limbs[-1]
 
