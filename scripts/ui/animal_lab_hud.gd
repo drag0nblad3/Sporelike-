@@ -51,6 +51,7 @@ func _ready() -> void:
 ## Shows the customizer with its current recipe and puts that body on.
 func open_editor() -> void:
 	_show_editor(true)
+	editor.refresh()
 	recipe_changed.emit(editor.recipe)
 
 

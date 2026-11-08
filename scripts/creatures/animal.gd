@@ -53,7 +53,7 @@ func forward() -> Vector3:
 ## Gap between segment i and the one behind it.
 func spacing(i: int) -> float:
 	var gap := (body.half_length(i) + body.half_length(mini(i + 1, body.segments() - 1))) * 0.7
-	return gap + (body.neck * body.radii[0] if i == 0 else 0.0)
+	return gap + (body.neck * body.radii[0] * 1.5 if i == 0 else 0.0)
 
 
 ## The direction segment i faces (toward the one in front of it).
@@ -112,5 +112,5 @@ func _rest_on_ground() -> void:
 		var half_height := body.radii[i] * body.shape_scale(i).y
 		p.y = LandHeight.at(p.x, p.z) + body.ride_height() + half_height * 0.8 + arch + bounce
 		if i == 0:
-			p.y += body.neck * body.radii[0] * 0.8
+			p.y += body.neck * body.radii[0] * 1.1
 		spine[i] = p

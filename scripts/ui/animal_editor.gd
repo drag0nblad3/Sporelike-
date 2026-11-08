@@ -52,24 +52,24 @@ func _ready() -> void:
 		line.stepped.connect(_on_stepped)
 		list.add_child(line)
 		_rows.append(line)
-	_refresh()
+	refresh()
 
 
 func randomize_all() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	recipe.roll(rng)
-	_refresh()
+	refresh()
 	changed.emit(recipe)
 
 
 func _on_stepped(key: String, step: int) -> void:
 	recipe.shift(key, step)
-	_refresh()
+	refresh()
 	changed.emit(recipe)
 
 
-func _refresh() -> void:
+func refresh() -> void:
 	for line in _rows:
 		line.show_value(recipe.value(line.key))
 

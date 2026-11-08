@@ -218,6 +218,7 @@ func _shoot_zoo(lab: AnimalLab) -> void:
 		beast.build(AnimalRandom.make(lab.rng), at)
 		lab.add_child(beast)
 	spot.y = LandHeight.at(spot.x, spot.z)
+	lab.camera.look_yaw = 0.0
 	lab.camera.snap(spot, 0.0)
 	lab.camera.position += (lab.camera.position - spot) * 0.5
 	lab.camera.look_at(spot + Vector3.UP)
