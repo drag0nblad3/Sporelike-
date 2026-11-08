@@ -4,10 +4,10 @@ extends RefCounted
 ## MultiMeshInstance3D, so hundreds of stage 3 rocks or trees cost one
 ## draw call. Each copy carries its own transform and tint.
 
-const CHUNK := 55.0
+const CHUNK := 80.0
 ## Patches further than this from the camera are not drawn (the haze has
 ## hidden them by then).
-const FAR := 120.0
+const FAR := 170.0
 
 
 static func build(mesh: Mesh, places: Array[Transform3D], tints: PackedColorArray) -> MultiMeshInstance3D:

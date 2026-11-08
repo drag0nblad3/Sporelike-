@@ -23,13 +23,14 @@ static func ensure() -> void:
 
 
 static func make(value: int) -> void:
-	hills = _noise(value, 0.012, 3)
+	var s := LandHeight.SCALE
+	hills = _noise(value, 0.012 / s, 3)
 	bumps = _noise(value + 1, 0.09, 5)
-	zones = _noise(value + 2, 0.008, 2)
-	woods = _noise(value + 3, 0.018, 3)
-	ridges = _noise(value + 4, 0.035, 3)
-	tiers = _noise(value + 5, 0.022, 2)
-	rivers = _noise(value + 6, 0.0055, 2)
+	zones = _noise(value + 2, 0.008 / s, 2)
+	woods = _noise(value + 3, 0.018 / s, 3)
+	ridges = _noise(value + 4, 0.035 / s, 3)
+	tiers = _noise(value + 5, 0.022 / s, 2)
+	rivers = _noise(value + 6, 0.0055 / s, 2)
 
 
 static func _noise(value: int, frequency: float, octaves: int) -> FastNoiseLite:

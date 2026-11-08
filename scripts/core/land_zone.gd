@@ -3,7 +3,7 @@ extends RefCounted
 ## Which kind of country a stage 3 spot belongs to, as 0 to 1 weights that
 ## blend smoothly at the edges: crags (jagged rock peaks), mesas (flat
 ## tops ringed by cliffs) and forest. Rolling hills fill the gaps between.
-## Nothing rises within about 15 units of the start, so a walker begins
+## Nothing rises within about 40 units of the start, so a walker begins
 ## on open ground.
 
 
@@ -25,4 +25,4 @@ static func forest(x: float, z: float) -> float:
 
 
 static func _away(x: float, z: float) -> float:
-	return smoothstep(14.0, 32.0, Vector2(x, z).length())
+	return smoothstep(14.0, 32.0, Vector2(x, z).length() / LandHeight.SCALE)

@@ -9,9 +9,9 @@ extends RefCounted
 const BANK := 0.06
 ## Where the channel floor is flat.
 const BED := 0.022
-const DEPTH := 1.3
+const DEPTH := 1.3 * LandHeight.SCALE
 ## Shifts the river lines so none runs through the start.
-const SHIFT := Vector2(-50.0, 30.0)
+const SHIFT := Vector2(30.0, 30.0) * LandHeight.SCALE
 
 
 ## 1 in the river, falling to 0 at the top of its banks.
@@ -24,7 +24,7 @@ static func wet(x: float, z: float) -> float:
 ## The height of the water surface (meaningful where wet() > 0).
 static func surface(x: float, z: float) -> float:
 	LandNoise.ensure()
-	return LandNoise.hills.get_noise_2d(x, z) * LandHeight.HILLS * 0.35 - 0.6
+	return LandNoise.hills.get_noise_2d(x, z) * LandHeight.HILLS * 0.35 - 0.6 * LandHeight.SCALE
 
 
 ## Cuts the river channel into ground height h.

@@ -5,8 +5,8 @@ extends Node3D
 ## under forests and banded bare rock on cliffs, crags and peaks. Lit
 ## meshes with vertex colours; LandWater adds the rivers on top.
 
-const SIZE := 240.0
-const STEP := 1.5
+const SIZE := 440.0
+const STEP := 2.75
 const SAND := Color(0.8, 0.73, 0.53)
 const MOSS := Color(0.33, 0.5, 0.24)
 const GRASS := Color(0.5, 0.6, 0.3)
@@ -71,12 +71,13 @@ func _chunk(heights: PackedFloat32Array, cells: int, x0: int, z0: int, span: int
 
 func _color(y: float, flat: float, x: float, z: float) -> Color:
 	var speckle := sin(x * 1.7) * sin(z * 1.3) * 0.04
-	var c := SAND.lerp(MOSS, smoothstep(-2.5, 0.5, y))
-	c = c.lerp(GRASS, smoothstep(2.0, 4.0, y) * 0.6)
+	var k := LandHeight.SCALE
+	var c := SAND.lerp(MOSS, smoothstep(-2.5 * k, 0.5 * k, y))
+	c = c.lerp(GRASS, smoothstep(2.0 * k, 4.0 * k, y) * 0.6)
 	c = c.lerp(LITTER, LandZone.forest(x, z) * 0.85)
 	c = c.lerp(MUD, smoothstep(0.3, 0.7, LandRiver.wet(x, z)))
-	var bare := maxf(smoothstep(9.0, 14.0, y), smoothstep(0.82, 0.62, flat))
+	var bare := maxf(smoothstep(9.0 * k, 14.0 * k, y), smoothstep(0.82, 0.62, flat))
 	# Layered bands across cliff faces.
-	var rock := ROCK.darkened(0.12 * (0.5 + 0.5 * sin(y * 2.4 + sin(x * 0.2) * 0.8)))
+	var rock := ROCK.darkened(0.12 * (0.5 + 0.5 * sin(y * 2.4 / k + sin(x * 0.2 / k) * 0.8)))
 	c = c.lerp(rock, bare)
 	return c.lightened(speckle) if speckle > 0.0 else c.darkened(-speckle)

@@ -5,7 +5,7 @@ extends MeshInstance3D
 ## rise through it, so the water's edge follows the land. Drawn with
 ## WaterShader.
 
-const STEP := 2.0
+const STEP := 3.0
 ## Cells with no corner wetter than this are left out.
 const DRY := 0.15
 

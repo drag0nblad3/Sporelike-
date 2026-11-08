@@ -5,18 +5,18 @@ extends Node3D
 ## bud on top), kept out of rivers. Adds LandForest and LandSpires for the
 ## trees and crag pinnacles. Drawn as LandMulti batches.
 
-const ROCKS := 90
-const STALKS := 420
-const CUSHIONS := 220
+const ROCKS := 300
+const STALKS := 1500
+const CUSHIONS := 800
 ## Half the width of the square things are scattered over.
-const SPREAD := 110.0
+const SPREAD := 210.0
 
 var rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	rng.seed = 11
-	_add(LandMulti.blob(0.5, 0.8, 7, 4), ROCKS, Color(0.5, 0.48, 0.45), 1.0, 3.2, 0.3, true)
+	_add(LandMulti.blob(0.5, 0.8, 7, 4), ROCKS, Color(0.5, 0.48, 0.45), 1.0, 6.0, 0.3, true)
 	var stalk := LandMulti.post(0.03, 0.08, 5)
 	_add(stalk, STALKS, Color(0.38, 0.62, 0.3), 0.6, 1.6, 0.05, false)
 	_add(LandMulti.blob(0.5, 0.45, 8, 3), CUSHIONS, Color(0.3, 0.52, 0.28), 0.8, 2.2, 0.1, false)

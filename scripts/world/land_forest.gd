@@ -6,7 +6,7 @@ extends Node3D
 ## trunks, plus low thickets between them. Four LandMulti batches.
 
 ## Spacing of the jittered grid trees are tried on.
-const GAP := 3.6
+const GAP := 8.5
 const LONE := 0.015
 
 var rng := RandomNumberGenerator.new()
@@ -36,7 +36,7 @@ func _ready() -> void:
 
 
 func _try(x: float, z: float) -> void:
-	if Vector2(x, z).length() < 7.0 or LandRiver.wet(x, z) > 0.1:
+	if Vector2(x, z).length() < 7.0 * LandHeight.SCALE or LandRiver.wet(x, z) > 0.1:
 		return
 	var f := LandZone.forest(x, z)
 	var roll := rng.randf()
@@ -47,10 +47,10 @@ func _try(x: float, z: float) -> void:
 	if LandHeight.normal(x, z).y < 0.8:
 		return
 	var y := LandHeight.at(x, z)
-	var tall := rng.randf_range(6.0, 12.0)
+	var tall := rng.randf_range(6.0, 12.0) * LandHeight.SCALE
 	var trunk := tall * rng.randf_range(0.45, 0.6)
 	var lean := Basis(Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)).normalized(), rng.randf_range(0.0, 0.08))
-	var base := Vector3(x, y - 0.3, z)
+	var base := Vector3(x, y - 1.0, z)
 	_trunks.append(Transform3D(lean.scaled(Vector3(tall * 0.12, trunk + 0.5, tall * 0.12)), base))
 	_trunk_tints.append(Color(0.36, 0.27, 0.19).lightened(rng.randf_range(-0.1, 0.1)))
 	var top := base + lean * Vector3(0, trunk, 0)
@@ -67,7 +67,7 @@ func _try(x: float, z: float) -> void:
 
 
 func _bush(x: float, z: float) -> void:
-	var r := rng.randf_range(0.6, 1.5)
+	var r := rng.randf_range(1.2, 3.0)
 	var turn := Basis(Vector3.UP, rng.randf() * TAU)
 	_bushes.append(Transform3D(turn.scaled(Vector3(r * 1.3, r, r)), Vector3(x, LandHeight.at(x, z), z)))
 	_bush_tints.append(Color(0.26, 0.42, 0.2).lightened(rng.randf_range(-0.1, 0.12)))

@@ -6,12 +6,16 @@ extends RefCounted
 ## channels from LandRiver cut through all of it. Heights are in world
 ## units above sea level.
 
-const HILLS := 7.0
+## How much bigger the land's features are than they first were, so a
+## walker is small beside them. Hills, crags, cliffs, rivers and trees all
+## grow by this; the small bumps underfoot and the low plants do not.
+const SCALE := 3.0
+const HILLS := 7.0 * SCALE
 const BUMPS := 0.9
 ## Crag peaks reach about this high above the hills.
-const CRAGS := 18.0
+const CRAGS := 18.0 * SCALE
 ## Height of each mesa tier's cliff.
-const TIER := 6.5
+const TIER := 6.5 * SCALE
 
 
 static func at(x: float, z: float) -> float:
@@ -19,7 +23,7 @@ static func at(x: float, z: float) -> float:
 	var h := LandNoise.hills.get_noise_2d(x, z) * HILLS
 	h += LandNoise.bumps.get_noise_2d(x, z) * BUMPS
 	# A gentle, flatter spot where a walker starts.
-	h *= clampf(Vector2(x, z).length() / 18.0, 0.25, 1.0)
+	h *= clampf(Vector2(x, z).length() / (12.0 * SCALE), 0.25, 1.0)
 	var c := LandZone.crag(x, z)
 	if c > 0.0:
 		h += c * _crag(x, z)
