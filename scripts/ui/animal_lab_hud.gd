@@ -1,14 +1,17 @@
 class_name AnimalLabHud
 extends CanvasLayer
 ## Controls for the stage 3 feel-test lab: the joystick on the left, the
-## look pad on the right, a status line (the body and the frame rate), a
-## New body button and Back.
+## look pad on the right, a status line (the body and the frame rate),
+## New body, Customize (opens the AnimalEditor over the look pad) and Back.
 
 signal new_body_pressed
 signal back_pressed
+signal recipe_changed(recipe: AnimalRecipe)
 
 var joystick := VirtualJoystick.new()
 var look := LookPad.new()
+var editor := AnimalEditor.new()
+var _corners: Array[Button] = []
 var _status: Label
 var _hint: Label
 
@@ -23,7 +26,7 @@ func _ready() -> void:
 	root.add_child(look)
 	_status = Label.new()
 	_status.position = Vector2(24, 18)
-	_status.size = Vector2(900, 80)
+	_status.size = Vector2(720, 80)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UiTheme.outline(_status, 26)
 	root.add_child(_status)
@@ -36,8 +39,31 @@ func _ready() -> void:
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	UiTheme.outline(_hint, 24)
 	root.add_child(_hint)
-	root.add_child(_corner("Back", 20.0, func() -> void: back_pressed.emit()))
-	root.add_child(_corner("New body", 110.0, func() -> void: new_body_pressed.emit()))
+	_corner(root, "Back", 20.0, func() -> void: back_pressed.emit())
+	_corner(root, "New body", 110.0, func() -> void: new_body_pressed.emit())
+	_corner(root, "Customize", 200.0, open_editor)
+	editor.visible = false
+	editor.changed.connect(func(recipe: AnimalRecipe) -> void: recipe_changed.emit(recipe))
+	editor.closed.connect(close_editor)
+	root.add_child(editor)
+
+
+## Shows the customizer with its current recipe and puts that body on.
+func open_editor() -> void:
+	_show_editor(true)
+	recipe_changed.emit(editor.recipe)
+
+
+func close_editor() -> void:
+	_show_editor(false)
+
+
+func _show_editor(on: bool) -> void:
+	editor.visible = on
+	look.enabled = not on
+	_hint.visible = not on
+	for button in _corners:
+		button.visible = not on
 
 
 func steering() -> Vector2:
@@ -49,7 +75,7 @@ func show_status(body: AnimalBody) -> void:
 		body.describe()]
 
 
-func _corner(label: String, top: float, action: Callable) -> Button:
+func _corner(root: Control, label: String, top: float, action: Callable) -> void:
 	var button := Button.new()
 	button.text = label
 	button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -58,4 +84,5 @@ func _corner(label: String, top: float, action: Callable) -> Button:
 	button.offset_top = top
 	button.offset_bottom = top + 72.0
 	button.pressed.connect(action)
-	return button
+	root.add_child(button)
+	_corners.append(button)

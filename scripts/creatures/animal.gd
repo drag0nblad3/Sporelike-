@@ -4,7 +4,8 @@ extends Node3D
 ## points, turning at a steady rate, and every other segment trails the
 ## one in front over the ground (LandHeight), arched by its posture. Limbs
 ## step on their own (AnimalLegs); a hopper bounds along in leaps
-## (AnimalGait). Drawn by AnimalLook.
+## (AnimalGait). A neck holds the head up and out in front. Drawn by
+## AnimalLook.
 
 ## Radians per second it can turn.
 const TURN := 2.6
@@ -51,7 +52,8 @@ func forward() -> Vector3:
 
 ## Gap between segment i and the one behind it.
 func spacing(i: int) -> float:
-	return (body.half_length(i) + body.half_length(mini(i + 1, body.segments() - 1))) * 0.7
+	var gap := (body.half_length(i) + body.half_length(mini(i + 1, body.segments() - 1))) * 0.7
+	return gap + (body.neck * body.radii[0] if i == 0 else 0.0)
 
 
 ## The direction segment i faces (toward the one in front of it).
@@ -109,4 +111,6 @@ func _rest_on_ground() -> void:
 		var arch := sin(PI * i / last) * body.arch * (body.ride_height() + body.radii[i])
 		var half_height := body.radii[i] * body.shape_scale(i).y
 		p.y = LandHeight.at(p.x, p.z) + body.ride_height() + half_height * 0.8 + arch + bounce
+		if i == 0:
+			p.y += body.neck * body.radii[0] * 0.8
 		spine[i] = p

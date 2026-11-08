@@ -8,6 +8,8 @@ const TOPS := ["", "", "", "spikes", "sail", "plates"]
 const FEET := ["pad", "claw", "spike", "sucker"]
 const TAILS := ["", "", "fork", "club", "spike"]
 const PATTERNS := ["plain", "stripes", "spots", "bands"]
+const EYE_SETS := ["front", "wide", "top"]
+const ARM_TIPS := ["hand", "pincer", "blade"]
 
 
 static func make(rng: RandomNumberGenerator) -> AnimalBody:
@@ -48,7 +50,12 @@ static func make(rng: RandomNumberGenerator) -> AnimalBody:
 	body.horns = [0, 0, 1, 2][rng.randi() % 4]
 	body.feelers = rng.randf() < 0.4
 	body.eye_stalks = rng.randf() < 0.25
-	body.eyes = [2, 2, 4, 6][rng.randi() % 4]
+	body.eyes = [1, 2, 2, 2, 3, 4, 6, 8][rng.randi() % 8]
+	body.eye_set = EYE_SETS[rng.randi() % EYE_SETS.size()]
+	body.neck = [0.0, 0.0, 0.0, 0.8, 1.6][rng.randi() % 5]
+	body.arm_pairs = 1 if not hopper and rng.randf() < 0.25 else 0
+	body.arm_tip = ARM_TIPS[rng.randi() % ARM_TIPS.size()]
+	body.smooth = rng.randf() < 0.4
 	body.pattern = PATTERNS[rng.randi() % PATTERNS.size()]
 	body.hue = rng.randf()
 	body.hue2 = fposmod(body.hue + rng.randf_range(0.25, 0.6), 1.0)

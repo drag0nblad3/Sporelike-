@@ -2,8 +2,8 @@ class_name AnimalLegs
 extends RefCounted
 ## All the limbs of a stage 3 Animal: one LegStepper per limb, which
 ## segment and side it hangs from, and where along the segment (a segment
-## with two pairs has one near its front and one near its back). Feet rest
-## out to the side by the body's sprawl.
+## with two pairs has one near its front and one near its back). Low
+## sprawl tucks the legs under the body; high sprawl sets them wide.
 
 var limbs: Array[LegStepper] = []
 var segment := PackedInt32Array()
@@ -49,16 +49,19 @@ func update(animal: Animal, delta: float) -> void:
 func hip(animal: Animal, k: int) -> Vector3:
 	var i := segment[k]
 	var body := animal.body
-	var width := body.radii[i] * body.shape_scale(i).x * 0.8
+	# Upright legs hang from under the belly, sprawling ones from the sides.
+	var width := body.radii[i] * body.shape_scale(i).x * lerpf(0.3, 0.9, body.sprawl)
+	var low := body.radii[i] * body.shape_scale(i).y * (1.0 - body.sprawl) * 0.6
 	return animal.spine[i] + animal.segment_right(i) * side[k] * width \
-		+ animal.segment_forward(i) * along[k] * body.half_length(i)
+		+ animal.segment_forward(i) * along[k] * body.half_length(i) - Vector3.UP * low
 
 
 ## Where a foot rests on the ground under limb k.
 func home(animal: Animal, k: int) -> Vector3:
 	var i := segment[k]
 	var body := animal.body
-	var out := body.radii[i] * body.shape_scale(i).x + body.leg_lengths[i] * body.sprawl * 0.7
+	var out := body.radii[i] * body.shape_scale(i).x * lerpf(0.35, 1.0, body.sprawl) \
+		+ body.leg_lengths[i] * body.sprawl * 0.7
 	var p := animal.spine[i] + animal.segment_right(i) * side[k] * out \
 		+ animal.segment_forward(i) * along[k] * body.half_length(i)
 	p.y = LandHeight.at(p.x, p.z)

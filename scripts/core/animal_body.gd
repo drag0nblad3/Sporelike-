@@ -33,10 +33,22 @@ var sprawl := 0.6
 var claw_side := 0
 ## "", "fork", "club" or "spike".
 var tail := ""
+## A neck between the head and the body, in head radii (0 = none).
+var neck := 0.0
+## Pairs of arms held up at the front (not walked on), 0 to 2, and what
+## they end in: "hand", "pincer" or "blade".
+var arm_pairs := 0
+var arm_tip := "hand"
 var horns := 0
 var feelers := false
 var eye_stalks := false
+## 1 to 8 eyes; an odd count puts one in the middle.
 var eyes := 2
+## Where the eyes sit: "front" (facing ahead), "wide" (on the sides of the
+## head) or "top" (up on the crown).
+var eye_set := "front"
+## One smooth skin over the whole body instead of separate segments.
+var smooth := false
 ## "plain", "stripes", "spots" or "bands".
 var pattern := "plain"
 var hue := 0.3
@@ -98,6 +110,12 @@ func color2() -> Color:
 
 func describe() -> String:
 	var parts := PackedStringArray()
+	if neck > 0.0:
+		parts.append("long neck" if neck > 1.2 else "neck")
+	if arm_pairs > 0:
+		parts.append("%d arms" % (arm_pairs * 2))
+	if eyes != 2 or eye_set != "front":
+		parts.append("%d %s eye%s" % [eyes, eye_set, "" if eyes == 1 else "s"])
 	if horns > 0:
 		parts.append("horns")
 	if claw_side != 0:

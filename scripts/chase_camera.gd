@@ -3,7 +3,9 @@ extends Camera3D
 ## Stage 3's camera: sits behind and above the animal and swings round as
 ## it turns. The player can drag to look around (look_yaw, look_pitch);
 ## a second after letting go it eases back behind. It never dips into the
-## ground (LandHeight).
+## ground (LandHeight). In showcase (the body customizer is open) it swings
+## round to a three-quarter front view and keeps the animal left of centre,
+## clear of the panel.
 
 const DISTANCE := 9.0
 const HEIGHT := 4.0
@@ -12,6 +14,9 @@ const RETURN_DELAY := 1.0
 const RETURN_RATE := 2.0
 const MIN_PITCH := -0.35
 const MAX_PITCH := 0.9
+const SHOWCASE_YAW := 2.3
+
+var showcase := false
 
 ## Extra turn and tilt from dragging, in radians.
 var look_yaw := 0.0
@@ -35,7 +40,9 @@ func snap(target: Vector3, heading: float) -> void:
 func follow(target: Vector3, heading: float, size: float, delta: float) -> void:
 	_yaw = lerp_angle(_yaw, heading, clampf(FOLLOW * delta, 0.0, 1.0))
 	idle += delta
-	if idle > RETURN_DELAY:
+	if showcase:
+		look_yaw = lerp_angle(look_yaw, SHOWCASE_YAW, clampf(RETURN_RATE * delta, 0.0, 1.0))
+	elif idle > RETURN_DELAY:
 		var k := clampf(RETURN_RATE * delta, 0.0, 1.0)
 		look_yaw = lerpf(look_yaw, 0.0, k)
 		look_pitch = lerpf(look_pitch, 0.0, k)
@@ -63,4 +70,7 @@ func _place(target: Vector3, scale_by: float = 1.0) -> void:
 	var spot := target + offset
 	spot.y = maxf(spot.y, LandHeight.at(spot.x, spot.z) + 1.2)
 	position = spot
-	look_at(target + Vector3.UP * 0.8)
+	var aim := target + Vector3.UP * 0.8
+	if showcase:
+		aim += (-back).cross(Vector3.UP) * DISTANCE * scale_by * 0.22
+	look_at(aim)

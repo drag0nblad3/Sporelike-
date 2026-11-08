@@ -2,7 +2,8 @@ class_name AnimalLab
 extends Node3D
 ## The stage 3 feel test: one land animal on hilly ground (LandTerrain,
 ## LandScatter) under an open sky with haze, the ChaseCamera, the joystick
-## and look pad, and New body for a random AnimalBody. Used from the title
+## and look pad, New body for a random AnimalBody and the body customizer
+## (AnimalEditor, built by AnimalBuilder). Used from the title
 ## screen's Test stage 3 and by the screenshot tour.
 
 signal back_requested
@@ -28,12 +29,18 @@ func _ready() -> void:
 	add_child(hud)
 	hud.look.dragged.connect(camera.drag)
 	hud.new_body_pressed.connect(new_body)
+	hud.recipe_changed.connect(func(recipe: AnimalRecipe) -> void:
+		set_body(AnimalBuilder.build(recipe)))
 	hud.back_pressed.connect(func() -> void: back_requested.emit())
 	new_body()
 
 
 ## Swaps in a fresh random body where the animal stands.
 func new_body() -> void:
+	set_body(AnimalRandom.make(rng))
+
+
+func set_body(body: AnimalBody) -> void:
 	var at := Vector3.ZERO
 	var heading := 0.0
 	if is_instance_valid(animal):
@@ -42,7 +49,7 @@ func new_body() -> void:
 		animal.queue_free()
 	animal = Animal.new()
 	animal.heading = heading
-	animal.build(AnimalRandom.make(rng), at)
+	animal.build(body, at)
 	add_child(animal)
 	camera.snap(animal.head(), heading)
 
@@ -61,6 +68,7 @@ func _physics_process(_delta: float) -> void:
 func _process(delta: float) -> void:
 	if not is_instance_valid(animal):
 		return
+	camera.showcase = hud.editor.visible
 	camera.follow(animal.head(), animal.heading, animal.body.radii[0], delta)
 	hud.show_status(animal.body)
 

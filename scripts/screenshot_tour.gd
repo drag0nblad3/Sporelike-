@@ -178,9 +178,32 @@ func _shoot_animal_lab() -> void:
 	lab.autopilot = Vector2(-0.4, -1.0)
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("stage3_body2")
+	await _shoot_editor(lab)
 	await _shoot_zoo(lab)
 	lab.queue_free()
 	await get_tree().process_frame
+
+
+## The body customizer open on a smooth, long-necked body with arms and
+## wide-set eyes, then a segmented one with legs tucked under.
+func _shoot_editor(lab: AnimalLab) -> void:
+	lab.autopilot = Vector2.ZERO
+	var recipe := lab.hud.editor.recipe
+	var picks := {"skin": 1, "neck": 2, "arms": 1, "arm_tip": 2, "eyes": 3, "eye_set": 1,
+		"stance": 1, "legs": 2, "horns": 2, "pattern": 2, "hue": 1}
+	for key: String in picks:
+		recipe.picks[key] = picks[key]
+	lab.hud.open_editor()
+	await get_tree().create_timer(2.0).timeout
+	await _shoot("stage3_editor")
+	picks = {"skin": 0, "neck": 0, "arms": 2, "arm_tip": 1, "eyes": 5, "eye_set": 2,
+		"stance": 0, "legs": 3, "shape": 3, "pattern": 1, "hue": 6, "tail": 1}
+	for key: String in picks:
+		recipe.picks[key] = picks[key]
+	lab.hud.open_editor()
+	await get_tree().create_timer(1.5).timeout
+	await _shoot("stage3_editor2")
+	lab.hud.close_editor()
 
 
 ## Six random land animals side by side, facing the camera, to show the

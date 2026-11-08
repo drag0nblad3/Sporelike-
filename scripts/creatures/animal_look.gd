@@ -2,9 +2,11 @@ class_name AnimalLook
 extends Node3D
 ## How a stage 3 Animal's body looks: a shaped body per segment, a colour
 ## pattern (stripes, spots or bands in its second colour) and parts on the
-## back (spikes, a sail, plates). A legless body wriggles as it slithers.
-## The head (AnimalHeadLook) and limbs and tail (AnimalLimbLook) are drawn
-## by their own children from the segment transforms worked out here.
+## back (spikes, a sail, plates), and a neck. A legless body wriggles as
+## it slithers. A smooth body is one AnimalSkinLook instead of a ball per
+## segment. The head (AnimalHeadLook), limbs and tail (AnimalLimbLook) and
+## arms (AnimalArmLook) are drawn by their own children from the segment
+## transforms worked out here.
 
 const WIGGLE := 0.3
 const SPOTS := 3
@@ -20,6 +22,9 @@ var _extra_segment := PackedInt32Array()
 var _extra_local: Array[Transform3D] = []
 var _head := AnimalHeadLook.new()
 var _limbs := AnimalLimbLook.new()
+var _arms := AnimalArmLook.new()
+var _skin: AnimalSkinLook
+var _neck: Array[MeshInstance3D] = []
 
 
 func build(body: AnimalBody) -> void:
@@ -30,6 +35,8 @@ func build(body: AnimalBody) -> void:
 	_extras.clear()
 	_extra_segment.clear()
 	_extra_local.clear()
+	_neck.clear()
+	_skin = null
 	frames.clear()
 	var skin := AnimalParts.material(body.color())
 	var second := AnimalParts.material(body.color2())
@@ -40,12 +47,27 @@ func build(body: AnimalBody) -> void:
 		frames.append(Transform3D())
 		_add_pattern(i, second)
 		_add_top(i, second, dark)
+	var first := 1 if body.neck > 0.0 else 0
+	if body.smooth and body.segments() - first >= 1:
+		for i in range(first, body.segments()):
+			_segments[i].visible = false
+		_skin = AnimalSkinLook.new()
+		add_child(_skin)
+		_skin.build(body, first)
+	if body.neck > 0.0:
+		var neck_mat := AnimalParts.material(body.color().darkened(0.08))
+		for k in 3:
+			var part: Mesh = AnimalParts.ball() if k == 1 else AnimalParts.rod()
+			_neck.append(AnimalParts.node(part, neck_mat, self))
 	_head = AnimalHeadLook.new()
 	add_child(_head)
 	_head.build(body)
 	_limbs = AnimalLimbLook.new()
 	add_child(_limbs)
 	_limbs.build(body)
+	_arms = AnimalArmLook.new()
+	add_child(_arms)
+	_arms.build(body)
 
 
 func update(animal: Animal) -> void:
@@ -67,6 +89,22 @@ func update(animal: Animal) -> void:
 		_extras[k].transform = frames[_extra_segment[k]] * _extra_local[k]
 	_head.update(animal, frames[0])
 	_limbs.update(animal, frames)
+	_arms.update(animal, frames)
+	if _skin:
+		_skin.update(frames)
+	if not _neck.is_empty():
+		_pose_neck()
+
+
+## Two rods and a joint from the shoulders up to the back of the head.
+func _pose_neck() -> void:
+	var base := frames[1] * Vector3(0.0, 0.3, 0.7)
+	var top := frames[0] * Vector3(0.0, -0.1, -0.5)
+	var mid := (base + top) * 0.5 + Vector3.UP * base.distance_to(top) * 0.15
+	var width := _body.radii[0] * 0.38
+	_neck[0].transform = AnimalParts.span(base, mid, width)
+	_neck[1].transform = Transform3D(Basis.from_scale(Vector3.ONE * width), mid)
+	_neck[2].transform = AnimalParts.span(mid, top, width * 0.9)
 
 
 ## Spots or a band on segment i, in the unit space of its ball.
