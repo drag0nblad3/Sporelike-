@@ -7,6 +7,8 @@ extends CanvasLayer
 
 signal new_body_pressed
 signal nest_pressed
+## The player finished a generation's evolving (begin with open_evolve).
+signal evolve_finished
 signal back_pressed
 signal recipe_changed(recipe: AnimalRecipe)
 
@@ -30,7 +32,7 @@ func _ready() -> void:
 	root.add_child(look)
 	_status = Label.new()
 	_status.position = Vector2(24, 18)
-	_status.size = Vector2(900, 140)
+	_status.size = Vector2(900, 180)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UiTheme.outline(_status, 26)
 	root.add_child(_status)
@@ -45,7 +47,7 @@ func _ready() -> void:
 	root.add_child(_hint)
 	_corner(root, "Back", 20.0, func() -> void: back_pressed.emit())
 	_corner(root, "New body", 110.0, func() -> void: new_body_pressed.emit())
-	_corner(root, "Customize", 200.0, open_editor)
+	_corner(root, "Free edit", 200.0, open_editor)
 	_corner(root, "Nest here", 290.0, func() -> void: nest_pressed.emit())
 	_notice = Label.new()
 	_notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
@@ -69,8 +71,18 @@ func open_editor() -> void:
 	recipe_changed.emit(editor.recipe)
 
 
+## Opens the customizer to evolve between generations, `picks` changes.
+func open_evolve(picks: int) -> void:
+	open_editor()
+	editor.begin_evolve(picks)
+
+
 func close_editor() -> void:
+	var evolving := not editor.budget.off
+	editor.end_evolve()
 	_show_editor(false)
+	if evolving:
+		evolve_finished.emit()
 
 
 func _show_editor(on: bool) -> void:

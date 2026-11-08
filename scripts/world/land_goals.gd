@@ -21,7 +21,7 @@ func _ready() -> void:
 	nest.egg_laid.connect(func(total: int) -> void:
 		notice.emit("An egg! %d in the nest" % total))
 	landmarks.reached.connect(func(id: String) -> void:
-		notice.emit("You reached the %s! %s unlocked in Customize" % [
+		notice.emit("You reached the %s! %s unlocked for evolving" % [
 			LandLandmarks.title(id), LandUnlocks.family(id)]))
 
 
@@ -34,6 +34,12 @@ func step(animal: Animal, delta: float) -> void:
 	if food.carried > 0 and nest.is_near(at):
 		nest.deliver(food.drop_all())
 	landmarks.check(at, unlocks)
+
+
+## A new generation: the eggs have hatched and the mouth is empty.
+func new_generation() -> void:
+	nest.hatch()
+	food.carried = 0
 
 
 ## Moves the nest under the animal, keeping its eggs.

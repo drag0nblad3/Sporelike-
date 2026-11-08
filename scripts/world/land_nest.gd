@@ -56,6 +56,13 @@ func is_near(at: Vector3) -> bool:
 	return Vector2(at.x - position.x, at.z - position.z).length() < REACH
 
 
+## A new generation hatched: the nest starts empty again.
+func hatch() -> void:
+	eggs = 0
+	food = 0
+	deliver(0)
+
+
 ## Takes `count` pieces of food; lays eggs as the store fills.
 func deliver(count: int) -> void:
 	food += count

@@ -6,13 +6,16 @@ extends PanelContainer
 ## rebuilds the animal at once (changed), so the player sees it while
 ## picking. Holds the AnimalRecipe it edits. Options still locked by
 ## LandUnlocks are skipped, with a line saying where to unlock them, and
-## Unlock all frees them for testing.
+## Unlock all frees them for testing. Between stage 3 generations an
+## EvolveBudget limits how many rows may change (begin_evolve).
 
 signal changed(recipe: AnimalRecipe)
 signal closed
 
 var recipe := AnimalRecipe.new()
 var unlocks := LandUnlocks.new()
+var budget := EvolveBudget.new()
+var _random: Button
 var _locked := Label.new()
 var _rows: Array[AnimalEditRow] = []
 
@@ -38,7 +41,8 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", UiTheme.ACCENT)
 	top.add_child(title)
-	top.add_child(_button("Random", randomize_all))
+	_random = _button("Random", randomize_all)
+	top.add_child(_random)
 	top.add_child(_button("Unlock all", func() -> void:
 		unlocks.unlock_all()
 		refresh()))
@@ -60,7 +64,7 @@ func _ready() -> void:
 	for row: Array in AnimalRecipe.ROWS:
 		var line := AnimalEditRow.new()
 		line.setup(row[0], row[1])
-		line.stepped.connect(_on_stepped)
+		line.stepped.connect(step_row)
 		list.add_child(line)
 		_rows.append(line)
 	refresh()
@@ -75,7 +79,24 @@ func randomize_all() -> void:
 	changed.emit(recipe)
 
 
-func _on_stepped(key: String, step: int) -> void:
+## Opens a generation's evolving: up to `picks` rows may change.
+func begin_evolve(picks: int) -> void:
+	budget.begin(recipe, picks)
+	if _random:
+		_random.visible = false
+	refresh()
+
+
+func end_evolve() -> void:
+	budget.end()
+	if _random:
+		_random.visible = true
+	refresh()
+
+
+func step_row(key: String, step: int) -> void:
+	if not budget.allows(recipe, key):
+		return
 	recipe.shift(key, step)
 	var tries := 0
 	while unlocks.is_locked(key, recipe.value(key)) and tries < 12:
@@ -87,6 +108,8 @@ func _on_stepped(key: String, step: int) -> void:
 
 func refresh() -> void:
 	_locked.text = unlocks.locked_text()
+	if not budget.off:
+		_locked.text = budget.text(recipe) + "\n" + _locked.text
 	for line in _rows:
 		line.show_value(recipe.value(line.key))
 

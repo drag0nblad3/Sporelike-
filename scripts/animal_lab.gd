@@ -4,7 +4,9 @@ extends Node3D
 ## LandScatter) under an open sky with haze, the ChaseCamera, the joystick
 ## and look pad, New body for a random AnimalBody, the body customizer
 ## (AnimalEditor, built by AnimalBuilder) and the land goals (LandGoals:
-## food, nest and eggs, landmarks that unlock parts). Used from the title
+## food, nest and eggs, landmarks that unlock parts) and LandGenerations:
+## when a generation's clock runs out, the eggs become changes in the
+## customizer and the new body hatches at the nest. Used from the title
 ## screen's Test stage 3 and by the screenshot tour.
 
 signal back_requested
@@ -15,6 +17,7 @@ var animal: Animal
 var camera := ChaseCamera.new()
 var hud := AnimalLabHud.new()
 var goals := LandGoals.new()
+var generations := LandGenerations.new()
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player, in screen terms like the
 ## joystick (the screenshot tour).
@@ -28,6 +31,9 @@ func _ready() -> void:
 	add_child(LandTerrain.new())
 	add_child(LandScatter.new())
 	add_child(goals)
+	add_child(generations)
+	generations.ended.connect(_on_generation_ended)
+	hud.evolve_finished.connect(_hatch)
 	goals.notice.connect(func(text: String) -> void: hud.flash(text))
 	hud.editor.unlocks = goals.unlocks
 	hud.nest_pressed.connect(func() -> void:
@@ -48,11 +54,13 @@ func new_body() -> void:
 	set_body(AnimalRandom.make(rng))
 
 
-func set_body(body: AnimalBody) -> void:
-	var at := Vector3.ZERO
+## Puts `body` on where the animal stands, or at `spot` when given.
+func set_body(body: AnimalBody, spot := Vector3.INF) -> void:
+	var at := Vector3.ZERO if spot == Vector3.INF else spot
 	var heading := 0.0
 	if is_instance_valid(animal):
-		at = animal.head()
+		if spot == Vector3.INF:
+			at = animal.head()
 		heading = animal.heading
 		animal.queue_free()
 	animal = Animal.new()
@@ -79,7 +87,23 @@ func _process(delta: float) -> void:
 		return
 	camera.showcase = hud.editor.visible
 	camera.follow(animal.focus(), animal.heading, animal.body.radii[0], delta)
-	hud.show_status(animal.body, goals.status_text(animal.focus()))
+	hud.show_status(animal.body, generations.text() + "\n" + goals.status_text(animal.focus()))
+
+
+func _on_generation_ended(number: int) -> void:
+	var eggs := goals.nest.eggs
+	var picks := LandGenerations.picks_for(eggs)
+	hud.open_evolve(picks)
+	hud.flash("Generation %d is over. %d eggs: make up to %d changes, then Done" % [
+		number, eggs, picks])
+
+
+## The evolved body hatches at the nest and the next generation starts.
+func _hatch() -> void:
+	set_body(AnimalBuilder.build(hud.editor.recipe), goals.nest.position)
+	goals.new_generation()
+	generations.begin_next()
+	hud.flash("Generation %d hatches from the nest" % generations.number)
 
 
 func _environment() -> WorldEnvironment:

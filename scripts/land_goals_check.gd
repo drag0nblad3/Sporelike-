@@ -1,8 +1,9 @@
 class_name LandGoalsCheck
 extends RefCounted
 ## CI only (part of "-- --smoke"): sets up the stage 3 goals with a random
-## animal, delivers food to the nest, visits every landmark and checks a
-## locked part is skipped, reporting an error if any of it misbehaves.
+## animal, delivers food to the nest, visits every landmark, checks a
+## locked part is skipped, ends a generation and spends its evolve
+## budget, reporting an error if any of it misbehaves.
 
 
 static func run(host: Node) -> void:
@@ -30,5 +31,29 @@ static func run(host: Node) -> void:
 	print("smoke: landmarks reached %s; %s" % [goals.unlocks.reached, goals.unlocks.locked_text()])
 	if goals.unlocks.reached.size() != goals.landmarks.spots.size():
 		push_error("Not every landmark could be reached")
+	_check_generation(host, goals)
 	animal.queue_free()
 	goals.queue_free()
+
+
+static func _check_generation(host: Node, goals: LandGoals) -> void:
+	var generations := LandGenerations.new()
+	host.add_child(generations)
+	var ends := [0]
+	generations.ended.connect(func(_number: int) -> void: ends[0] += 1)
+	generations.end_now()
+	var picks := LandGenerations.picks_for(goals.nest.eggs)
+	var editor := AnimalEditor.new()
+	editor.begin_evolve(1)
+	editor.step_row("tail", 1)
+	editor.step_row("horns", 1)
+	editor.step_row("tail", 1)
+	var changed := editor.budget.changed(editor.recipe)
+	goals.new_generation()
+	generations.begin_next()
+	print("smoke: stage 3 generation ended %d time(s), %d picks; 1-pick evolve changed %d row(s)" % [
+		ends[0], picks, changed])
+	if ends[0] != 1 or picks != 3 or changed != 1 or goals.nest.eggs != 0 or generations.number != 2:
+		push_error("Stage 3 generation or evolve budget misbehaved")
+	editor.free()
+	generations.queue_free()

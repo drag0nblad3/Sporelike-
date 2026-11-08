@@ -197,6 +197,10 @@ func _shoot_goals(lab: AnimalLab) -> void:
 	print("smoke: landmarks at %s" % [lab.goals.landmarks.spots])
 	await get_tree().create_timer(1.0).timeout
 	await _shoot("stage3_goals")
+	lab.generations.end_now()
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_evolve")
+	lab.hud.close_editor()
 
 
 ## The body customizer open on an upright biped, a leaning biped and a
