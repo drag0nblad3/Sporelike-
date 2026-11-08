@@ -1,15 +1,18 @@
 class_name LandTerrain
 extends MeshInstance3D
-## A square of stage 3 land shaped by LandHeight: sand in the hollows, moss
-## and low green growth on the slopes and bare rock where it is steep or
-## high. One lit mesh with vertex colours.
+## A square of stage 3 land shaped by LandHeight: sand in the hollows and
+## river beds, moss and low green growth on the slopes, dark leaf litter
+## under forests and banded bare rock on cliffs, crags and peaks. One lit
+## mesh with vertex colours; LandWater adds the rivers on top.
 
-const SIZE := 160.0
-const STEP := 2.0
+const SIZE := 240.0
+const STEP := 1.5
 const SAND := Color(0.8, 0.73, 0.53)
 const MOSS := Color(0.33, 0.5, 0.24)
 const GRASS := Color(0.5, 0.6, 0.3)
 const ROCK := Color(0.47, 0.45, 0.41)
+const LITTER := Color(0.24, 0.3, 0.16)
+const MUD := Color(0.42, 0.36, 0.26)
 
 
 func _ready() -> void:
@@ -20,6 +23,7 @@ func _ready() -> void:
 	mat.roughness = 1.0
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material_override = mat
+	add_child(LandWater.new())
 
 
 func _build() -> ArrayMesh:
@@ -57,5 +61,10 @@ func _color(y: float, flat: float, x: float, z: float) -> Color:
 	var speckle := sin(x * 1.7) * sin(z * 1.3) * 0.04
 	var c := SAND.lerp(MOSS, smoothstep(-2.5, 0.5, y))
 	c = c.lerp(GRASS, smoothstep(2.0, 4.0, y) * 0.6)
-	c = c.lerp(ROCK, maxf(smoothstep(4.5, 7.0, y), smoothstep(0.86, 0.7, flat)))
+	c = c.lerp(LITTER, LandZone.forest(x, z) * 0.85)
+	c = c.lerp(MUD, smoothstep(0.3, 0.7, LandRiver.wet(x, z)))
+	var bare := maxf(smoothstep(9.0, 14.0, y), smoothstep(0.82, 0.62, flat))
+	# Layered bands across cliff faces.
+	var rock := ROCK.darkened(0.12 * (0.5 + 0.5 * sin(y * 2.4 + sin(x * 0.2) * 0.8)))
+	c = c.lerp(rock, bare)
 	return c.lightened(speckle) if speckle > 0.0 else c.darkened(-speckle)

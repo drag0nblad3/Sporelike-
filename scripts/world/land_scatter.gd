@@ -1,74 +1,53 @@
 class_name LandScatter
 extends Node3D
-## What grows and lies on the stage 3 land: boulders and low plants (moss
-## cushions and stalks with a bud on top), placed on LandHeight and drawn
-## as a few MultiMeshes so hundreds cost a handful of draw calls.
+## What grows and lies on the open stage 3 land: boulders (thicker around
+## crags and below cliffs) and low plants (moss cushions and stalks with a
+## bud on top), kept out of rivers. Adds LandForest and LandSpires for the
+## trees and crag pinnacles. Drawn as LandMulti batches.
 
-const ROCKS := 45
-const STALKS := 260
-const CUSHIONS := 140
-const SPREAD := 75.0
+const ROCKS := 90
+const STALKS := 420
+const CUSHIONS := 220
+## Half the width of the square things are scattered over.
+const SPREAD := 110.0
 
 var rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	rng.seed = 11
-	_add(_rock_mesh(), ROCKS, Color(0.5, 0.48, 0.45), 1.0, 3.2, 0.3)
-	_add(_stalk_mesh(), STALKS, Color(0.38, 0.62, 0.3), 0.6, 1.6, -0.45)
-	_add(_cushion_mesh(), CUSHIONS, Color(0.3, 0.52, 0.28), 0.8, 2.2, 0.1)
+	_add(LandMulti.blob(0.5, 0.8, 7, 4), ROCKS, Color(0.5, 0.48, 0.45), 1.0, 3.2, 0.3, true)
+	var stalk := LandMulti.post(0.03, 0.08, 5)
+	_add(stalk, STALKS, Color(0.38, 0.62, 0.3), 0.6, 1.6, 0.05, false)
+	_add(LandMulti.blob(0.5, 0.45, 8, 3), CUSHIONS, Color(0.3, 0.52, 0.28), 0.8, 2.2, 0.1, false)
+	add_child(LandForest.new())
+	add_child(LandSpires.new())
 
 
-func _add(mesh: Mesh, count: int, tint: Color, low: float, high: float, sink: float) -> void:
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_colors = true
-	mm.mesh = mesh
-	mm.instance_count = count
+## A random spot away from the start and out of the water, or the start
+## itself if none turns up. Rocky spots favour crags and mesas.
+func spot(rocky: bool) -> Vector2:
+	for _try in 12:
+		var p := Vector2(rng.randf_range(-SPREAD, SPREAD), rng.randf_range(-SPREAD, SPREAD))
+		if p.length() < 4.0 or LandRiver.wet(p.x, p.y) > 0.2:
+			continue
+		var rough := maxf(LandZone.crag(p.x, p.y), LandZone.mesa(p.x, p.y))
+		if rocky and rng.randf() > 0.25 + rough:
+			continue
+		if not rocky and rng.randf() < rough * 0.7:
+			continue
+		return p
+	return Vector2(6.0, 6.0)
+
+
+func _add(mesh: Mesh, count: int, tint: Color, low: float, high: float, sink: float, rocky: bool) -> void:
+	var places: Array[Transform3D] = []
+	var tints := PackedColorArray()
 	for i in count:
-		var x := rng.randf_range(-SPREAD, SPREAD)
-		var z := rng.randf_range(-SPREAD, SPREAD)
-		if Vector2(x, z).length() < 4.0:
-			x += 8.0
+		var p := spot(rocky)
 		var size := rng.randf_range(low, high)
 		var squash := Vector3(size, size * rng.randf_range(0.6, 1.1), size * rng.randf_range(0.8, 1.2))
 		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(squash)
-		var at := Vector3(x, LandHeight.at(x, z) - sink * size, z)
-		mm.set_instance_transform(i, Transform3D(basis, at))
-		mm.set_instance_color(i, tint.lightened(rng.randf_range(-0.1, 0.15)))
-	var node := MultiMeshInstance3D.new()
-	node.multimesh = mm
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.vertex_color_is_srgb = true
-	mat.roughness = 0.9
-	node.material_override = mat
-	add_child(node)
-
-
-func _rock_mesh() -> Mesh:
-	var m := SphereMesh.new()
-	m.radius = 0.5
-	m.height = 0.8
-	m.radial_segments = 7
-	m.rings = 4
-	return m
-
-
-func _stalk_mesh() -> Mesh:
-	var m := CylinderMesh.new()
-	m.top_radius = 0.03
-	m.bottom_radius = 0.08
-	m.height = 1.0
-	m.radial_segments = 5
-	m.rings = 1
-	return m
-
-
-func _cushion_mesh() -> Mesh:
-	var m := SphereMesh.new()
-	m.radius = 0.5
-	m.height = 0.45
-	m.radial_segments = 8
-	m.rings = 3
-	return m
+		places.append(Transform3D(basis, Vector3(p.x, LandHeight.at(p.x, p.y) - sink * size, p.y)))
+		tints.append(tint.lightened(rng.randf_range(-0.1, 0.15)))
+	add_child(LandMulti.build(mesh, places, tints))
