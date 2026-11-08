@@ -51,7 +51,7 @@ func set_body(body: AnimalBody) -> void:
 	animal.heading = heading
 	animal.build(body, at)
 	add_child(animal)
-	camera.snap(animal.head(), heading)
+	camera.snap(animal.focus(), heading)
 
 
 func _physics_process(_delta: float) -> void:
@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(animal):
 		return
 	camera.showcase = hud.editor.visible
-	camera.follow(animal.head(), animal.heading, animal.body.radii[0], delta)
+	camera.follow(animal.focus(), animal.heading, animal.body.radii[0], delta)
 	hud.show_status(animal.body)
 
 

@@ -75,6 +75,14 @@ func head() -> Vector3:
 	return spine[0]
 
 
+## What the camera looks at: the head, or the middle of an upright body so
+## all of it stays in view.
+func focus() -> Vector3:
+	if body and body.posture == "upright":
+		return (spine[0] + spine[spine.size() - 1]) * 0.5
+	return spine[0]
+
+
 func _physics_process(delta: float) -> void:
 	if body == null:
 		return
