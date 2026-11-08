@@ -50,4 +50,4 @@ func _add(mesh: Mesh, count: int, tint: Color, low: float, high: float, sink: fl
 		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(squash)
 		places.append(Transform3D(basis, Vector3(p.x, LandHeight.at(p.x, p.y) - sink * size, p.y)))
 		tints.append(tint.lightened(rng.randf_range(-0.1, 0.15)))
-	add_child(LandMulti.build(mesh, places, tints))
+	add_child(LandMulti.build_patches(mesh, places, tints))

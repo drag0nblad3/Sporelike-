@@ -34,6 +34,6 @@ func _ready() -> void:
 		var b := rng.randf_range(0.6, 1.6)
 		blocks.append(Transform3D(turn.scaled(Vector3(b * 1.2, b * 0.8, b)), Vector3(bx, LandHeight.at(bx, bz) - 0.2, bz)))
 		block_tints.append(grey.darkened(0.08))
-	add_child(LandMulti.build(LandMulti.post(0.08, 1.0, 5), spikes, spike_tints))
+	add_child(LandMulti.build_patches(LandMulti.post(0.08, 1.0, 5), spikes, spike_tints))
 	var block := BoxMesh.new()
-	add_child(LandMulti.build(block, blocks, block_tints))
+	add_child(LandMulti.build_patches(block, blocks, block_tints))

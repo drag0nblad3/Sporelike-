@@ -1,9 +1,9 @@
 class_name LandTerrain
-extends MeshInstance3D
+extends Node3D
 ## A square of stage 3 land shaped by LandHeight: sand in the hollows and
 ## river beds, moss and low green growth on the slopes, dark leaf litter
-## under forests and banded bare rock on cliffs, crags and peaks. One lit
-## mesh with vertex colours; LandWater adds the rivers on top.
+## under forests and banded bare rock on cliffs, crags and peaks. Lit
+## meshes with vertex colours; LandWater adds the rivers on top.
 
 const SIZE := 240.0
 const STEP := 1.5
@@ -13,31 +13,42 @@ const GRASS := Color(0.5, 0.6, 0.3)
 const ROCK := Color(0.47, 0.45, 0.41)
 const LITTER := Color(0.24, 0.3, 0.16)
 const MUD := Color(0.42, 0.36, 0.26)
+## The square is cut into CHUNKS x CHUNKS meshes so the parts behind the
+## camera are skipped.
+const CHUNKS := 4
 
 
 func _ready() -> void:
-	mesh = _build()
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true
 	mat.vertex_color_is_srgb = true
 	mat.roughness = 1.0
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material_override = mat
-	add_child(LandWater.new())
-
-
-func _build() -> ArrayMesh:
 	var cells := int(SIZE / STEP)
-	var half := SIZE * 0.5
 	var row := cells + 1
+	var half := SIZE * 0.5
 	var heights := PackedFloat32Array()
 	for gz in row:
 		for gx in row:
 			heights.append(LandHeight.at(-half + gx * STEP, -half + gz * STEP))
+	var span := cells / CHUNKS
+	for cz in CHUNKS:
+		for cx in CHUNKS:
+			var part := MeshInstance3D.new()
+			part.mesh = _chunk(heights, cells, cx * span, cz * span, span)
+			part.material_override = mat
+			add_child(part)
+	add_child(LandWater.new())
+
+
+## One mesh covering span x span cells from grid corner (x0, z0).
+func _chunk(heights: PackedFloat32Array, cells: int, x0: int, z0: int, span: int) -> ArrayMesh:
+	var half := SIZE * 0.5
+	var row := cells + 1
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for gz in row:
-		for gx in row:
+	for gz in range(z0, z0 + span + 1):
+		for gx in range(x0, x0 + span + 1):
 			var x := -half + gx * STEP
 			var z := -half + gz * STEP
 			var y := heights[gz * row + gx]
@@ -49,10 +60,11 @@ func _build() -> ArrayMesh:
 			st.set_color(_color(y, up.y, x, z))
 			st.set_normal(up)
 			st.add_vertex(Vector3(x, y, z))
-	for gz in cells:
-		for gx in cells:
-			var a := gz * row + gx
-			for k: int in [a, a + 1, a + row + 1, a, a + row + 1, a + row]:
+	var w := span + 1
+	for gz in span:
+		for gx in span:
+			var a := gz * w + gx
+			for k: int in [a, a + 1, a + w + 1, a, a + w + 1, a + w]:
 				st.add_index(k)
 	return st.commit()
 

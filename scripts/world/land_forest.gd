@@ -29,10 +29,10 @@ func _ready() -> void:
 			var x := -reach + (gx + rng.randf()) * GAP
 			var z := -reach + (gz + rng.randf()) * GAP
 			_try(x, z)
-	add_child(LandMulti.build(LandMulti.post(0.12, 0.2, 5), _trunks, _trunk_tints))
-	add_child(LandMulti.build(LandMulti.post(0.0, 1.0, 7), _spires, _spire_tints))
-	add_child(LandMulti.build(LandMulti.blob(1.0, 1.0, 8, 4), _tufts, _tuft_tints))
-	add_child(LandMulti.build(LandMulti.blob(1.0, 0.7, 7, 3), _bushes, _bush_tints))
+	add_child(LandMulti.build_patches(LandMulti.post(0.12, 0.2, 5), _trunks, _trunk_tints))
+	add_child(LandMulti.build_patches(LandMulti.post(0.0, 1.0, 7), _spires, _spire_tints))
+	add_child(LandMulti.build_patches(LandMulti.blob(1.0, 1.0, 8, 4), _tufts, _tuft_tints))
+	add_child(LandMulti.build_patches(LandMulti.blob(1.0, 0.7, 7, 3), _bushes, _bush_tints))
 
 
 func _try(x: float, z: float) -> void:

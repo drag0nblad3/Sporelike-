@@ -4,6 +4,11 @@ extends RefCounted
 ## MultiMeshInstance3D, so hundreds of stage 3 rocks or trees cost one
 ## draw call. Each copy carries its own transform and tint.
 
+const CHUNK := 55.0
+## Patches further than this from the camera are not drawn (the haze has
+## hidden them by then).
+const FAR := 120.0
+
 
 static func build(mesh: Mesh, places: Array[Transform3D], tints: PackedColorArray) -> MultiMeshInstance3D:
 	var mm := MultiMesh.new()
@@ -22,6 +27,34 @@ static func build(mesh: Mesh, places: Array[Transform3D], tints: PackedColorArra
 	mat.roughness = 0.9
 	node.material_override = mat
 	return node
+
+
+## Like build(), but split into square patches of CHUNK units so patches
+## behind the camera or past FAR are skipped. Returns their parent.
+static func build_patches(mesh: Mesh, places: Array[Transform3D], tints: PackedColorArray) -> Node3D:
+	var groups := {}
+	for i in places.size():
+		var o := places[i].origin
+		var key := Vector2i(floori(o.x / CHUNK), floori(o.z / CHUNK))
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(i)
+	var root := Node3D.new()
+	for key: Vector2i in groups:
+		# Each patch sits at its own centre, which is what its range is
+		# measured from.
+		var center := Vector3((key.x + 0.5) * CHUNK, 0.0, (key.y + 0.5) * CHUNK)
+		var picked: Array[Transform3D] = []
+		var colors := PackedColorArray()
+		for i: int in groups[key]:
+			picked.append(places[i].translated(-center))
+			colors.append(tints[i])
+		var node := build(mesh, picked, colors)
+		node.position = center
+		node.visibility_range_end = FAR
+		node.visibility_range_end_margin = 10.0
+		root.add_child(node)
+	return root
 
 
 ## A low-poly upright cylinder or cone (top 0) one unit tall, base at 0.
