@@ -65,6 +65,7 @@ func _run() -> void:
 	game.queue_free()
 	await get_tree().process_frame
 	await _shoot_colony_lab()
+	await _shoot_animal_lab()
 	title.open(true)
 	await _shoot("title")
 	await _shoot_genes()
@@ -160,6 +161,25 @@ func _shoot_shallows() -> void:
 	pilot.hauling = false
 	pilot.autopilot = Vector2.ZERO
 	game.camera.zoom = 1.0
+
+
+## The stage 3 feel test: a random land animal walking over the hills,
+## then a second, different body.
+func _shoot_animal_lab() -> void:
+	var lab := AnimalLab.new()
+	lab.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_parent().add_child(lab)
+	lab.rng.seed = 3
+	lab.new_body()
+	lab.autopilot = Vector2(0.35, -1.0)
+	await get_tree().create_timer(3.0).timeout
+	await _shoot("stage3")
+	lab.new_body()
+	lab.autopilot = Vector2(-0.4, -1.0)
+	await get_tree().create_timer(2.5).timeout
+	await _shoot("stage3_body2")
+	lab.queue_free()
+	await get_tree().process_frame
 
 
 ## The colony lab: the symmetry choice, then two kinds of colony

@@ -9,6 +9,7 @@ var smoke_test := "--smoke" in OS.get_cmdline_user_args()
 var _title: TitleScreen
 var _creator: SubspeciesCreator
 var _game: Game
+var _lab: AnimalLab
 var _smoke_reloaded := false
 
 
@@ -17,6 +18,7 @@ func _ready() -> void:
 	_title.new_game.connect(_on_new_game)
 	_title.continue_game.connect(_on_continue)
 	_title.test_stage_two.connect(func() -> void: _start({}, true))
+	_title.test_stage_three.connect(_open_animal_lab)
 	add_child(_title)
 	var layer := CanvasLayer.new()
 	layer.layer = 5
@@ -43,6 +45,17 @@ func _start_screenshot_tour() -> void:
 	tour.title = _title
 	tour.creator = _creator
 	add_child(tour)
+
+
+## The stage 3 feel test, back to the title when done.
+func _open_animal_lab() -> void:
+	_close_game()
+	_title.visible = false
+	_lab = AnimalLab.new()
+	_lab.back_requested.connect(func() -> void:
+		_lab.queue_free()
+		_title.open(SaveGame.exists()))
+	add_child(_lab)
 
 
 ## New run: found a subspecies first (the creator), then start.

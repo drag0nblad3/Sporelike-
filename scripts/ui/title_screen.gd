@@ -3,12 +3,13 @@ extends CanvasLayer
 ## The first screen: the game's name, Continue (only when a save exists),
 ## New subspecies (opens the SubspeciesCreator) and Test stage 2 (a
 ## made-up evolved species that goes straight to the multicellular switch,
-## without touching the save). Starting a new run over a save asks to
-## confirm first.
+## without touching the save) and Test stage 3 (the land animal feel test,
+## AnimalLab). Starting a new run over a save asks to confirm first.
 
 signal new_game
 signal continue_game
 signal test_stage_two
+signal test_stage_three
 
 var _continue: Button
 var _new: Button
@@ -53,6 +54,11 @@ func _ready() -> void:
 	test.add_theme_font_size_override("font_size", 24)
 	test.modulate = Color(1, 1, 1, 0.75)
 	column.add_child(test)
+	var land := _button("Test stage 3", func() -> void: test_stage_three.emit())
+	land.custom_minimum_size = Vector2(300, 64)
+	land.add_theme_font_size_override("font_size", 24)
+	land.modulate = Color(1, 1, 1, 0.75)
+	column.add_child(land)
 
 	var footer := Label.new()
 	footer.text = "Early playtest build"

@@ -2,7 +2,8 @@ class_name ShoreLook
 extends Node3D
 ## How the shallows look: a long strip of sand that rises from the sea floor
 ## up past the waterline into a dry beach, darker where it stays wet, and a
-## line of foam that moves in and out with the tide. The strip is rebuilt
+## line of foam that moves in and out with the tide, pebbles and shells
+## (BeachPebbles), ripples and caustics (SandShader). The strip is rebuilt
 ## around the colony whenever it has moved far along the shore.
 
 const FLOOR_Y := -1.4
@@ -19,19 +20,17 @@ const DEEP := Color(0.4, 0.42, 0.38)
 var _line: ShoreLine
 var _sand := MeshInstance3D.new()
 var _foam := MeshInstance3D.new()
+var _pebbles := BeachPebbles.new()
+var _sand_mat := SandShader.material()
 var _center := INF
 
 
 func _ready() -> void:
-	var sand_mat := StandardMaterial3D.new()
-	sand_mat.vertex_color_use_as_albedo = true
-	sand_mat.vertex_color_is_srgb = true
-	sand_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# Shallow water is bright even where the open sea around it is dim, so
 	# the sand keeps its own colours, shaded by how steeply it climbs.
-	sand_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_sand.material_override = sand_mat
+	_sand.material_override = _sand_mat
 	add_child(_sand)
+	add_child(_pebbles)
 	var foam_mat := StandardMaterial3D.new()
 	foam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	foam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -45,6 +44,9 @@ func show_line(line: ShoreLine) -> void:
 	_line = line
 	_center = INF
 	visible = line != null
+	if line:
+		_sand_mat.set_shader_parameter("origin", line.origin)
+		_sand_mat.set_shader_parameter("inland", line.inland)
 
 
 ## Keeps the sand around `focus` and the foam on the tide's waterline.
@@ -56,8 +58,10 @@ func follow(focus: Vector2, water: float) -> void:
 		_center = snappedf(s, RECENTER)
 		_sand.mesh = _build_sand(_center)
 		_foam.mesh = _build_foam(_center)
+		_pebbles.scatter(_line, _center, LENGTH * 0.6)
 	var lift := ShoreLine.rise(water) + 0.06
 	_foam.position = _line.inland3() * water + Vector3.UP * lift
+	_sand_mat.set_shader_parameter("water", water)
 
 
 func _build_sand(center: float) -> ArrayMesh:

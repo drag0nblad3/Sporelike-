@@ -5,7 +5,7 @@ extends Node3D
 ## plants (SeaweedBed, PlantKind), rock outcrops and vent chimneys
 ## (RockField) and the remains of dead colonies (Carrion) on the floor,
 ## marine snow in open water, and floating rafts and diving comb jellies
-## at the surface.
+## at the surface. Sunlight ripples over the floor (CausticLight).
 
 const MAX_CARRION := 4
 const RAFTS := 7
@@ -15,6 +15,7 @@ var rafts := SeaweedBed.new()
 var jellies := CombJellies.new()
 var snow := MarineSnow.new()
 var rocks := RockField.new()
+var light := CausticLight.new()
 var rng := RandomNumberGenerator.new()
 var carrion: Array[Carrion] = []
 
@@ -26,6 +27,7 @@ func _ready() -> void:
 	add_child(jellies)
 	add_child(snow)
 	add_child(rocks)
+	add_child(light)
 
 
 func spread_around(center: Vector3) -> void:
@@ -34,6 +36,7 @@ func spread_around(center: Vector3) -> void:
 	jellies.clear()
 	snow.scatter(center)
 	rocks.scatter(center)
+	light.follow(center, 1.0)
 	for heap in carrion:
 		heap.queue_free()
 	carrion.clear()
@@ -44,6 +47,7 @@ func follow(center: Vector3) -> void:
 	rafts.follow(center)
 	snow.follow(center)
 	rocks.follow(center)
+	light.follow(center, get_physics_process_delta_time())
 	for heap in carrion.duplicate():
 		if heap.is_gone() or heap.center.distance_to(center) > SeaweedBed.DROP:
 			carrion.erase(heap)
