@@ -8,7 +8,10 @@ extends RefCounted
 const THICK := [0.45, 0.6, 0.8]
 const TAPER := [0.0, 0.4, -0.3]
 const LEG := [1.1, 1.7, 2.5]
-const STANCE := [0.1, 0.5, 1.0]
+const STANCE := [0.1, 0.5, 1.0, 0.95, 0.4]
+const KNEE := ["up", "up", "up", "high", "back"]
+const LEG_BUILD := [1.0, 1.7, 2.6]
+const HEAD_AT := ["front", "raised", "low", "middle"]
 const NECK := [0.0, 0.8, 1.7]
 const ARCH := [0.0, 0.3, 0.6]
 
@@ -31,6 +34,11 @@ static func build(recipe: AnimalRecipe) -> AnimalBody:
 	body.smooth = recipe.value("skin") == "smooth"
 	body.neck = NECK[recipe.index("neck")]
 	body.sprawl = STANCE[recipe.index("stance")]
+	body.knee = KNEE[recipe.index("stance")]
+	body.leg_build = LEG_BUILD[recipe.index("leg_build")]
+	body.head_at = HEAD_AT[recipe.index("head_at")]
+	body.symmetry = recipe.value("symmetry")
+	body.mouth = recipe.value("mouth")
 	body.limb = "tentacle" if recipe.value("limb") == "tentacles" else "leg"
 	body.joints = 5 if body.limb == "tentacle" else recipe.index("joints") + 2
 	body.foot = recipe.value("foot")

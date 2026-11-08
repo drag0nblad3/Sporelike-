@@ -1,12 +1,13 @@
 class_name AnimalHeadLook
 extends Node3D
-## The head of a stage 3 Animal: its eyes (AnimalEyeLook), horns, a pair
-## of swaying feelers and one big pincer claw on one side, each only if the
-## AnimalBody has it. Posed from the head segment's
-## transform every frame.
+## The head of a stage 3 Animal: its eyes (AnimalEyeLook), mouth
+## (AnimalMouthLook), horns, a pair of swaying feelers and one big pincer
+## claw on one side, each only if the AnimalBody has it. Posed from the
+## head's transform every frame.
 
 var _body: AnimalBody
 var _eyes := AnimalEyeLook.new()
+var _mouth := AnimalMouthLook.new()
 var _horns: Array[MeshInstance3D] = []
 var _feelers: Array[MeshInstance3D] = []
 var _claw: Array[MeshInstance3D] = []
@@ -18,6 +19,8 @@ func build(body: AnimalBody) -> void:
 	var horn := AnimalParts.material(Color(0.88, 0.84, 0.72))
 	add_child(_eyes)
 	_eyes.build(body)
+	add_child(_mouth)
+	_mouth.build(body)
 	for k in body.horns:
 		_horns.append(AnimalParts.node(AnimalParts.cone(), horn, self))
 	if body.feelers:
@@ -36,6 +39,7 @@ func update(animal: Animal, head: Transform3D) -> void:
 	var fwd := animal.forward()
 	var right := fwd.cross(Vector3.UP)
 	_eyes.update(head)
+	_mouth.update(animal, head)
 	for k in _horns.size():
 		var side := 0.0 if _horns.size() == 1 else (-1.0 if k == 0 else 1.0)
 		var base := head * Vector3(side * 0.35, 0.7, 0.55)

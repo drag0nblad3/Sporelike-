@@ -33,6 +33,20 @@ var sprawl := 0.6
 var claw_side := 0
 ## "", "fork", "club" or "spike".
 var tail := ""
+## Where the head sits: "front" (leading the body), "raised" (up on top of
+## the front), "low" (slung under the front) or "middle" (rising from the
+## middle of the back).
+var head_at := "front"
+## "two-sided" (mirrored), "radial" (limbs and eyes spread all round) or
+## "lopsided" (one side's limbs and eyes bigger than the other's).
+var symmetry := "two-sided"
+## "none", "smile", "beak", "mandibles", "tusks", "trunk" or "sucker".
+var mouth := "smile"
+## How thick and strong the legs are (1 = thin, up to about 2.6 = mighty).
+var leg_build := 1.0
+## Which way the knees bend: "up" (arched), "high" (crouched, knees above
+## the body like a spider) or "back" (backward knees, like a bird's).
+var knee := "up"
 ## A neck between the head and the body, in head radii (0 = none).
 var neck := 0.0
 ## Pairs of arms held up at the front (not walked on), 0 to 2, and what
@@ -89,7 +103,8 @@ func ride_height() -> float:
 	if pairs() == 0:
 		return 0.0
 	var lift := 0.6 if limb == "leg" else 0.3
-	return longest_leg() * lift * (1.15 - sprawl * 0.5)
+	var knees := {"high": 0.6, "back": 1.1}.get(knee, 1.0) as float
+	return longest_leg() * lift * (1.15 - sprawl * 0.5) * knees
 
 
 func gait() -> String:
@@ -109,23 +124,4 @@ func color2() -> Color:
 
 
 func describe() -> String:
-	var parts := PackedStringArray()
-	if neck > 0.0:
-		parts.append("long neck" if neck > 1.2 else "neck")
-	if arm_pairs > 0:
-		parts.append("%d arms" % (arm_pairs * 2))
-	if eyes != 2 or eye_set != "front":
-		parts.append("%d %s eye%s" % [eyes, eye_set, "" if eyes == 1 else "s"])
-	if horns > 0:
-		parts.append("horns")
-	if claw_side != 0:
-		parts.append("big claw")
-	if eye_stalks:
-		parts.append("eye stalks")
-	if tail != "":
-		parts.append(tail + " tail")
-	for top in tops:
-		if top != "" and not (top + "s" in parts or top in parts):
-			parts.append(top)
-	var text := "%d segments, %s" % [segments(), AnimalGait.verb(self)]
-	return text + (" · " + ", ".join(parts) if not parts.is_empty() else "")
+	return AnimalWords.describe(self)

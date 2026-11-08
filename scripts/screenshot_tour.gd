@@ -184,25 +184,24 @@ func _shoot_animal_lab() -> void:
 	await get_tree().process_frame
 
 
-## The body customizer open on a smooth, long-necked body with arms and
-## wide-set eyes, then a segmented one with legs tucked under.
+## The body customizer open on three very different custom bodies.
 func _shoot_editor(lab: AnimalLab) -> void:
 	lab.autopilot = Vector2.ZERO
-	var recipe := lab.hud.editor.recipe
-	var picks := {"skin": 1, "neck": 2, "arms": 1, "arm_tip": 2, "eyes": 3, "eye_set": 1,
-		"stance": 1, "legs": 2, "horns": 2, "pattern": 2, "hue": 1}
-	for key: String in picks:
-		recipe.picks[key] = picks[key]
-	lab.hud.open_editor()
-	await get_tree().create_timer(2.0).timeout
-	await _shoot("stage3_editor")
-	picks = {"skin": 0, "neck": 0, "arms": 2, "arm_tip": 1, "eyes": 5, "eye_set": 2,
-		"stance": 0, "legs": 3, "shape": 3, "pattern": 1, "hue": 6, "tail": 1}
-	for key: String in picks:
-		recipe.picks[key] = picks[key]
-	lab.hud.open_editor()
-	await get_tree().create_timer(1.5).timeout
-	await _shoot("stage3_editor2")
+	var looks := [
+		{"skin": 1, "head_at": 1, "neck": 2, "mouth": 5, "arms": 1, "eyes": 3, "eye_set": 1,
+			"leg_build": 2, "stance": 4, "legs": 2, "horns": 2, "pattern": 2, "hue": 1},
+		{"skin": 0, "symmetry": 2, "head_at": 3, "neck": 1, "mouth": 3, "arms": 1,
+			"arm_tip": 1, "eyes": 3, "stance": 3, "legs": 3, "shape": 3, "hue": 6, "tail": 1},
+		{"skin": 1, "symmetry": 1, "segments": 1, "legs": 2, "eyes": 5, "mouth": 6,
+			"shape": 4, "stance": 2, "leg_build": 1, "hue": 7, "pattern": 3},
+	]
+	for k in looks.size():
+		var picks: Dictionary = looks[k]
+		for key: String in picks:
+			lab.hud.editor.recipe.picks[key] = picks[key]
+		lab.hud.open_editor()
+		await get_tree().create_timer(1.8).timeout
+		await _shoot("stage3_editor%d" % (k + 1))
 	lab.hud.close_editor()
 
 

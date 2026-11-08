@@ -24,8 +24,12 @@ static func of(body: AnimalBody) -> String:
 	return WALK
 
 
-## World units per second at full stick.
+## World units per second at full stick: mighty legs push a little harder.
 static func speed(body: AnimalBody) -> float:
+	return _base_speed(body) * (0.85 + 0.15 * body.leg_build)
+
+
+static func _base_speed(body: AnimalBody) -> float:
 	var legs := body.longest_leg()
 	match of(body):
 		SLITHER:

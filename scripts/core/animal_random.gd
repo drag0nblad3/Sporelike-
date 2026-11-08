@@ -10,6 +10,10 @@ const TAILS := ["", "", "fork", "club", "spike"]
 const PATTERNS := ["plain", "stripes", "spots", "bands"]
 const EYE_SETS := ["front", "wide", "top"]
 const ARM_TIPS := ["hand", "pincer", "blade"]
+const MOUTHS := ["none", "smile", "smile", "beak", "mandibles", "tusks", "trunk", "sucker"]
+const HEADS := ["front", "front", "front", "raised", "low", "middle"]
+const SYMMETRY := ["two-sided", "two-sided", "two-sided", "radial", "lopsided"]
+const KNEES := ["up", "up", "high", "back"]
 
 
 static func make(rng: RandomNumberGenerator) -> AnimalBody:
@@ -56,6 +60,11 @@ static func make(rng: RandomNumberGenerator) -> AnimalBody:
 	body.arm_pairs = 1 if not hopper and rng.randf() < 0.25 else 0
 	body.arm_tip = ARM_TIPS[rng.randi() % ARM_TIPS.size()]
 	body.smooth = rng.randf() < 0.4
+	body.mouth = MOUTHS[rng.randi() % MOUTHS.size()]
+	body.head_at = HEADS[rng.randi() % HEADS.size()]
+	body.symmetry = SYMMETRY[rng.randi() % SYMMETRY.size()]
+	body.knee = "up" if body.limb == "tentacle" else KNEES[rng.randi() % KNEES.size()]
+	body.leg_build = [1.0, 1.0, 1.6, 2.4][rng.randi() % 4]
 	body.pattern = PATTERNS[rng.randi() % PATTERNS.size()]
 	body.hue = rng.randf()
 	body.hue2 = fposmod(body.hue + rng.randf_range(0.25, 0.6), 1.0)

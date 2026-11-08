@@ -9,14 +9,18 @@ const HUES := ["red", "orange", "yellow", "lime", "green", "teal", "blue", "viol
 ## Each row: [key, label, options].
 const ROWS := [
 	["skin", "Body", ["segments", "smooth"]],
+	["symmetry", "Symmetry", ["two-sided", "radial", "lopsided"]],
 	["segments", "Segments", ["2", "3", "4", "5", "6", "7", "8"]],
 	["shape", "Shape", ["round", "flat", "keel", "tube", "bulb"]],
 	["size", "Build", ["slim", "medium", "bulky"]],
 	["taper", "Taper", ["even", "narrow tail", "big rear"]],
+	["head_at", "Head on", ["front", "raised", "low", "mid-back"]],
 	["neck", "Neck", ["none", "short", "long"]],
+	["mouth", "Mouth", ["none", "smile", "beak", "mandibles", "tusks", "trunk", "sucker"]],
 	["legs", "Leg pairs", ["0", "1", "2", "3", "4", "5", "6"]],
 	["leg_length", "Leg length", ["short", "medium", "long"]],
-	["stance", "Stance", ["under body", "upright", "wide"]],
+	["leg_build", "Leg build", ["thin", "sturdy", "mighty"]],
+	["stance", "Stance", ["under body", "upright", "wide", "crouched", "back knees"]],
 	["limb", "Limbs", ["legs", "tentacles"]],
 	["joints", "Joints", ["2", "3", "4"]],
 	["foot", "Feet", ["pad", "claw", "spike", "sucker"]],
@@ -48,6 +52,8 @@ func _init() -> void:
 	picks["leg_length"] = 1
 	picks["stance"] = 1
 	picks["eyes"] = 1
+	picks["mouth"] = 1
+	picks["leg_build"] = 1
 	picks["hue"] = 4
 	picks["hue2"] = 6
 
