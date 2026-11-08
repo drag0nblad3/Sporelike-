@@ -19,6 +19,11 @@ var lost: Array[BodyPart] = []
 var _timer := 0.0
 
 
+## Seconds to regrow one cell, shorter with Stem cells.
+static func regrow_time(plan: BodyPlan) -> float:
+	return REGROW_TIME * TissueTrait.regrow_factor(plan)
+
+
 ## Resolves a bite on cell `index`. Biters must check STUNG themselves.
 func bite(colony: Colony, index: int, rng: RandomNumberGenerator) -> String:
 	if index < 0 or index >= colony.plan.parts.size():
@@ -28,7 +33,7 @@ func bite(colony: Colony, index: int, rng: RandomNumberGenerator) -> String:
 	if CellEffects.stings(colony.plan, index):
 		return STUNG
 	lost.append(colony.lose_cell(index))
-	_timer = REGROW_TIME
+	_timer = regrow_time(colony.plan)
 	return BITTEN
 
 
@@ -47,7 +52,7 @@ func tick(colony: Colony, delta: float) -> void:
 	_timer -= delta
 	if _timer > 0.0 or colony.energy < REGROW_COST:
 		return
-	_timer = REGROW_TIME
+	_timer = regrow_time(colony.plan)
 	var part: BodyPart = lost.pop_back()
 	if colony.regain(part):
 		colony.energy -= REGROW_COST

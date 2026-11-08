@@ -109,7 +109,7 @@ func save_data() -> Dictionary:
 
 ## What the colony burns per second, for the generation's Fed score.
 func upkeep() -> float:
-	return Colony.UPKEEP_PER_CELL * plan.parts.size() * FinalBody.upkeep_factor(plan.final_body)
+	return CellEffects.upkeep(plan)
 
 
 func center() -> Vector2:

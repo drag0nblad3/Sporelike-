@@ -65,7 +65,7 @@ func _feed(rival: Colony) -> void:
 		if gained > 0.0:
 			rival.feed(gained)
 		return
-	var reach := FeedingStyle.mouth_reach(rival.plan.style)
+	var reach := CellEffects.mouth_reach(rival.plan)
 	for point in rival.eat_points():
 		gained += ecosystem.food.take_near(Vector2(point.x, point.z), reach) \
 			* FeedingStyle.food_factor(rival.plan.style)
@@ -113,4 +113,5 @@ static func make_plan(cells: int, random: RandomNumberGenerator) -> BodyPlan:
 	while plan.parts.size() < cells and tries < 30:
 		tries += 1
 		plan.grow(str(roles[random.randi() % roles.size()]))
+	TissueTrait.add_random(plan, random, int(cells / 15.0))
 	return plan

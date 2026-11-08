@@ -32,7 +32,7 @@ static func attempt(eater: Colony, target: Colony, rng: RandomNumberGenerator) -
 		eater.abilities.start("bite", BITE_COOLDOWN)
 		var outcome := target.wounds.bite(target, index, rng)
 		if outcome == ColonyWounds.STUNG:
-			eater.stun_time = CellEffects.STING_STUN
+			eater.stun_time = CellEffects.sting_stun(target.plan)
 		elif outcome == ColonyWounds.BITTEN:
 			return [outcome, CELL_MEAL]
 		return [outcome, 0.0]

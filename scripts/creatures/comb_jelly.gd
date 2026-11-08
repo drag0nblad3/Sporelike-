@@ -74,7 +74,7 @@ func _bite(colony: Colony, index: int, rng: RandomNumberGenerator) -> String:
 	var outcome := colony.wounds.bite(colony, index, rng)
 	match outcome:
 		ColonyWounds.STUNG:
-			stun_time = CellEffects.STING_STUN
+			stun_time = CellEffects.sting_stun(colony.plan)
 		ColonyWounds.BITTEN:
 			rest_time = REST_AFTER_BITE
 		_:

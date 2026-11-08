@@ -10,7 +10,7 @@ extends RefCounted
 static func eat(colony: Colony, eco: Ecosystem) -> float:
 	var style := colony.plan.style
 	var gained := 0.0
-	var reach := FeedingStyle.mouth_reach(style) + FinalBody.reach_bonus(colony.plan.final_body)
+	var reach := CellEffects.mouth_reach(colony.plan) + FinalBody.reach_bonus(colony.plan.final_body)
 	var largest := FeedingStyle.prey_radius(style)
 	var prey := eco.prey_list()
 	for point in colony.eat_points():

@@ -148,7 +148,8 @@ func _process(delta: float) -> void:
 func _report(outcome: String) -> void:
 	match outcome:
 		ColonyWounds.BITTEN:
-			hud.flash_message("A cell was bitten off! It regrows in %d s" % ColonyWounds.REGROW_TIME, 1.5)
+			var regrow := ColonyWounds.regrow_time(colony.plan)
+			hud.flash_message("A cell was bitten off! It regrows in %.1f s" % regrow, 1.5)
 		ColonyWounds.STUNG:
 			hud.flash_message("Your stinging cells stunned the biter!", 1.5)
 

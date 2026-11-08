@@ -23,6 +23,8 @@ var hollow: Array[Vector2] = []
 var style := ""
 ## The FinalBody picked at the end of the stage ("" until then).
 var final_body := ""
+## TissueTrait upgrades: id -> level.
+var traits := {}
 
 
 ## Rounds a grid position so the same spot always compares equal.
@@ -52,6 +54,10 @@ static func from_dict(data: Dictionary) -> BodyPlan:
 		plan.hollow.append(snap(Vector2(float(pair[0]), float(pair[1]))))
 	plan.style = str(data.get("style", ""))
 	plan.final_body = str(data.get("final_body", ""))
+	var saved: Dictionary = data.get("traits", {})
+	for id in saved:
+		if TissueTrait.INFO.has(id):
+			plan.traits[str(id)] = clampi(int(saved[id]), 0, TissueTrait.MAX_LEVEL)
 	if plan.parts.is_empty():
 		return starter(kind)
 	return plan
@@ -69,7 +75,7 @@ func to_dict() -> Dictionary:
 	for spot in hollow:
 		holes.append([spot.x, spot.y])
 	return {"symmetry": symmetry, "parts": list, "hollow": holes, "style": style,
-		"final_body": final_body}
+		"final_body": final_body, "traits": traits.duplicate()}
 
 
 func count(role: String) -> int:

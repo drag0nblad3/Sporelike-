@@ -62,7 +62,7 @@ static func _bite(hunter: Predator, colony: Colony, index: int,
 	var outcome := colony.wounds.bite(colony, index, rng)
 	match outcome:
 		ColonyWounds.STUNG:
-			hunter.stun_time = CellEffects.STING_STUN
+			hunter.stun_time = CellEffects.sting_stun(colony.plan)
 			hunter.cooldown = Predator.STUNG_COOLDOWN
 		ColonyWounds.BITTEN:
 			hunter.cooldown = FULL_COOLDOWN

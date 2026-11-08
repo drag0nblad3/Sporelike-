@@ -41,6 +41,9 @@ func open(stats: GenerationStats, plan: BodyPlan, roles: Array[String]) -> void:
 	_label("%s body, %d cells. You gathered %d energy, %d%% of what your body burns." % [
 		Symmetry.label(plan.symmetry), plan.parts.size(), roundi(stats.energy_gained),
 		roundi(stats.fed_ratio() * 100.0)], 22)
+	var tissues := TissueText.summary(plan)
+	if tissues != "":
+		_label("Tissues: %s" % tissues, 20).add_theme_color_override("font_color", UiTheme.DIM)
 	_label("Grow a new kind of cell:", 24)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
@@ -73,7 +76,7 @@ func _choice(plan: BodyPlan, role: String) -> Button:
 		var ability := ColonyAbility.card_line(role, trial)
 		if ability != "":
 			lines.append(ability)
-		lines.append("Energy use +%.2f/s" % (Colony.UPKEEP_PER_CELL * added))
+		lines.append("Energy use +%.2f/s" % (CellEffects.upkeep(trial) - CellEffects.upkeep(plan)))
 		card = PickCard.new("+%d %s" % [added, BodyPart.label(role)], "\n".join(PackedStringArray(lines)))
 	card.tint_title(BodyPart.color(role).lightened(0.35))
 	card.pressed.connect(func() -> void: chosen.emit(role))

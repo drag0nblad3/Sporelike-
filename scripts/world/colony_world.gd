@@ -64,7 +64,7 @@ func feed(colony: Colony, delta: float) -> float:
 	var plants := bed.touch(colony) + rafts.touch(colony)
 	var gained := plants * FeedingStyle.seaweed_factor(style)
 	if ColonySwim.at_layer(colony, Depth.OPEN):
-		gained += snow.eat(points, FeedingStyle.mouth_reach(style))
+		gained += snow.eat(points, CellEffects.mouth_reach(colony.plan))
 	if ColonySwim.at_layer(colony, Depth.FLOOR):
 		for heap in carrion:
 			gained += heap.bite(points) * FeedingStyle.carrion_factor(style)

@@ -16,6 +16,7 @@ static func run(host: Node) -> void:
 			kind, start, plan.parts.size(), again.parts.size()])
 		if again.parts.size() != plan.parts.size():
 			push_error("Body plan did not survive saving and loading")
+	TissueCheck.run()
 	var lab := ColonyLab.new()
 	lab.process_mode = Node.PROCESS_MODE_ALWAYS
 	lab.with_sea = false
