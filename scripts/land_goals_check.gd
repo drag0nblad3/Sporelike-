@@ -43,17 +43,17 @@ static func _check_generation(host: Node, goals: LandGoals) -> void:
 	generations.ended.connect(func(_number: int) -> void: ends[0] += 1)
 	generations.end_now()
 	var picks := LandGenerations.picks_for(goals.nest.eggs)
-	var editor := AnimalEditor.new()
-	editor.begin_evolve(1)
-	editor.step_row("tail", 1)
-	editor.step_row("horns", 1)
-	editor.step_row("tail", 1)
-	var changed := editor.budget.changed(editor.recipe)
+	var recipe := AnimalRecipe.new()
+	var budget := EvolveBudget.new()
+	budget.begin(recipe, 1)
+	for key: String in ["tail", "horns", "tail"]:
+		if budget.allows(recipe, key):
+			recipe.shift(key, 1)
+	var changed := budget.changed(recipe)
 	goals.new_generation()
 	generations.begin_next()
 	print("smoke: stage 3 generation ended %d time(s), %d picks; 1-pick evolve changed %d row(s)" % [
 		ends[0], picks, changed])
 	if ends[0] != 1 or picks != 3 or changed != 1 or goals.nest.eggs != 0 or generations.number != 2:
 		push_error("Stage 3 generation or evolve budget misbehaved")
-	editor.free()
 	generations.queue_free()
