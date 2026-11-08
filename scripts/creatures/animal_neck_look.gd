@@ -15,9 +15,10 @@ var _parts: Array[MeshInstance3D] = []
 func build(body: AnimalBody) -> void:
 	_body = body
 	if body.head_at != "front":
-		_ball = AnimalParts.node(AnimalParts.ball(), AnimalParts.material(body.color()), self)
+		_ball = AnimalParts.node(AnimalParts.ball(), AnimalSkinMaterial.make(body, body.color()),
+			self)
 	if body.neck > 0.0 or body.head_at != "front":
-		var mat := AnimalParts.material(body.color().darkened(0.08))
+		var mat := AnimalSkinMaterial.make(body, body.color().darkened(0.08))
 		for k in 3:
 			var part: Mesh = AnimalParts.ball() if k == 1 else AnimalParts.rod()
 			_parts.append(AnimalParts.node(part, mat, self))

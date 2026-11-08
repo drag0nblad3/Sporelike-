@@ -14,6 +14,9 @@ const MOUTHS := ["none", "smile", "smile", "beak", "mandibles", "tusks", "trunk"
 const HEADS := ["front", "front", "front", "raised", "low", "middle"]
 const SYMMETRY := ["two-sided", "two-sided", "two-sided", "two-sided", "radial"]
 const KNEES := ["up", "up", "high", "back"]
+const SHADINGS := ["even", "dark back", "light belly", "both", "both"]
+const COVERINGS := ["none", "none", "none", "a few feathers", "full feathers", "quills"]
+const OVERSIZE := ["none", "none", "none", "none", "head", "eyes", "legs", "arms", "tail", "horns"]
 const POSTURES := ["crawl", "crawl", "crawl", "crawl", "crawl", "leaning", "upright"]
 
 
@@ -66,6 +69,10 @@ static func make(rng: RandomNumberGenerator) -> AnimalBody:
 	body.symmetry = SYMMETRY[rng.randi() % SYMMETRY.size()]
 	body.knee = "up" if body.limb == "tentacle" else KNEES[rng.randi() % KNEES.size()]
 	body.leg_build = [1.0, 1.0, 1.6, 2.4][rng.randi() % 4]
+	body.shading = SHADINGS[rng.randi() % SHADINGS.size()]
+	body.texture = AnimalSkinMaterial.TEXTURES[rng.randi() % 4]
+	body.covering = COVERINGS[rng.randi() % COVERINGS.size()]
+	body.oversize = OVERSIZE[rng.randi() % OVERSIZE.size()]
 	if body.pairs() > 0 and not hopper:
 		body.posture = POSTURES[rng.randi() % POSTURES.size()]
 		if body.posture != "crawl":
@@ -73,4 +80,5 @@ static func make(rng: RandomNumberGenerator) -> AnimalBody:
 	body.pattern = PATTERNS[rng.randi() % PATTERNS.size()]
 	body.hue = rng.randf()
 	body.hue2 = fposmod(body.hue + rng.randf_range(0.25, 0.6), 1.0)
+	AnimalBuilder.grow_oversize(body)
 	return body

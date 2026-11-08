@@ -82,7 +82,7 @@ func _pose_tail(animal: Animal) -> void:
 	if _tail.is_empty():
 		return
 	var last := _body.segments() - 1
-	var r := _body.radii[last]
+	var r := _body.radii[last] * (2.2 if _body.oversize == "tail" else 1.0)
 	var dir := -animal.segment_forward(last)
 	var right := dir.cross(Vector3.UP)
 	var base := animal.spine[last] + dir * _body.half_length(last) * 0.85

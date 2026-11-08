@@ -44,8 +44,9 @@ func update(animal: Animal, frames: Array[Transform3D]) -> void:
 	for k in _arms.size():
 		var pair := k / 2
 		var side := -1.0 if k % 2 == 0 else 1.0
-		var length := reach
-		var w := r
+		var big := 1.6 if _body.oversize == "arms" else 1.0
+		var length := reach * big
+		var w := r * big
 		var out := frame.basis.x.normalized() * side
 		var shoulder := frame * Vector3(side * 0.8, 0.35 - 0.3 * pair, 0.6 - 0.7 * pair)
 		var sway := sin(animal.time * 2.5 + pair * 1.7 + side) * 0.12

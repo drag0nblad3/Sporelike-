@@ -12,6 +12,12 @@ static func describe(body: AnimalBody) -> String:
 		parts.append(body.head_at + " head")
 	if body.mouth not in ["none", "smile"]:
 		parts.append(body.mouth)
+	if body.texture != "smooth":
+		parts.append(body.texture)
+	if body.covering != "none":
+		parts.append(body.covering)
+	if body.oversize != "none":
+		parts.append("huge " + body.oversize)
 	if body.leg_build > 2.0 and body.pairs() > 0:
 		parts.append("mighty legs")
 	if body.neck > 0.0:

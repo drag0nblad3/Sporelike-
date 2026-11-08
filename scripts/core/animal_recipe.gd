@@ -37,6 +37,10 @@ const ROWS := [
 	["arch", "Back arch", ["flat", "low", "high"]],
 	["tail", "Tail", ["none", "fork", "club", "spike"]],
 	["pattern", "Pattern", ["plain", "stripes", "spots", "bands"]],
+	["shading", "Shading", ["even", "dark back", "light belly", "both"]],
+	["texture", "Texture", ["smooth", "scales", "warts", "fuzz"]],
+	["covering", "Covering", ["none", "a few feathers", "full feathers", "quills"]],
+	["oversize", "Oversize", ["none", "head", "eyes", "legs", "arms", "tail", "horns"]],
 	["hue", "Colour", HUES],
 	["hue2", "Colour 2", HUES],
 ]

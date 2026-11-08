@@ -40,11 +40,12 @@ func update(animal: Animal, head: Transform3D) -> void:
 	var right := fwd.cross(Vector3.UP)
 	_eyes.update(head)
 	_mouth.update(animal, head)
+	var horn := r * (2.2 if _body.oversize == "horns" else 1.0)
 	for k in _horns.size():
 		var side := 0.0 if _horns.size() == 1 else (-1.0 if k == 0 else 1.0)
 		var base := head * Vector3(side * 0.35, 0.7, 0.55)
-		var tip := base + (Vector3.UP * 0.8 + fwd * 0.6 + right * side * 0.3).normalized() * r * 1.2
-		_horns[k].transform = AnimalParts.span(base, tip, r * 0.18)
+		var tip := base + (Vector3.UP * 0.8 + fwd * 0.6 + right * side * 0.3).normalized() * horn * 1.2
+		_horns[k].transform = AnimalParts.span(base, tip, horn * 0.18)
 	for k in range(0, _feelers.size(), 2):
 		var side := -1.0 if k == 0 else 1.0
 		var sway := sin(animal.time * 4.0 + side) * 0.3

@@ -64,6 +64,15 @@ var eyes := 2
 ## Where the eyes sit: "front" (facing ahead), "wide" (on the sides of the
 ## head) or "top" (up on the crown).
 var eye_set := "front"
+## "even", "dark back", "light belly" or "both".
+var shading := "even"
+## "smooth", "scales", "warts" or "fuzz" (AnimalSkinMaterial).
+var texture := "smooth"
+## "none", "a few feathers", "full feathers" or "quills" (AnimalCoverings).
+var covering := "none"
+## One part grown far bigger: "none", "head", "eyes", "legs", "arms",
+## "tail" or "horns".
+var oversize := "none"
 ## One smooth skin over the whole body instead of separate segments.
 var smooth := false
 ## "plain", "stripes", "spots" or "bands".

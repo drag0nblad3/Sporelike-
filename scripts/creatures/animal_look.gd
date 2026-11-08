@@ -2,12 +2,13 @@ class_name AnimalLook
 extends Node3D
 ## How a stage 3 Animal's body looks: a shaped body per segment, a colour
 ## pattern (stripes, spots or bands in its second colour) and parts on the
-## back (spikes, a sail, plates). A legless body wriggles as it slithers.
-## A smooth body is one AnimalSkinLook instead of a ball per segment. The
-## neck and where the head sits (AnimalNeckLook), the head
-## (AnimalHeadLook), limbs and tail (AnimalLimbLook) and arms
-## (AnimalArmLook) are drawn by their own children from the segment
-## transforms worked out here.
+## back (spikes, a sail, plates), on a shaded, textured skin
+## (AnimalSkinMaterial), with feathers or quills (AnimalCoverings). A
+## legless body wriggles as it slithers. A smooth body is one
+## AnimalSkinLook instead of a ball per segment. The neck and where the
+## head sits (AnimalNeckLook), the head (AnimalHeadLook), limbs and tail
+## (AnimalLimbLook) and arms (AnimalArmLook) are drawn by their own
+## children from the segment transforms worked out here.
 
 const WIGGLE := 0.3
 const SPOTS := 3
@@ -38,8 +39,8 @@ func build(body: AnimalBody) -> void:
 	_extra_local.clear()
 	_skin = null
 	frames.clear()
-	var skin := AnimalParts.material(body.color())
-	var second := AnimalParts.material(body.color2())
+	var skin := AnimalSkinMaterial.make(body, body.color())
+	var second := AnimalSkinMaterial.make(body, body.color2())
 	var dark := AnimalParts.material(body.color().darkened(0.35))
 	for i in body.segments():
 		var striped := body.pattern == "stripes" and i % 2 == 1
@@ -47,6 +48,7 @@ func build(body: AnimalBody) -> void:
 		frames.append(Transform3D())
 		_add_pattern(i, second)
 		_add_top(i, second, dark)
+	_add_coverings()
 	var apart := (body.neck > 0.0 and body.head_at == "front") or body.posture == "upright"
 	var first := 1 if apart else 0
 	if body.smooth and body.segments() - first >= 1:
@@ -123,6 +125,17 @@ func _add_top(i: int, light: Material, dark: Material) -> void:
 		"plates":
 			_extra(i, AnimalParts.ball(), dark,
 				Transform3D(Basis.from_scale(Vector3(0.85, 0.35, 0.9)), Vector3(0.0, 0.78, 0.0)))
+
+
+func _add_coverings() -> void:
+	var mats := {}
+	for part: Array in AnimalCoverings.parts(_body):
+		var tint: Color = part[2]
+		if not mats.has(tint):
+			mats[tint] = AnimalParts.material(tint)
+		var mesh: Mesh = AnimalParts.cone() if part[1] == "cone" else AnimalParts.ball()
+		var local: Transform3D = part[3]
+		_extra(part[0], mesh, mats[tint], local)
 
 
 func _extra(i: int, mesh: Mesh, mat: Material, local: Transform3D) -> void:

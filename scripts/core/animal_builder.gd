@@ -44,6 +44,11 @@ static func build(recipe: AnimalRecipe) -> AnimalBody:
 	body.head_at = HEAD_AT[recipe.index("head_at")]
 	body.symmetry = recipe.value("symmetry")
 	body.mouth = recipe.value("mouth")
+	body.shading = recipe.value("shading")
+	body.texture = recipe.value("texture")
+	body.covering = recipe.value("covering")
+	body.oversize = recipe.value("oversize")
+	grow_oversize(body)
 	body.limb = "tentacle" if recipe.value("limb") == "tentacles" else "leg"
 	body.joints = 5 if body.limb == "tentacle" else recipe.index("joints") + 2
 	body.foot = recipe.value("foot")
@@ -62,6 +67,18 @@ static func build(recipe: AnimalRecipe) -> AnimalBody:
 	body.hue = recipe.index("hue") / float(AnimalRecipe.HUES.size())
 	body.hue2 = recipe.index("hue2") / float(AnimalRecipe.HUES.size())
 	return body
+
+
+## Makes the oversized part bigger where it is part of the body plan (a
+## bigger head segment, longer and thicker legs); the looks scale the rest.
+static func grow_oversize(body: AnimalBody) -> void:
+	match body.oversize:
+		"head":
+			body.radii[0] *= 1.6
+		"legs":
+			for i in body.segments():
+				body.leg_lengths[i] *= 1.5
+			body.leg_build += 0.8
 
 
 ## Stands a body on one pair of long legs: at the middle for a leaning

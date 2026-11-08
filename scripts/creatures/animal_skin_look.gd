@@ -28,9 +28,7 @@ func build(body: AnimalBody, first: int) -> void:
 	_skin = body.color()
 	_stripe = body.color2() if body.pattern == "stripes" else body.color()
 	mesh = _mesh
-	var mat := AnimalParts.material(Color.WHITE)
-	mat.vertex_color_use_as_albedo = true
-	material_override = mat
+	material_override = AnimalSkinMaterial.make(body, Color.WHITE)
 
 
 func update(frames: Array[Transform3D]) -> void:
@@ -41,6 +39,7 @@ func update(frames: Array[Transform3D]) -> void:
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
+	var uvs := PackedVector2Array()
 	var n := centres.size()
 	for s in n:
 		var t := centres[mini(s + 1, n - 1)] - centres[maxi(s - 1, 0)]
@@ -58,6 +57,7 @@ func update(frames: Array[Transform3D]) -> void:
 			verts.append(centres[s] + right * c * size.x + up * sn * size.y)
 			normals.append((right * c / maxf(size.x, 0.001) + up * sn / maxf(size.y, 0.001)).normalized())
 			colors.append(tint)
+			uvs.append(Vector2(float(a) / SIDES, float(s) / STEPS * 0.5))
 	if _indices.size() != (n - 1) * SIDES * 6:
 		_make_indices(n)
 	var arrays := []
@@ -65,6 +65,7 @@ func update(frames: Array[Transform3D]) -> void:
 	arrays[Mesh.ARRAY_VERTEX] = verts
 	arrays[Mesh.ARRAY_NORMAL] = normals
 	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_INDEX] = _indices
 	_mesh.clear_surfaces()
 	_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)

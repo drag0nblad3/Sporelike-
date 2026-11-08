@@ -29,7 +29,7 @@ func build(body: AnimalBody) -> void:
 
 func update(head: Transform3D) -> void:
 	var r := _body.radii[0]
-	var size := r * (0.24 if _body.eyes <= 2 else 0.19)
+	var size := r * (0.24 if _body.eyes <= 2 else 0.19) * (1.9 if _body.oversize == "eyes" else 1.0)
 	for e in _whites.size():
 		var dir := _dirs[e]
 		var base := head * (dir * 0.88)
