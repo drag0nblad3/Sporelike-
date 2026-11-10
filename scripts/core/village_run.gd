@@ -46,7 +46,7 @@ func points() -> int:
 
 
 func goals_text() -> String:
-	return "Goals: %s raid with no losses  ·  %s giant hunted  ·  %s all four buildings" % [
+	return "Goals: %s raid with no losses  ·  %s giant hunted  ·  %s 4 buildings" % [
 		_tick(clean_raid), _tick(giant), _tick(all_built)]
 
 

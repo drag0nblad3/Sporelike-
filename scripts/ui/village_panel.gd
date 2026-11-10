@@ -86,7 +86,8 @@ func refresh(village: Village) -> void:
 		if id == village.buildings.active:
 			button.text = "%s\nBuilding %d%%" % [head, roundi(village.buildings.share() * 100.0)]
 		else:
-			button.text = head + ("\nDone" if next == "" else "\n" + next)
+			var verb := "Build: " if level == 0 else "Upgrade: "
+			button.text = head + ("\nDone" if next == "" else "\n" + verb + next)
 	_alarm.text = "Alarm is ON" if village.alarm else "Alarm"
 
 

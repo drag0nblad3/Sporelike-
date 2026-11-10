@@ -25,7 +25,7 @@ func add_group(actors: Array[CrowdActor]) -> void:
 ## Overhead: no full bodies, bigger shapes.
 func set_overhead(on: bool) -> void:
 	avatars.off = on
-	proxies.grow = 1.9 if on else 1.0
+	proxies.grow = 2.6 if on else 1.0
 
 
 func step(focus: Vector3, delta: float) -> void:

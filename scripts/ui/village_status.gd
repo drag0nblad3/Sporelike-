@@ -10,7 +10,8 @@ static func text(lab: VillageLab) -> String:
 	var left := ceili(maxf(lab.generations.time_left, 0.0))
 	var lines := PackedStringArray()
 	lines.append("Stage 4 test  ·  %d FPS  ·  Generation %d of %d  ·  %d:%02d left" % [
-		roundi(Engine.get_frames_per_second()), lab.generations.number, VillageRun.GENERATIONS,
+		roundi(Engine.get_frames_per_second()),
+		mini(lab.generations.number, VillageRun.GENERATIONS), VillageRun.GENERATIONS,
 		left / 60, left % 60])
 	lines.append("People %d/%d  ·  Food %d/%d  ·  Elder %d/%d  ·  Carrying %d" % [
 		village.people(), VillageRun.WIN_PEOPLE, village.stock, village.stock_cap(),
