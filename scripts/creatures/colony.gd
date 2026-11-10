@@ -89,7 +89,7 @@ func reach() -> float:
 
 ## Energy the body burns per second.
 func upkeep() -> float:
-	return UPKEEP_PER_CELL * plan.parts.size() * FinalBody.upkeep_factor(plan.final_body)
+	return CellEffects.upkeep(plan)
 
 
 func max_energy() -> float:

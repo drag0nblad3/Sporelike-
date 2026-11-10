@@ -2,7 +2,7 @@ class_name ColonySwim
 extends RefCounted
 ## How a colony swims: every cell adds push (cilia on skin, whips on
 ## flagellated cells, a little from the rest), scaled by its FeedingStyle,
-## FinalBody and any Surge, and it turns at a rate its symmetry allows.
+## FinalBody, TissueTrait upgrades and any Surge, and it turns at a rate its symmetry allows.
 
 ## Swimming push per unit of cell push, shared over the whole body.
 const SWIM_FORCE := 17.0
@@ -11,11 +11,16 @@ const PUSH := {"skin": 1.0, "flagellum": 3.0}
 const OTHER_PUSH := 0.3
 
 
+## How much one cell of `role` helps swimming, with tissue upgrades.
+static func cell_push(plan: BodyPlan, role: String) -> float:
+	return float(PUSH.get(role, OTHER_PUSH)) + TissueTrait.extra_push(plan, role)
+
+
 ## Average push per cell, before any multipliers.
 static func cell_average(plan: BodyPlan) -> float:
 	var sum := 0.0
 	for part in plan.parts:
-		sum += float(PUSH.get(part.role, OTHER_PUSH))
+		sum += cell_push(plan, part.role)
 	return sum / float(maxi(plan.parts.size(), 1))
 
 
@@ -23,7 +28,8 @@ static func push(colony: Colony) -> float:
 	var plan := colony.plan
 	var surge := ColonyAbility.surge_push(plan) if colony.surge_time > 0.0 else 1.0
 	return SWIM_FORCE * cell_average(plan) * FeedingStyle.swim_factor(plan.style) \
-		* FinalBody.swim_factor(plan.final_body) * Depth.swim_factor(colony.layer) * surge
+		* FinalBody.swim_factor(plan.final_body) * Depth.swim_factor(colony.layer) * surge \
+		* TissueTrait.swim_factor(plan)
 
 
 ## Most of the push is shared by the whole body; the rest comes from the
@@ -38,7 +44,7 @@ static func stroke(colony: Colony, dir: Vector3, time: float) -> void:
 	var side := dir.cross(Vector3.UP)
 	for i in plan.parts.size():
 		var role := plan.parts[i].role
-		var share := float(PUSH.get(role, OTHER_PUSH)) / average
+		var share := cell_push(plan, role) / average
 		var a := dir * total * (0.6 + 0.4 * share)
 		if role == "flagellum":
 			a += side * sin(time * 9.0 + i) * total * 0.5

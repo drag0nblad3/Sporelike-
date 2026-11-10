@@ -3,7 +3,8 @@ extends Node
 ## The choices between multicellular generations, while the game is
 ## paused: a new kind of cell every time (CellPickScreen), the colony's
 ## FeedingStyle once early on, and its FinalBody once the body is full,
-## which ends the stage once the colony is in the shallows. Changes the
+## which ends the stage once the colony is in the shallows. A well-fed
+## generation also earns a TissueTrait upgrade after the cell. Changes the
 ## plan it is given. Past FAST_GROWTH_AT cells each pick grows twice.
 
 ## The pick is done; the next generation can start.
@@ -42,29 +43,36 @@ func open(stats: GenerationStats, plan: BodyPlan, generations: int) -> void:
 	_stats = stats
 	if plan.final_body == "" and plan.parts.size() >= BodyPlan.MAX_CELLS:
 		if at_shore or smoke_test:
-			_offer(FinalBody.ALL, "Your body is fully grown",
+			_offer(_cards_for(FinalBody.ALL), "Your body is fully grown",
 				"Choose the body your species takes out of the sea. This completes the stage.",
 				_on_final)
 		else:
 			hud.flash_message("Fully grown! Swim north into the shallows to finish the stage", 5.0)
 			done.emit.call_deferred()
 	elif plan.style == "" and generations >= FeedingStyle.OFFER_AT:
-		_offer(FeedingStyle.ALL, "How does your colony feed?",
+		_offer(_cards_for(FeedingStyle.ALL), "How does your colony feed?",
 			"Your body specializes. This choice is for good.", _on_style)
 	else:
 		_offer_cells()
 
 
-func _offer(ids: Array, title: String, subtitle: String, then: Callable) -> void:
-	if smoke_test:
-		then.call_deferred(str(ids[rng.randi() % ids.size()]))
-		return
+## Cards for final bodies or feeding styles.
+func _cards_for(ids: Array) -> Array:
 	var cards: Array = []
 	for id in ids:
 		if id in FinalBody.ALL:
 			cards.append([id, FinalBody.title(id), FinalBody.card_text(id), FinalBody.color(id)])
 		else:
 			cards.append([id, FeedingStyle.title(id), FeedingStyle.card_text(id), UiTheme.GOLD])
+	return cards
+
+
+## cards: [id, name, text, colour] each.
+func _offer(cards: Array, title: String, subtitle: String, then: Callable) -> void:
+	if smoke_test:
+		var entry: Array = cards[rng.randi() % cards.size()]
+		then.call_deferred(str(entry[0]))
+		return
 	for connection in _cards.chosen.get_connections():
 		_cards.chosen.disconnect(connection["callable"])
 	_cards.chosen.connect(then, CONNECT_ONE_SHOT)
@@ -104,4 +112,25 @@ func _on_cell_chosen(role: String) -> void:
 		_plan.grow(role)
 		if _plan.parts.size() >= FAST_GROWTH_AT:
 			_plan.grow(role)
+	_offer_tissue()
+
+
+## A tissue upgrade when the generation fed the body at least what it burned.
+func _offer_tissue() -> void:
+	var ids := TissueTrait.offer(_plan, rng, 3)
+	if ids.is_empty() or (_stats.fed_ratio() < TissueTrait.EARN_AT and not smoke_test):
+		done.emit()
+		return
+	var cards: Array = []
+	for id in ids:
+		cards.append(TissueText.card(id, _plan))
+	_offer(cards, "Refine a tissue",
+		"Fed %d%%: your cells specialize further. Each upgrade stacks up to level III." % [
+			roundi(_stats.fed_ratio() * 100.0)], _on_tissue)
+
+
+func _on_tissue(id: String) -> void:
+	TissueTrait.take(_plan, id)
+	var level := TissueTrait.level(_plan, id)
+	hud.flash_message("%s %s" % [TissueTrait.title(id), TissueText.NUMERALS[level]], 2.5)
 	done.emit()

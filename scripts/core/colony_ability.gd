@@ -46,6 +46,20 @@ static func sting_reach(plan: BodyPlan) -> float:
 	return STING_REACH + STING_PER_GLAND * plan.count("gland")
 
 
+## Energy an ability costs; Potent venom makes Sting dearer.
+static func cost(plan: BodyPlan, id: String) -> float:
+	var extra := TissueTrait.VENOM_COST * TissueTrait.level(plan, "venom") if id == "sting" else 0.0
+	return float(COST[id]) + extra
+
+
+static func sting_stun(plan: BodyPlan) -> float:
+	return STING_STUN + TissueTrait.VENOM_STUN * TissueTrait.level(plan, "venom")
+
+
+static func curl_time(plan: BodyPlan) -> float:
+	return CURL_TIME + TissueTrait.CURL_TIME * TissueTrait.level(plan, "plates")
+
+
 ## A line for the cell pick card when this pick unlocks or improves an ability.
 static func card_line(role: String, after: BodyPlan) -> String:
 	var um := StatSheet.MICRONS
@@ -53,10 +67,10 @@ static func card_line(role: String, after: BodyPlan) -> String:
 		"flagellum":
 			return "Surge: %.1fx push for %.1f s" % [surge_push(after), SURGE_TIME]
 		"gland":
-			return "Sting: stuns everything within %d µm for %d s" % [
-				sting_reach(after) * um, STING_STUN]
+			return "Sting: stuns everything within %d µm for %.1f s" % [
+				sting_reach(after) * um, sting_stun(after)]
 		"plate":
 			if has(after, "curl"):
-				return "Curl: blocks every bite for %d s, but you stop swimming" % CURL_TIME
+				return "Curl: blocks every bite for %.1f s, but you stop swimming" % curl_time(after)
 			return "2 plates unlock Curl"
 	return ""
