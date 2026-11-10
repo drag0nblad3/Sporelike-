@@ -2,7 +2,7 @@ class_name VillageStatus
 extends RefCounted
 ## The stage 4 status lines: frame rate and generation clock, people,
 ## food and the elder's health, the rival tribe's mood, the raid, and the
-## run goals.
+## run goals and each job's learning bar.
 
 
 static func text(lab: VillageLab) -> String:
@@ -19,14 +19,12 @@ static func text(lab: VillageLab) -> String:
 		village.food.carried])
 	lines.append("Rival tribe: %d, %s  ·  %s" % [lab.rival.size(), lab.rival.mood(), _raid(lab)])
 	lines.append(lab.run.goals_text())
-	var learning := village.learning
-	var bars := "Learning: gather %d%%  ·  hunt %d%%  ·  guard %d%%  ·  build %d%%"
-	lines.append((bars + "  ·  known %d/%d") % [
-		roundi(learning.share(VillageJob.GATHER) * 100.0),
-		roundi(learning.share(VillageJob.HUNT) * 100.0),
-		roundi(learning.share(VillageJob.GUARD) * 100.0),
-		roundi(learning.share(VillageJob.IDLE) * 100.0), learning.known.size(),
-		Discovery.ALL.size()])
+	var bars := PackedStringArray()
+	for job: int in [VillageJob.GATHER, VillageJob.HUNT, VillageJob.GUARD, VillageJob.IDLE]:
+		var done := village.learning.offers(job).is_empty()
+		bars.append("%s %s" % [Discovery.learner(job),
+			"all" if done else "%d%%" % roundi(village.learning.share(job) * 100.0)])
+	lines.append("Learning: " + "  ·  ".join(bars))
 	return "\n".join(lines)
 
 
