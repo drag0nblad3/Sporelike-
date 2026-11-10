@@ -184,6 +184,8 @@ func _add_stage_two() -> void:
 		run_end.screen.final_body = FinalBody.title(stage_two.plan.final_body)
 		run_end.conclude(true, cycle.number, progress.points, director.genome))
 	stage_two.pilot.ate.connect(cycle.record_food)
+	stage_two.pilot.apex.slain.connect(func(_title: String) -> void:
+		progress.points += ApexKind.PROGRESS_BONUS)
 	add_child(stage_two)
 
 

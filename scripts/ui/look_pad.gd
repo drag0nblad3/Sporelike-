@@ -11,6 +11,8 @@ const START := VirtualJoystick.ACTIVE_AREA
 const YAW_PER_PIXEL := -0.008
 const PITCH_PER_PIXEL := 0.005
 
+## Off while a panel (the body customizer) covers the right side.
+var enabled := true
 var _finger := -1
 
 
@@ -22,7 +24,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
-		if touch.pressed and _finger == -1 \
+		if touch.pressed and _finger == -1 and enabled \
 				and touch.position.x >= get_viewport_rect().size.x * START:
 			_finger = touch.index
 		elif not touch.pressed and touch.index == _finger:

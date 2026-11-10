@@ -10,6 +10,7 @@ var _title: TitleScreen
 var _creator: SubspeciesCreator
 var _game: Game
 var _lab: AnimalLab
+var _village: VillageLab
 var _smoke_reloaded := false
 
 
@@ -19,6 +20,7 @@ func _ready() -> void:
 	_title.continue_game.connect(_on_continue)
 	_title.test_stage_two.connect(func() -> void: _start({}, true))
 	_title.test_stage_three.connect(_open_animal_lab)
+	_title.test_stage_four.connect(func() -> void: _open_village(null, null, Vector3.INF, 5))
 	add_child(_title)
 	var layer := CanvasLayer.new()
 	layer.layer = 5
@@ -55,7 +57,32 @@ func _open_animal_lab() -> void:
 	_lab.back_requested.connect(func() -> void:
 		_lab.queue_free()
 		_title.open(SaveGame.exists()))
+	_lab.village_founded.connect(func(body: AnimalBody, recipe: AnimalRecipe, at: Vector3,
+			kin: int) -> void:
+		_lab.queue_free()
+		_open_village(body, recipe, at, kin))
 	add_child(_lab)
+
+
+## Stage 4: a village of `body` at `at` (from stage 3), or a random animal
+## in a new valley when body is null (the title's test button).
+func _open_village(body: AnimalBody, recipe: AnimalRecipe, at: Vector3, people: int) -> void:
+	_close_game()
+	_title.visible = false
+	_village = VillageLab.new()
+	_village.start_body = body
+	_village.start_recipe = recipe
+	_village.start_at = at
+	_village.start_people = people
+	_village.valley_seed = 0 if body != null else randi_range(2, 99999)
+	_village.back_requested.connect(func() -> void:
+		_village.queue_free()
+		LandHeight.use_seed(1)
+		_title.open(SaveGame.exists()))
+	_village.new_valley_requested.connect(func() -> void:
+		_village.queue_free()
+		_open_village.call_deferred(null, null, Vector3.INF, 5))
+	add_child(_village)
 
 
 ## New run: found a subspecies first (the creator), then start.
@@ -122,6 +149,8 @@ func _check_glossary() -> void:
 	print("smoke: saved cells %d" % OrganismCollection.entries().size())
 	menu.close()
 	ColonyCheck.run(self)
+	LandGoalsCheck.run(self)
+	VillageCheck.run(self)
 
 
 ## In CI, build the subspecies creator and gene trees with a made-up bank.

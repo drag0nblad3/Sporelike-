@@ -4,12 +4,14 @@ extends CanvasLayer
 ## New subspecies (opens the SubspeciesCreator) and Test stage 2 (a
 ## made-up evolved species that goes straight to the multicellular switch,
 ## without touching the save) and Test stage 3 (the land animal feel test,
-## AnimalLab). Starting a new run over a save asks to confirm first.
+## AnimalLab) and Test stage 4 (a village of a random animal, VillageLab).
+## Starting a new run over a save asks to confirm first.
 
 signal new_game
 signal continue_game
 signal test_stage_two
 signal test_stage_three
+signal test_stage_four
 
 var _continue: Button
 var _new: Button
@@ -49,16 +51,18 @@ func _ready() -> void:
 	column.add_child(_continue)
 	_new = _button("New subspecies", _on_new_pressed)
 	column.add_child(_new)
-	var test := _button("Test stage 2", func() -> void: test_stage_two.emit())
-	test.custom_minimum_size = Vector2(300, 64)
-	test.add_theme_font_size_override("font_size", 24)
-	test.modulate = Color(1, 1, 1, 0.75)
-	column.add_child(test)
-	var land := _button("Test stage 3", func() -> void: test_stage_three.emit())
-	land.custom_minimum_size = Vector2(300, 64)
-	land.add_theme_font_size_override("font_size", 24)
-	land.modulate = Color(1, 1, 1, 0.75)
-	column.add_child(land)
+	var tests := HBoxContainer.new()
+	tests.alignment = BoxContainer.ALIGNMENT_CENTER
+	tests.add_theme_constant_override("separation", 14)
+	column.add_child(tests)
+	for entry: Array in [["Test stage 2", test_stage_two], ["Test stage 3", test_stage_three],
+			["Test stage 4", test_stage_four]]:
+		var wanted: Signal = entry[1]
+		var test := _button(entry[0], func() -> void: wanted.emit())
+		test.custom_minimum_size = Vector2(230, 64)
+		test.add_theme_font_size_override("font_size", 24)
+		test.modulate = Color(1, 1, 1, 0.75)
+		tests.add_child(test)
 
 	var footer := Label.new()
 	footer.text = "Early playtest build"

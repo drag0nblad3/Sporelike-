@@ -33,4 +33,5 @@ static func run(host: Node) -> void:
 	if is_nan(moved) or moved < 0.2 or moved > 50.0:
 		push_error("Colony soft body did not swim properly (moved %.2f)" % moved)
 	ColonyFightCheck.run(lab.colony)
+	ApexCheck.run(lab)
 	lab.queue_free()

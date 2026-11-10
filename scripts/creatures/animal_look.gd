@@ -1,101 +1,144 @@
 class_name AnimalLook
 extends Node3D
-## How a stage 3 Animal looks: a rounded body per segment (striped bodies
-## alternate a darker shade), eyes on the head, and legs as two rods each
-## with a foot, all simple meshes posed every frame. A legless body wriggles
-## from side to side as it slithers.
+## How a stage 3 Animal's body looks: a shaped body per segment, a colour
+## pattern (stripes, spots or bands in its second colour) and parts on the
+## back (spikes, a sail, plates), on a shaded, textured skin
+## (AnimalSkinMaterial), with feathers or quills (AnimalCoverings). A
+## legless body wriggles as it slithers. A smooth body is one
+## AnimalSkinLook instead of a ball per segment. The neck and where the
+## head sits (AnimalNeckLook), the head (AnimalHeadLook), limbs and tail
+## (AnimalLimbLook) and arms (AnimalArmLook) are drawn by their own
+## children from the segment transforms worked out here.
 
 const WIGGLE := 0.3
+const SPOTS := 3
+const SPIKES := 3
 
+## Each segment's transform this frame (scaled to its size and shape).
+var frames: Array[Transform3D] = []
+var _body: AnimalBody
 var _segments: Array[MeshInstance3D] = []
-var _eyes: Array[MeshInstance3D] = []
-var _bones: Array[MeshInstance3D] = []
-var _feet: Array[MeshInstance3D] = []
+## Pattern and back parts, each with the segment it rides on and where.
+var _extras: Array[MeshInstance3D] = []
+var _extra_segment := PackedInt32Array()
+var _extra_local: Array[Transform3D] = []
+var _head := AnimalHeadLook.new()
+var _limbs := AnimalLimbLook.new()
+var _arms := AnimalArmLook.new()
+var _skin: AnimalSkinLook
+var _neck := AnimalNeckLook.new()
 
 
 func build(body: AnimalBody) -> void:
 	for child in get_children():
 		child.queue_free()
+	_body = body
 	_segments.clear()
-	_eyes.clear()
-	_bones.clear()
-	_feet.clear()
-	var ball := SphereMesh.new()
-	ball.radius = 1.0
-	ball.height = 2.0
-	ball.radial_segments = 14
-	ball.rings = 8
-	var skin := _material(body.color())
-	var dark := _material(body.color().darkened(0.35))
+	_extras.clear()
+	_extra_segment.clear()
+	_extra_local.clear()
+	_skin = null
+	frames.clear()
+	var skin := AnimalSkinMaterial.make(body, body.color())
+	var second := AnimalSkinMaterial.make(body, body.color2())
+	var dark := AnimalParts.material(body.color().darkened(0.35))
 	for i in body.segments():
-		var seg := MeshInstance3D.new()
-		seg.mesh = ball
-		seg.material_override = dark if body.striped and i % 2 == 1 else skin
-		add_child(seg)
-		_segments.append(seg)
-	var white := _material(Color(0.95, 0.95, 0.9))
-	var black := _material(Color(0.05, 0.05, 0.05))
-	for e in body.eyes * 2:
-		var eye := MeshInstance3D.new()
-		eye.mesh = ball
-		eye.material_override = white if e % 2 == 0 else black
-		add_child(eye)
-		_eyes.append(eye)
-	var limb := _material(body.color().darkened(0.2))
-	var thick := body.radii[0] * 0.16
-	for k in body.pairs() * 2:
-		for b in 2:
-			var bone := BoneMesh.make(thick, limb)
-			add_child(bone)
-			_bones.append(bone)
-		var foot := MeshInstance3D.new()
-		foot.mesh = ball
-		foot.material_override = limb
-		add_child(foot)
-		_feet.append(foot)
+		var striped := body.pattern == "stripes" and i % 2 == 1
+		_segments.append(AnimalParts.node(AnimalParts.ball(), second if striped else skin, self))
+		frames.append(Transform3D())
+		_add_pattern(i, second)
+		_add_top(i, second, dark)
+	_add_coverings()
+	var apart := (body.neck > 0.0 and body.head_at == "front") or body.posture == "upright"
+	var first := 1 if apart else 0
+	if body.smooth and body.segments() - first >= 1:
+		for i in range(first, body.segments()):
+			_segments[i].visible = false
+		_skin = AnimalSkinLook.new()
+		add_child(_skin)
+		_skin.build(body, first)
+	_neck = AnimalNeckLook.new()
+	add_child(_neck)
+	_neck.build(body)
+	_head = AnimalHeadLook.new()
+	add_child(_head)
+	_head.build(body)
+	_limbs = AnimalLimbLook.new()
+	add_child(_limbs)
+	_limbs.build(body)
+	_arms = AnimalArmLook.new()
+	add_child(_arms)
+	_arms.build(body)
 
 
 func update(animal: Animal) -> void:
-	var body := animal.body
-	if _segments.size() != body.segments():
+	if _body == null or _segments.size() != _body.segments():
 		return
-	var slither := body.pairs() == 0
-	for i in body.segments():
-		var r := body.radii[i]
+	var slither := _body.pairs() == 0
+	var upright := _body.posture == "upright"
+	for i in _body.segments():
+		var r := _body.radii[i]
+		var s := _body.shape_scale(i) * r
 		var fwd := animal.segment_forward(i)
 		var side := fwd.cross(Vector3.UP)
 		var at := animal.spine[i]
 		if slither:
 			var moving := clampf(animal.speed_now / 2.0, 0.0, 1.0)
 			at += side * sin(animal.time * 9.0 - i * 1.1) * WIGGLE * moving * (0.3 + i * 0.15)
-		var up := fwd.cross(side).normalized() * -1.0
-		_segments[i].transform = Transform3D(Basis(-side * r, up * r * 0.85, fwd * r * 1.25), at)
-	_pose_eyes(_segments[0].transform)
-	for k in animal.legs.size():
-		var joints := animal.legs[k].chain.joints
-		BoneMesh.place(_bones[k * 2], joints[0], joints[1])
-		BoneMesh.place(_bones[k * 2 + 1], joints[1], joints[2])
-		var size := body.radii[0] * 0.2
-		_feet[k].transform = Transform3D(Basis.from_scale(Vector3(size, size * 0.6, size * 1.3)),
-			joints[2])
+		if upright and i > 0:
+			# Standing segments run up and down; the belly faces forward.
+			frames[i] = Transform3D(Basis(-side * s.x, Vector3.UP * s.z, fwd * s.y), at)
+		else:
+			frames[i] = Transform3D(Basis(-side * s.x, Vector3.UP * s.y, fwd * s.z), at)
+		_segments[i].transform = frames[i]
+	for k in _extras.size():
+		_extras[k].transform = frames[_extra_segment[k]] * _extra_local[k]
+	_head.update(animal, _neck.pose(animal, frames))
+	_limbs.update(animal, frames)
+	_arms.update(animal, frames)
+	if _skin:
+		_skin.update(frames)
 
 
-## Pairs of eyes across the front of the head, each a white ball with a pupil.
-func _pose_eyes(head: Transform3D) -> void:
-	for e in range(0, _eyes.size(), 2):
-		var pair := e / 4
-		var side := -1.0 if (e / 2) % 2 == 0 else 1.0
-		var local := Vector3(side * (0.42 - pair * 0.08), 0.55 - pair * 0.28, 0.72 - pair * 0.18)
-		var center := head * local
-		var size := head.basis.get_scale().x * 0.22
-		_eyes[e].transform = Transform3D(Basis.from_scale(Vector3.ONE * size), center)
-		var look := (head.basis * Vector3(0.0, 0.0, 1.0)).normalized()
-		_eyes[e + 1].transform = Transform3D(Basis.from_scale(Vector3.ONE * size * 0.55),
-			center + look * size * 0.6)
+## Spots or a band on segment i, in the unit space of its ball.
+func _add_pattern(i: int, mat: Material) -> void:
+	if _body.pattern == "spots":
+		for k in SPOTS:
+			var a := (k - 1) * 0.6
+			var at := Vector3(sin(a) * 0.75, cos(a) * 0.62, 0.15 * (k - 1))
+			_extra(i, AnimalParts.ball(), mat, Transform3D(Basis.from_scale(Vector3.ONE * 0.22), at))
+	elif _body.pattern == "bands" and i > 0:
+		_extra(i, AnimalParts.ball(), mat,
+			Transform3D(Basis.from_scale(Vector3(1.04, 1.04, 0.22)), Vector3.ZERO))
 
 
-func _material(tint: Color) -> StandardMaterial3D:
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = tint
-	mat.roughness = 0.55
-	return mat
+func _add_top(i: int, light: Material, dark: Material) -> void:
+	match _body.tops[i]:
+		"spikes":
+			for k in SPIKES:
+				var z := (k - 1) * 0.5
+				_extra(i, AnimalParts.cone(), dark,
+					Transform3D(Basis.from_scale(Vector3(0.18, 0.7, 0.18)), Vector3(0.0, 1.15, z)))
+		"sail":
+			_extra(i, AnimalParts.ball(), light,
+				Transform3D(Basis.from_scale(Vector3(0.06, 0.9, 0.95)), Vector3(0.0, 1.35, 0.0)))
+		"plates":
+			_extra(i, AnimalParts.ball(), dark,
+				Transform3D(Basis.from_scale(Vector3(0.85, 0.35, 0.9)), Vector3(0.0, 0.78, 0.0)))
+
+
+func _add_coverings() -> void:
+	var mats := {}
+	for part: Array in AnimalCoverings.parts(_body):
+		var tint: Color = part[2]
+		if not mats.has(tint):
+			mats[tint] = AnimalParts.material(tint)
+		var mesh: Mesh = AnimalParts.cone() if part[1] == "cone" else AnimalParts.ball()
+		var local: Transform3D = part[3]
+		_extra(part[0], mesh, mats[tint], local)
+
+
+func _extra(i: int, mesh: Mesh, mat: Material, local: Transform3D) -> void:
+	_extras.append(AnimalParts.node(mesh, mat, self))
+	_extra_segment.append(i)
+	_extra_local.append(local)

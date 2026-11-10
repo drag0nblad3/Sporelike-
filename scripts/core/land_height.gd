@@ -1,23 +1,36 @@
 class_name LandHeight
 extends RefCounted
-## The shape of the land in stage 3: rolling hills with bumpy detail, the
-## same for everything that stands on it (the terrain mesh, walkers, rocks
-## and plants). Heights are in world units above sea level.
+## The shape of the land in stage 3, the same for everything that stands
+## on it (the terrain mesh, walkers, rocks and plants): rolling hills,
+## jagged crags and stepped mesa cliffs where LandZone says so, and river
+## channels from LandRiver cut through all of it. Heights are in world
+## units above sea level.
 
-const HILLS := 7.0
+## How much bigger the land's features are than they first were, so a
+## walker is small beside them. Hills, crags, cliffs, rivers and trees all
+## grow by this; the small bumps underfoot and the low plants do not.
+const SCALE := 3.0
+const HILLS := 7.0 * SCALE
 const BUMPS := 0.9
-
-static var _hills: FastNoiseLite
-static var _bumps: FastNoiseLite
+## Crag peaks reach about this high above the hills.
+const CRAGS := 18.0 * SCALE
+## Height of each mesa tier's cliff.
+const TIER := 6.5 * SCALE
 
 
 static func at(x: float, z: float) -> float:
-	if _hills == null:
-		_setup(1)
-	var h := _hills.get_noise_2d(x, z) * HILLS + _bumps.get_noise_2d(x, z) * BUMPS
+	LandNoise.ensure()
+	var h := LandNoise.hills.get_noise_2d(x, z) * HILLS
+	h += LandNoise.bumps.get_noise_2d(x, z) * BUMPS
 	# A gentle, flatter spot where a walker starts.
-	var calm := clampf(Vector2(x, z).length() / 18.0, 0.25, 1.0)
-	return h * calm
+	h *= clampf(Vector2(x, z).length() / (12.0 * SCALE), 0.25, 1.0)
+	var c := LandZone.crag(x, z)
+	if c > 0.0:
+		h += c * _crag(x, z)
+	var m := LandZone.mesa(x, z)
+	if m > 0.0:
+		h += m * _mesa(x, z)
+	return LandRiver.carve(x, z, h)
 
 
 ## Points up out of the ground at (x, z).
@@ -29,14 +42,17 @@ static func normal(x: float, z: float) -> Vector3:
 
 
 static func use_seed(value: int) -> void:
-	_setup(value)
+	LandNoise.make(value)
 
 
-static func _setup(value: int) -> void:
-	_hills = FastNoiseLite.new()
-	_hills.seed = value
-	_hills.frequency = 0.012
-	_hills.fractal_octaves = 3
-	_bumps = FastNoiseLite.new()
-	_bumps.seed = value + 1
-	_bumps.frequency = 0.09
+## Sharp ridge lines with spiky tops.
+static func _crag(x: float, z: float) -> float:
+	var ridge := 1.0 - absf(LandNoise.ridges.get_noise_2d(x, z))
+	var spikes := absf(LandNoise.bumps.get_noise_2d(x * 2.3, z * 2.3))
+	return pow(ridge, 3.0) * CRAGS * (0.75 + spikes * 0.6)
+
+
+## Two flat-topped tiers, each rising in a sharp cliff.
+static func _mesa(x: float, z: float) -> float:
+	var n := LandNoise.tiers.get_noise_2d(x, z)
+	return (smoothstep(-0.02, 0.03, n) + smoothstep(0.28, 0.33, n)) * TIER

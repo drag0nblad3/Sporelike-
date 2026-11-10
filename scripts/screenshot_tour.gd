@@ -66,6 +66,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	await _shoot_colony_lab()
 	await _shoot_animal_lab()
+	await VillageShots.run(self)
 	title.open(true)
 	await _shoot("title")
 	await _shoot_genes()
@@ -174,12 +175,78 @@ func _shoot_animal_lab() -> void:
 	lab.autopilot = Vector2(0.35, -1.0)
 	await get_tree().create_timer(3.0).timeout
 	await _shoot("stage3")
+	await _shoot_goals(lab)
 	lab.new_body()
 	lab.autopilot = Vector2(-0.4, -1.0)
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("stage3_body2")
+	await _shoot_editor(lab)
+	await _shoot_zoo(lab)
 	lab.queue_free()
 	await get_tree().process_frame
+
+
+## The stage 3 goals: a nest with eggs just ahead, food carried on the
+## back, and the landmark beams in the distance.
+func _shoot_goals(lab: AnimalLab) -> void:
+	lab.autopilot = Vector2.ZERO
+	await get_tree().create_timer(0.5).timeout
+	lab.goals.nest.move_to(lab.animal.focus() + lab.animal.forward() * 5.0)
+	lab.goals.nest.deliver(LandNest.FOOD_PER_EGG * 3)
+	lab.goals.food.carried = 2
+	lab.hud.flash("An egg! 3 in the nest")
+	print("smoke: landmarks at %s" % [lab.goals.landmarks.spots])
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_goals")
+	lab.generations.end_now()
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_evolve")
+	lab.hud.close_editor()
+
+
+## The body customizer open on an upright biped, a leaning biped and a
+## radial crawler.
+func _shoot_editor(lab: AnimalLab) -> void:
+	lab.autopilot = Vector2.ZERO
+	var looks := [
+		{"posture": 2, "skin": 1, "segments": 2, "neck": 1, "mouth": 2, "arms": 1, "eyes": 1,
+			"leg_build": 2, "stance": 1, "leg_length": 2, "tail": 2, "hue": 1,
+			"texture": 3, "covering": 1, "shading": 3},
+		{"posture": 1, "skin": 0, "segments": 4, "neck": 2, "mouth": 4, "stance": 4,
+			"leg_build": 2, "arms": 1, "arm_tip": 2, "shape": 3, "hue": 6, "tail": 3,
+			"texture": 1, "covering": 3, "oversize": 1, "shading": 1},
+		{"posture": 0, "skin": 1, "symmetry": 1, "segments": 1, "legs": 2, "eyes": 5,
+			"mouth": 6, "neck": 0, "arms": 0, "shape": 4, "stance": 2, "leg_build": 1,
+			"hue": 7, "pattern": 0, "texture": 2, "covering": 2, "shading": 3, "oversize": 2},
+	]
+	for k in looks.size():
+		var picks: Dictionary = looks[k]
+		for key: String in picks:
+			lab.hud.editor.recipe.picks[key] = picks[key]
+		lab.hud.open_editor()
+		await get_tree().create_timer(1.8).timeout
+		await _shoot("stage3_editor%d" % (k + 1))
+	lab.hud.close_editor()
+
+
+## Six random land animals side by side, facing the camera, to show the
+## spread of body plans.
+func _shoot_zoo(lab: AnimalLab) -> void:
+	lab.animal.queue_free()
+	var spot := Vector3(0.0, 0.0, 30.0)
+	for k in 6:
+		var beast := Animal.new()
+		beast.heading = PI
+		var at := spot + Vector3(-9.0 + 3.6 * k, 0.0, 0.0)
+		beast.build(AnimalRandom.make(lab.rng), at)
+		lab.add_child(beast)
+	spot.y = LandHeight.at(spot.x, spot.z)
+	lab.camera.look_yaw = 0.0
+	lab.camera.snap(spot, 0.0)
+	lab.camera.position += (lab.camera.position - spot) * 0.5
+	lab.camera.look_at(spot + Vector3.UP)
+	await get_tree().create_timer(1.0).timeout
+	await _shoot("stage3_zoo")
 
 
 ## The colony lab: the symmetry choice, then two kinds of colony
@@ -201,6 +268,11 @@ func _shoot_colony_lab() -> void:
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("colony_radial")
 	lab.queue_free()
+
+
+## Saves a screenshot (for shot helpers in other files).
+func shoot(shot_name: String) -> void:
+	await _shoot(shot_name)
 
 
 func _shoot(shot_name: String) -> void:
