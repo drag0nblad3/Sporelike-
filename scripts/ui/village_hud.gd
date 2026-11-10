@@ -23,6 +23,7 @@ var panel := VillagePanel.new()
 var editor := AnimalEditor.new()
 var summary := VillageSummary.new()
 var discovery := DiscoveryPick.new()
+var tips := TipBanner.new()
 var overhead := false
 var _map := Control.new()
 var _foot: Array[Control] = []
@@ -72,6 +73,8 @@ func _ready() -> void:
 	_rally.tapped.connect(func() -> void: rally_pressed.emit())
 	root.add_child(_rally)
 	_foot.append(_rally)
+	tips.lift = 150.0
+	root.add_child(tips)
 	panel.walk_pressed.connect(func() -> void: view_pressed.emit())
 	root.add_child(panel)
 	editor.visible = false

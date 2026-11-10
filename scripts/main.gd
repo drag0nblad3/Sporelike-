@@ -9,8 +9,7 @@ var smoke_test := "--smoke" in OS.get_cmdline_user_args()
 var _title: TitleScreen
 var _creator: SubspeciesCreator
 var _game: Game
-var _lab: AnimalLab
-var _village: VillageLab
+var _land := LandStages.new()
 var _smoke_reloaded := false
 
 
@@ -19,9 +18,11 @@ func _ready() -> void:
 	_title.new_game.connect(_on_new_game)
 	_title.continue_game.connect(_on_continue)
 	_title.test_stage_two.connect(func() -> void: _start({}, true))
-	_title.test_stage_three.connect(_open_animal_lab)
-	_title.test_stage_four.connect(func() -> void: _open_village(null, null, Vector3.INF, 5))
+	_title.test_stage_three.connect(func() -> void: _open_land(null, 3))
+	_title.test_stage_four.connect(func() -> void: _open_land(null, 4))
 	add_child(_title)
+	_land.closed.connect(func() -> void: _title.open(SaveGame.exists()))
+	add_child(_land)
 	var layer := CanvasLayer.new()
 	layer.layer = 5
 	add_child(layer)
@@ -49,42 +50,6 @@ func _start_screenshot_tour() -> void:
 	add_child(tour)
 
 
-## The stage 3 feel test, back to the title when done.
-func _open_animal_lab() -> void:
-	_close_game()
-	_title.visible = false
-	_lab = AnimalLab.new()
-	_lab.back_requested.connect(func() -> void:
-		_lab.queue_free()
-		_title.open(SaveGame.exists()))
-	_lab.village_founded.connect(func(body: AnimalBody, recipe: AnimalRecipe, at: Vector3,
-			kin: int) -> void:
-		_lab.queue_free()
-		_open_village(body, recipe, at, kin))
-	add_child(_lab)
-
-
-## Stage 4: a village of `body` at `at` (from stage 3), or a random animal
-## in a new valley when body is null (the title's test button).
-func _open_village(body: AnimalBody, recipe: AnimalRecipe, at: Vector3, people: int) -> void:
-	_close_game()
-	_title.visible = false
-	_village = VillageLab.new()
-	_village.start_body = body
-	_village.start_recipe = recipe
-	_village.start_at = at
-	_village.start_people = people
-	_village.valley_seed = 0 if body != null else randi_range(2, 99999)
-	_village.back_requested.connect(func() -> void:
-		_village.queue_free()
-		LandHeight.use_seed(1)
-		_title.open(SaveGame.exists()))
-	_village.new_valley_requested.connect(func() -> void:
-		_village.queue_free()
-		_open_village.call_deferred(null, null, Vector3.INF, 5))
-	add_child(_village)
-
-
 ## New run: found a subspecies first (the creator), then start.
 func _on_new_game() -> void:
 	_title.visible = false
@@ -97,19 +62,38 @@ func _on_begin_run(subspecies_name: String, loadout: Array[String], sea_id: Stri
 
 
 func _on_continue() -> void:
-	_start(SaveGame.load_data())
+	var data := SaveGame.load_data()
+	if int(data.get("stage", 1)) >= 3:
+		_open_land(LandRun.from_save(data), 0)
+	else:
+		_start(data)
+
+
+## The land stages: a run that came ashore or was saved there, or (run
+## null) the title's test of `stage`.
+func _open_land(run: LandRun, stage: int) -> void:
+	_close_game()
+	_title.visible = false
+	if run != null:
+		_land.resume(run)
+	elif stage == 4:
+		_land.open_village(null, null, Vector3.INF, 5)
+	else:
+		_land.open_lab()
 
 
 ## jump: a throwaway game that goes straight to the stage 2 switch.
 func _start(save: Dictionary, jump: bool = false, subspecies_name: String = "",
 		loadout: Array[String] = [], sea_id: String = Sea.DEFAULT) -> void:
 	_close_game()
+	_land.close()
 	_title.visible = false
 	_game = Game.new()
 	_game.setup(save, smoke_test, subspecies_name, loadout, sea_id)
 	_game.jump_to_stage_two = jump
 	_game.quit_to_title.connect(_on_quit_to_title)
 	_game.generation_started.connect(_on_generation_started)
+	_game.went_ashore.connect(func(run: LandRun) -> void: _open_land.call_deferred(run, 0))
 	add_child(_game)
 
 
@@ -151,6 +135,7 @@ func _check_glossary() -> void:
 	ColonyCheck.run(self)
 	LandGoalsCheck.run(self)
 	VillageCheck.run(self)
+	LandLifeCheck.run(self)
 
 
 ## In CI, build the subspecies creator and gene trees with a made-up bank.

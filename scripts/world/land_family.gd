@@ -9,6 +9,8 @@ extends Node3D
 ## (ready_to_found), which opens stage 4. Drawn through a LandCrowd.
 
 signal notice(text: String)
+## A moment worth a sound (LandFeel): its kind and where.
+signal cue(kind: String, at: Vector3)
 
 const MOST := 6
 const FOUND := 4
@@ -26,6 +28,8 @@ var called := 0.0
 var rng := RandomNumberGenerator.new()
 ## Seconds until the next prowler comes.
 var prowl_in := PROWL_EVERY
+## The player's bite, per second (LandBody.bite).
+var bite := BITE
 var _wait := 0.0
 var _prowler_body: AnimalBody
 
@@ -49,6 +53,7 @@ func hatch(eggs: int, body: AnimalBody, nest: Vector3) -> int:
 
 func call_kin() -> void:
 	called = CALL_TIME
+	cue.emit("call", Vector3.INF)
 	notice.emit("You call your kin to you" if not kin.is_empty() else "No kin to call yet")
 
 
@@ -65,7 +70,8 @@ func step(animal: Animal, delta: float) -> void:
 		_send_prowler(at)
 	for p in prowlers:
 		if p.alive and p.flat_to(at) < 3.2 + p.size():
-			p.hurt(BITE * delta)
+			p.hurt(bite * delta)
+			cue.emit("bite", p.pos)
 	_wait -= delta
 	if _wait <= 0.0:
 		_wait = THINK
@@ -108,4 +114,5 @@ func _send_prowler(at: Vector3) -> void:
 		_prowler_body.hue2 = 0.08
 	var from := CrowdFind.ring(at, 0, 55.0, rng.randf() * TAU)
 	prowlers.append(CrowdActor.make(CrowdActor.RAIDER, _prowler_body, from, PROWLER_HEALTH))
+	cue.emit("alarm", at)
 	notice.emit("A prowler is hunting your kin! Call them and fight it together")

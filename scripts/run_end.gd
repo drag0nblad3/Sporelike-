@@ -6,6 +6,8 @@ extends Node
 
 signal keep_playing
 signal finished
+## The player chose to walk onto the land after finishing stage 2.
+signal ashore
 
 ## Gene points for a thriving run: one per this many progress points.
 const PROGRESS_PER_POINT := 20.0
@@ -43,6 +45,7 @@ func conclude(established: bool, generation: int, progress: float, evolved: Geno
 	if not screen.keep_playing.is_connected(_on_keep):
 		screen.keep_playing.connect(_on_keep)
 		screen.end_run.connect(_on_end)
+		screen.go_ashore.connect(func() -> void: ashore.emit())
 	if smoke_test and established:
 		_on_keep.call_deferred()
 

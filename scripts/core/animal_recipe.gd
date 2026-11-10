@@ -79,6 +79,13 @@ func shift(key: String, step: int) -> void:
 	picks[key] = posmod(index(key) + step, options_of(key).size())
 
 
+## Sets a row to the option with this text (ignored if there is none).
+func put(key: String, text: String) -> void:
+	var at := options_of(key).find(text)
+	if at >= 0:
+		picks[key] = at
+
+
 func options_of(key: String) -> Array:
 	for row: Array in ROWS:
 		if row[0] == key:

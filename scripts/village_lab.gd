@@ -6,8 +6,9 @@ extends Node3D
 ## LandCrowd that moves and draws everyone, prey, the rival tribe, raids
 ## and the generation clock; VillageEvents handles what happens between
 ## them. Opened by the title's Test stage 4 or by founding a village at
-## the end of stage 3 (start_* say who and where). Runs are throwaway for
-## now: gene points are shown, not banked.
+## the end of stage 3 (start_* say who and where). As part of a run (`run_info`)
+## its gene points are banked at the end; the title's test is throwaway.
+## VillageFeel adds sounds, pop-ups and tips.
 
 signal back_requested
 signal new_valley_requested
@@ -22,6 +23,8 @@ var start_people := 5
 ## Not zero: reshape the land with this seed (a new valley).
 var valley_seed := 0
 var throwaway := true
+## The run this village belongs to, or null for the test.
+var run_info: LandRun
 ## Not zero: makes the run repeat exactly (CI).
 var seed_value := 0
 
@@ -39,6 +42,7 @@ var generations := LandGenerations.new()
 var run := VillageRun.new()
 var aura := ElderAura.new()
 var events := VillageEvents.new()
+var feel := VillageFeel.new()
 var rng := RandomNumberGenerator.new()
 ## Steers instead of the player when not zero (CI and the screenshot tour).
 var autopilot := Vector2.ZERO
@@ -84,7 +88,8 @@ func _ready() -> void:
 	village.rivals = rival.actors
 	generations.length = GENERATION
 	generations.time_left = GENERATION
-	for part: Node in [prey, rival, raids, generations, crowd, aura, camera, overhead, hud, events]:
+	for part: Node in [prey, rival, raids, generations, crowd, aura, camera, overhead, hud, events,
+			feel]:
 		add_child(part)
 	crowd.add_group(village.villagers)
 	crowd.add_group(prey.actors)
@@ -94,6 +99,7 @@ func _ready() -> void:
 	hud.editor.recipe = start_recipe
 	hud.editor.unlocks.unlock_all()
 	events.wire(self)
+	feel.start(self)
 	set_body(start_body, village.center)
 
 
@@ -158,5 +164,7 @@ func _process(delta: float) -> void:
 		_status_wait = 0.25
 		hud.show_status(VillageStatus.text(self))
 		hud.show_rally(events.rally_wait)
+		if not paused:
+			feel.watch(self)
 		if hud.overhead:
 			hud.panel.refresh(village)

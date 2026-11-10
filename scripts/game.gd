@@ -8,6 +8,8 @@ extends Node3D
 
 signal quit_to_title
 signal generation_started(number: int)
+## Stage 2 is complete and the player walks onto the land (stages 3 and 4).
+signal went_ashore(run: LandRun)
 
 const DEATH_PAUSE := 1.5
 
@@ -134,6 +136,8 @@ func _ready() -> void:
 		else:
 			_begin_generation()
 			hud.flash_message("%s arrives in the %s" % [subspecies_name, Sea.current().title], 3.0)
+			hud.tips.offer("s1_goal", "Eat more energy than your body burns. Your Fed % when "
+				+ "the generation ends is your progress, and it earns your next mutation.")
 	else:
 		_resume()
 	_refresh_species()
@@ -219,7 +223,21 @@ func _add_run_end() -> void:
 	run_end.finished.connect(func() -> void:
 		get_tree().paused = false
 		quit_to_title.emit())
+	run_end.ashore.connect(_go_ashore)
 	add_child(run_end)
+
+
+## Hands the run on to the land stages, shaped by how stage 2 ended.
+func _go_ashore() -> void:
+	var run := LandRun.new()
+	run.subspecies = subspecies_name
+	run.sea_title = Sea.current().title
+	run.throwaway = jump_to_stage_two
+	run.recipe = LandStart.recipe_for(stage_two.plan, director.genome.color())
+	saver.enabled = false
+	run.save()
+	get_tree().paused = false
+	went_ashore.emit(run)
 
 
 func _resume() -> void:

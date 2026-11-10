@@ -9,6 +9,8 @@ signal depth_pressed(step: int)
 
 var joystick: VirtualJoystick
 var pause_menu: PauseMenu
+## One-time teaching prompts.
+var tips := TipBanner.new()
 
 var _energy: EnergyBar
 var _abilities: AbilityBar
@@ -54,6 +56,8 @@ func _ready() -> void:
 	pause.offset_bottom = 150.0 + 76.0
 	pause.offset_right = -20.0
 	pause.offset_left = -20.0 - 170.0
+	tips.lift = 330.0
+	add_child(tips)
 	_abilities = AbilityBar.new()
 	add_child(_abilities)
 	_abilities.pressed.connect(func(id: String) -> void: ability_pressed.emit(id))
