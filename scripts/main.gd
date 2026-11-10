@@ -42,6 +42,8 @@ func _ready() -> void:
 
 
 func _start_screenshot_tour() -> void:
+	# Show the one-time tips in the shots, whatever ran before.
+	Tips.reset()
 	_start({})
 	var tour := ScreenshotTour.new()
 	tour.game = _game

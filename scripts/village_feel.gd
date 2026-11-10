@@ -20,6 +20,8 @@ func _ready() -> void:
 
 func start(lab: VillageLab) -> void:
 	feel.pops = lab
+	_stock = lab.village.stock
+	_known = lab.village.learning.known.size()
 	lab.hud.tips.offer("s4_elder", "You walk as the elder. Villagers near you work 30% "
 		+ "faster and fight harder. Walk into prey or raiders to bite them.")
 	lab.hud.tips.offer("s4_view", "Village view shows the whole valley. Set how many "

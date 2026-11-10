@@ -1,6 +1,7 @@
 class_name TipBanner
 extends PanelContainer
-## One-time teaching prompts: a small card low in the middle of the screen
+## One-time teaching prompts: a small card (low in the middle, or under
+## the top panels when `top` is set)
 ## that explains something the moment it first matters (Tips remembers
 ## which have been shown). Tips queue up; each stays SHOW seconds or until
 ## tapped. Never pauses the game.
@@ -10,6 +11,10 @@ const HALF_WIDTH := 300.0
 
 ## Pixels between the card and the bottom of the screen.
 var lift := 96.0
+## Not negative: hang the card this far below the top of the screen instead.
+var top := -1.0
+## Moves the card sideways from the middle (pixels, left is negative).
+var shift := 0.0
 var _label := Label.new()
 var _queue: Array[String] = []
 var _left := 0.0
@@ -17,12 +22,17 @@ var _left := 0.0
 
 func _ready() -> void:
 	theme = UiTheme.shared()
-	set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	offset_left = -HALF_WIDTH
-	offset_right = HALF_WIDTH
-	offset_bottom = -lift
-	offset_top = -lift - 90.0
-	grow_vertical = Control.GROW_DIRECTION_BEGIN
+	if top >= 0.0:
+		set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+		offset_top = top
+		offset_bottom = top + 90.0
+	else:
+		set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+		offset_bottom = -lift
+		offset_top = -lift - 90.0
+		grow_vertical = Control.GROW_DIRECTION_BEGIN
+	offset_left = shift - HALF_WIDTH
+	offset_right = shift + HALF_WIDTH
 	add_theme_stylebox_override("panel", UiTheme.panel(Color(0.05, 0.16, 0.22, 0.93), 14))
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

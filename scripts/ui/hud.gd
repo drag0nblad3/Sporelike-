@@ -56,7 +56,9 @@ func _ready() -> void:
 	pause.offset_bottom = 150.0 + 76.0
 	pause.offset_right = -20.0
 	pause.offset_left = -20.0 - 170.0
-	tips.lift = 330.0
+	# Under the species panel, clear of the cell, the depth panel and Help.
+	tips.top = 190.0
+	tips.shift = -100.0
 	add_child(tips)
 	_abilities = AbilityBar.new()
 	add_child(_abilities)
