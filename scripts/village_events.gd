@@ -111,6 +111,9 @@ func evolved() -> void:
 	lab.raids.plan(lab.generations.number)
 	lab.paused = false
 	lab.hud.flash("%d newborns join the village" % born)
+	if lab.run_info != null:
+		lab.run_info.recipe = lab.hud.editor.recipe
+		lab.run_info.save()
 	if lab.run.check(village, lab.rival, lab.generations.number) != "":
 		end_run()
 
@@ -125,8 +128,11 @@ func end_run() -> void:
 	lab.set_overhead(false)
 	var text := lab.run.summary()
 	if lab.throwaway:
-		text += "\n(Test run: gene points are not banked yet)"
+		text += "\n(Test run: gene points are not banked)"
 	else:
+		text += "\nBanked for your next subspecies. The run is complete."
+		if lab.run_info != null:
+			lab.run_info.finish()
 		var bank := GeneBank.load_bank()
 		bank.points += lab.run.points()
 		bank.lifetime += lab.run.points()

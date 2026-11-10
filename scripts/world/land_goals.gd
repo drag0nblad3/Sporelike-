@@ -28,7 +28,7 @@ func _ready() -> void:
 func step(animal: Animal, delta: float) -> void:
 	var was := food.carried
 	food.step(animal, delta)
-	if food.carried > was and food.carried == LandFood.CARRY:
+	if food.carried > was and food.carried == food.capacity:
 		notice.emit("Mouth full. Carry it home to the nest")
 	var at := animal.focus()
 	if food.carried > 0 and nest.is_near(at):
@@ -49,7 +49,7 @@ func nest_here(animal: Animal) -> void:
 
 
 func status_text(at: Vector3) -> String:
-	var line := "Carrying %d/%d food  ·  Eggs %d (next in %d)" % [food.carried, LandFood.CARRY,
+	var line := "Carrying %d/%d food  ·  Eggs %d (next in %d)" % [food.carried, food.capacity,
 		nest.eggs, LandNest.FOOD_PER_EGG - nest.food]
 	var next := landmarks.nearest_text(at, unlocks)
 	if next != "":

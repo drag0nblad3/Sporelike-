@@ -9,7 +9,8 @@ static func text(lab: VillageLab) -> String:
 	var village := lab.village
 	var left := ceili(maxf(lab.generations.time_left, 0.0))
 	var lines := PackedStringArray()
-	lines.append("Stage 4 test  ·  %d FPS  ·  Generation %d of %d  ·  %d:%02d left" % [
+	lines.append("%s  ·  %d FPS  ·  Generation %d of %d  ·  %d:%02d left" % [
+		"Stage 4 test" if lab.run_info == null else "Stage 4",
 		roundi(Engine.get_frames_per_second()),
 		mini(lab.generations.number, VillageRun.GENERATIONS), VillageRun.GENERATIONS,
 		left / 60, left % 60])

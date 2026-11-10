@@ -5,6 +5,8 @@ extends MenuPanel
 
 signal keep_playing
 signal end_run
+## The colony has hauled out: carry on to the land stage.
+signal go_ashore
 
 ## Set when the multicellular stage was completed: the final body's name.
 var final_body := ""
@@ -35,9 +37,13 @@ func open(subspecies_name: String, sea_title: String, established: bool, generat
 			names.append(GeneText.label(id))
 		label("Newly banked genes: %s" % ", ".join(names), 26, UiTheme.GAIN)
 	label("Gene slots for the next subspecies: %d" % bank.slots(), 26)
-	if established:
-		button("Keep playing" if final_body != "" else "Keep evolving (multicellular stage)",
-			func() -> void: _choose(true))
+	if established and final_body != "":
+		UiTheme.primary(button("Walk onto the land (stage 3)", func() -> void:
+			visible = false
+			go_ashore.emit()))
+		button("Keep playing in the sea", func() -> void: _choose(true))
+	elif established:
+		button("Keep evolving (multicellular stage)", func() -> void: _choose(true))
 	button("Return to the main species", func() -> void: _choose(false))
 
 

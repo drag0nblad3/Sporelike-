@@ -32,11 +32,13 @@ var smoke_test := false
 var _dead := false
 var _cues := SenseCues.new()
 var _region := RegionNotice.new()
+var _feel := ColonyFeel.new()
 var _smoke_timer := 0.0
 
 
 func _ready() -> void:
 	add_child(world)
+	add_child(_feel)
 	rivals.ecosystem = ecosystem
 	rivals.world = world
 	add_child(rivals)
@@ -44,8 +46,12 @@ func _ready() -> void:
 	apex.world = world
 	apex.appeared.connect(func(title: String) -> void:
 		var note := "A %s hunts these waters! Bite it to death for a feast" % title.to_lower()
+		_feel.boss(false)
+		hud.tips.offer("s2_apex", "Anyone may bite the sea's boss, whatever their size. "
+			+ "Killing it leaves a feast and a big jump in progress.")
 		hud.flash_message(note, 4.0))
 	apex.slain.connect(func(title: String) -> void:
+		_feel.boss(true)
 		hud.flash_message("You killed the %s! Its remains are a feast" % title.to_lower(), 4.0))
 	add_child(apex)
 	add_child(shallows)
@@ -95,17 +101,20 @@ func flat_center() -> Vector2:
 func use(id: String) -> void:
 	if is_alive() and id in ColonyAbility.ALL:
 		ColonyCaster.fire(colony, id, ecosystem, rivals.rivals)
+		_feel.ability()
 
 
 ## The stage is over: crawl inland out of the water.
 func haul_out() -> void:
 	hauling = true
+	_feel.hauled_out()
 	autopilot = shallows.line.inland if shallows.active else Vector2(0.0, -1.0)
 
 
 ## Rise (+1) or sink (-1) one Depth.
 func change_depth(step: int) -> void:
 	if is_alive():
+		_feel.depth(step)
 		colony.layer = clampi(colony.layer + step, Depth.FLOOR, Depth.SURFACE)
 
 
@@ -127,6 +136,7 @@ func _physics_process(delta: float) -> void:
 	if on_floor:
 		meal += ColonyFeeding.eat(colony, ecosystem)
 	if meal > 0.0:
+		_feel.meal(meal, float(fight[0]) + float(boss[0]))
 		colony.feed(meal)
 		ate.emit(meal * colony.digest_share())
 	if on_floor:
@@ -159,6 +169,7 @@ func _process(delta: float) -> void:
 
 
 func _report(outcome: String) -> void:
+	_feel.wound(outcome)
 	match outcome:
 		ColonyWounds.BITTEN:
 			var regrow := ColonyWounds.regrow_time(colony.plan)
@@ -172,4 +183,5 @@ func _die(why: Signal) -> void:
 	colony.move_input = Vector2.ZERO
 	hud.hide_abilities()
 	_cues.clear()
+	_feel.died()
 	why.emit()

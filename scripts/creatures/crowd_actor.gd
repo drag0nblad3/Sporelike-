@@ -46,6 +46,8 @@ var leaving := false
 var tool := 0
 ## Its place in a ring or herd, so members spread out.
 var slot := 0
+## Seconds a fleeing grazer has been running (LandPrey: they tire).
+var wind := 0.0
 var avatar: Animal
 
 

@@ -18,6 +18,10 @@ signal recipe_changed(recipe: AnimalRecipe)
 var joystick := VirtualJoystick.new()
 var look := LookPad.new()
 var editor := AnimalEditor.new()
+var tips := TipBanner.new()
+## The status line's heading.
+var title := "Stage 3 test"
+var _test_only: Array[Button] = []
 var _corners: Array[Button] = []
 var _call: TouchButton
 var _found: Button
@@ -54,6 +58,7 @@ func _ready() -> void:
 	_corner(root, "Back", 20.0, func() -> void: back_pressed.emit())
 	_corner(root, "New body", 110.0, func() -> void: new_body_pressed.emit())
 	_corner(root, "Free edit", 200.0, open_editor)
+	_test_only = [_corners[1], _corners[2]]
 	_corner(root, "Nest here", 290.0, func() -> void: nest_pressed.emit())
 	_corner(root, "Found a village", 380.0, func() -> void: found_pressed.emit())
 	_found = _corners[-1]
@@ -77,6 +82,8 @@ func _ready() -> void:
 	_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	UiTheme.outline(_notice, 30)
 	root.add_child(_notice)
+	tips.lift = 150.0
+	root.add_child(tips)
 	editor.visible = false
 	editor.changed.connect(func(recipe: AnimalRecipe) -> void: recipe_changed.emit(recipe))
 	editor.closed.connect(close_editor)
@@ -109,9 +116,16 @@ func _show_editor(on: bool) -> void:
 	look.enabled = not on
 	_hint.visible = not on
 	for button in _corners:
-		button.visible = not on
+		button.visible = not on and not (button in _test_only and title != "Stage 3 test")
 	_call.visible = not on
 	_found.visible = not on and _can_found
+
+
+## Part of a real run: the test tools (New body, Free edit) go away.
+func set_run(subspecies: String) -> void:
+	title = "Stage 3  ·  %s" % subspecies
+	for button in _test_only:
+		button.visible = false
 
 
 ## Shows Found a village once the family is big enough and at the nest.
@@ -125,7 +139,7 @@ func steering() -> Vector2:
 
 
 func show_status(body: AnimalBody, goals: String) -> void:
-	_status.text = "Stage 3 test  ·  %d FPS\n%s\n%s" % [roundi(Engine.get_frames_per_second()),
+	_status.text = "%s  ·  %d FPS\n%s\n%s" % [title, roundi(Engine.get_frames_per_second()),
 		body.describe(), goals]
 
 

@@ -9,12 +9,16 @@ extends Node3D
 const COUNT := 160
 const SPREAD := 170.0
 const CARRY := 3
+## The most any body can carry (LandBody: hands or a trunk).
+const MOST := 5
 const REGROW := 30.0
 const RADIUS := 0.45
 
 var rng := RandomNumberGenerator.new()
 ## Food in the animal's mouth now.
 var carried := 0
+## How much this animal's mouth holds.
+var capacity := CARRY
 var _items: Array[MeshInstance3D] = []
 var _gone := PackedFloat32Array()
 var _held: Array[MeshInstance3D] = []
@@ -38,7 +42,7 @@ func _ready() -> void:
 		_items.append(item)
 		_gone.append(0.0)
 		_place(item)
-	for i in CARRY:
+	for i in MOST:
 		var held := MeshInstance3D.new()
 		held.mesh = _mesh
 		held.visible = false
@@ -57,14 +61,15 @@ func step(animal: Animal, delta: float) -> void:
 			if _gone[i] <= 0.0:
 				_place(item)
 			continue
-		if carried < CARRY and Vector2(item.position.x - at.x, item.position.z - at.z).length() < reach:
+		var near := Vector2(item.position.x - at.x, item.position.z - at.z).length() < reach
+		if carried < capacity and near:
 			item.visible = false
 			_gone[i] = REGROW
 			carried += 1
 	var top := animal.focus() + Vector3.UP * (animal.body.radii[0] * 1.6 + 0.6)
 	for k in _held.size():
 		_held[k].visible = k < carried
-		_held[k].position = top + animal.forward().cross(Vector3.UP) * (k - 1) * 0.7 \
+		_held[k].position = top + animal.forward().cross(Vector3.UP) * (k - (capacity - 1) * 0.5) * 0.7 \
 			+ Vector3.UP * sin(animal.time * 4.0 + k) * 0.12
 
 

@@ -81,6 +81,10 @@ func switch_to(kind: String, at: Vector2) -> void:
 	if not grown.is_empty():
 		note += " Your old strengths gave you: " + ", ".join(grown)
 	hud.flash_message(note, 4.0)
+	hud.tips.offer("s2_colony", "You are a colony now. Food must touch a mouth cell to be "
+		+ "eaten, and each generation adds a cell of your choice.")
+	hud.tips.offer("s2_depth", "Rise and Sink swim between the sea floor, open water and "
+		+ "the surface. You only touch, eat or bite things at your own depth.")
 	ready_to_play.emit()
 
 
@@ -154,3 +158,5 @@ func _spawn(at: Vector2) -> void:
 	if not pilot.shallows.active and plan.parts.size() >= Shallows.APPEAR_AT:
 		pilot.shallows.place(at)
 		hud.flash_message("The sea grows shallow to the north. A shore lies ahead", 4.0)
+		hud.tips.offer("s2_shore", "Swim north to the shallows. Your final body is picked "
+			+ "there, and then your colony hauls out onto the land.")

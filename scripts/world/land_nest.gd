@@ -63,6 +63,21 @@ func hatch() -> void:
 	deliver(0)
 
 
+## An egg thief takes one egg; false if there was none.
+func steal() -> bool:
+	if eggs <= 0:
+		return false
+	eggs -= 1
+	deliver(0)
+	return true
+
+
+## An egg comes back (the thief was caught).
+func add_egg() -> void:
+	eggs += 1
+	deliver(0)
+
+
 ## Takes `count` pieces of food; lays eggs as the store fills.
 func deliver(count: int) -> void:
 	food += count

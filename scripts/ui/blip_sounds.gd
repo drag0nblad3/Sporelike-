@@ -2,7 +2,9 @@ class_name BlipSounds
 extends Node
 ## Little sound effects made in code at startup, so the game needs no audio
 ## files: soft chirps for eating, a sparkle for prize food, a gulp for
-## swallowing a cell, a whoosh for the Jet and a thud for a bite.
+## swallowing a cell, a whoosh for the Jet, a thud for a bite, and for the
+## later stages a chime (eggs, births), a horn (alarms, calls) and a knock
+## (building).
 
 const RATE := 22050
 const VOICES := 4
@@ -21,6 +23,9 @@ func _ready() -> void:
 		"jet": [300.0, 900.0, 0.18, 0.25, 0.7],
 		"hit": [160.0, 60.0, 0.2, 0.6, 0.3],
 		"death": [300.0, 50.0, 0.6, 0.5, 0.2],
+		"chime": [660.0, 990.0, 0.35, 0.4, 0.0],
+		"horn": [150.0, 110.0, 0.7, 0.5, 0.05],
+		"knock": [260.0, 150.0, 0.09, 0.6, 0.35],
 	}
 	for key in specs:
 		var s: Array = specs[key]

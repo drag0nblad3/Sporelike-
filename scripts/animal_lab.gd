@@ -1,6 +1,6 @@
 class_name AnimalLab
 extends Node3D
-## The stage 3 feel test: one land animal on hilly ground (LandTerrain,
+## Stage 3: one land animal on hilly ground (LandTerrain,
 ## LandScatter) under an open sky with haze, the ChaseCamera, the joystick
 ## and look pad, New body for a random AnimalBody, the body customizer
 ## (AnimalEditor, built by AnimalBuilder) and the land goals (LandGoals:
@@ -8,8 +8,10 @@ extends Node3D
 ## when a generation's clock runs out, the eggs become changes in the
 ## customizer and the new body hatches at the nest, with kin (LandFamily)
 ## who follow the player; with enough kin a village can be founded, which
-## starts stage 4. Used from the title
-## screen's Test stage 3 and by the screenshot tour.
+## starts stage 4. AnimalLabEvents handles what happens between the parts
+## (generations, grazers, the egg thief, sounds, tips). Part of a run when
+## `run` is set (the body and progress come from it and are saved);
+## otherwise the title's Test stage 3, with New body and Free edit.
 
 signal back_requested
 ## The player founded a village at the nest: stage 4 starts (VillageLab).
@@ -23,6 +25,9 @@ var hud := AnimalLabHud.new()
 var goals := LandGoals.new()
 var generations := LandGenerations.new()
 var family := LandFamily.new()
+var events := AnimalLabEvents.new()
+## The run this stage is part of, or null for the test lab.
+var run: LandRun
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player, in screen terms like the
 ## joystick (the screenshot tour).
@@ -44,8 +49,6 @@ func _ready() -> void:
 	hud.call_pressed.connect(family.call_kin)
 	hud.found_pressed.connect(func() -> void:
 		village_founded.emit(animal.body, hud.editor.recipe, goals.nest.position, family.kin.size()))
-	generations.ended.connect(_on_generation_ended)
-	hud.evolve_finished.connect(_hatch)
 	goals.notice.connect(func(text: String) -> void: hud.flash(text))
 	hud.editor.unlocks = goals.unlocks
 	hud.nest_pressed.connect(func() -> void:
@@ -58,7 +61,23 @@ func _ready() -> void:
 	hud.recipe_changed.connect(func(recipe: AnimalRecipe) -> void:
 		set_body(AnimalBuilder.build(recipe)))
 	hud.back_pressed.connect(func() -> void: back_requested.emit())
-	new_body()
+	if run != null:
+		_start_run()
+	else:
+		new_body()
+	add_child(events)
+	events.wire(self)
+
+
+## Picks the run up where it stands: its body, unlocked parts and kin.
+func _start_run() -> void:
+	hud.set_run(run.subspecies)
+	hud.editor.recipe = run.recipe
+	for id in run.unlocked:
+		goals.unlocks.unlock(id)
+	generations.number = run.generation
+	set_body(AnimalBuilder.build(run.recipe), goals.nest.position)
+	family.hatch(run.kin * 2, animal.body, goals.nest.position)
 
 
 ## Swaps in a fresh random body where the animal stands.
@@ -93,6 +112,7 @@ func _physics_process(delta: float) -> void:
 	animal.move_input = Vector2(dir.x, dir.z)
 	goals.step(animal, delta)
 	family.step(animal, delta)
+	events.step(delta)
 
 
 func _process(delta: float) -> void:
@@ -100,26 +120,10 @@ func _process(delta: float) -> void:
 		return
 	camera.showcase = hud.editor.visible
 	camera.follow(animal.focus(), animal.heading, animal.body.radii[0], delta)
-	hud.show_status(animal.body, "%s  ·  Kin %d/%d\n%s" % [generations.text(), family.kin.size(),
-		LandFamily.FOUND, goals.status_text(animal.focus())])
+	hud.show_status(animal.body, "%s\n%s  ·  Kin %d/%d\n%s" % [events.powers.text(),
+		generations.text(), family.kin.size(), LandFamily.FOUND,
+		goals.status_text(animal.focus())])
 	hud.show_found(family.ready_to_found(animal.focus(), goals.nest))
-
-
-func _on_generation_ended(number: int) -> void:
-	var eggs := goals.nest.eggs
-	var picks := LandGenerations.picks_for(eggs)
-	hud.open_evolve(picks)
-	hud.flash("Generation %d is over. %d eggs: make up to %d changes, then Done" % [
-		number, eggs, picks])
-
-
-## The evolved body hatches at the nest and the next generation starts.
-func _hatch() -> void:
-	set_body(AnimalBuilder.build(hud.editor.recipe), goals.nest.position)
-	var kin := family.hatch(goals.nest.eggs, animal.body, goals.nest.position)
-	goals.new_generation()
-	generations.begin_next()
-	hud.flash("Generation %d hatches from the nest, with %d new kin" % [generations.number, kin])
 
 
 ## The open sky and haze of the land stages.
