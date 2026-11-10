@@ -201,6 +201,9 @@ func _spawn(patch: FoodPatch, p: Vector2) -> void:
 		item.energy *= FoodPatch.HIDDEN_RICHNESS
 	var key := "%s%d%s" % [kind.id, item.tier(), "h" if patch.hidden else ""]
 	item.material_override = _materials[key]
+	PrizeFood.roll(item, rng)
+	if item.prize:
+		item.material_override = PrizeFood.material()
 	item.position = Vector3(p.x, 0.0, p.y)
 	add_child(item)
 	_grid.add(item)

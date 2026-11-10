@@ -5,6 +5,8 @@ extends Node3D
 
 signal species_changed
 signal member_died(cause: String)
+## The player swallowed a smaller rival cell (CellEngulf).
+signal player_swallowed(energy: float)
 
 const START_POPULATION := 30
 const MAX_POPULATION := 100
@@ -68,6 +70,9 @@ func _physics_process(delta: float) -> void:
 		_feed(org, delta)
 	food.startle_near(prey)
 	_hunt(prey)
+	var swallowed := CellEngulf.check(self)
+	if swallowed > 0.0:
+		player_swallowed.emit(swallowed)
 	_reproduce()
 
 

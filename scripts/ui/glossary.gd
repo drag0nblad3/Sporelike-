@@ -55,6 +55,14 @@ meadow's edge. Drifts and darts away when you come close. Rich if caught.
 trenches. Very rich, but need a strong mouth.
 [b]Motes[/b] (faint blue, plant): dark trenches. Hard to see, so they need keen sense.
 
+[b]Prize morsels[/b] (glowing gold): about 1 piece in 80 grows as a prize \
+worth 5 times the energy. It darts away fast, so it takes a chase or a Jet.
+[b]Eating streaks[/b]: eat pieces less than 1.5 s apart and from the 3rd in \
+a row each gives +10% energy, rising to +50%.
+[b]Swallowing cells[/b]: rival cells under 55% of your width can be \
+swallowed whole by swimming into them, for 1.5 energy plus 60% of the \
+energy they carried (digested as prey). Small rivals swim away from you.
+
 [b]Food grades[/b]: every piece is a little different. Bigger, darker pieces \
 are worth a bit more energy, but are much tougher to crack, harder to spot, \
 and faster and nimbler at dodging. Small pale pieces are slow, sluggish and \

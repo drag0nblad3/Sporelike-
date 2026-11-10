@@ -35,7 +35,7 @@ const FEATURE_HABITS := {
 const DIET_MIN_ENERGY := 3.0
 
 ## Seconds in the generation, for the timed habits.
-var length := 80.0
+var length := 75.0
 var amounts := {}
 var plant_energy := 0.0
 var prey_energy := 0.0

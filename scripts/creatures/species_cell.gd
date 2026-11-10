@@ -43,6 +43,9 @@ func think(delta: float) -> void:
 		_steer((me - threat.flat_pos()).normalized(), delta * 2.0)
 		AbilityCaster.defend(self, ecosystem, threat)
 		return
+	if CellEngulf.fears_player(self, ecosystem):
+		_steer((me - ecosystem.player.flat_pos()).normalized(), delta * 2.0)
+		return
 
 	_search_timer -= delta
 	if _search_timer <= 0.0 or not _food_still_there():
