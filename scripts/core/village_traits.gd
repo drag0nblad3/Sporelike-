@@ -4,11 +4,12 @@ extends RefCounted
 ## mighty legs haul more, claws and blades hit harder, many eyes warn of
 ## raids sooner, a sail or feathers widen the elder's aura, plates and
 ## quills shrug off damage, and bodies with hands (upright, or with arms)
-## use tools as buildings go up. Read from the tribe's current body.
+## learn discoveries faster (HANDS_LEARN). Read from the tribe's current body.
 
 const AURA := 8.0
 const WORK_BOOST := 1.3
 const DAMAGE_BOOST := 1.2
+const HANDS_LEARN := 1.3
 
 var haul := 1
 var attack := 1.0
@@ -39,20 +40,7 @@ static func of(body: AnimalBody) -> VillageTraits:
 		t.words.append("Armour: 25% less damage taken")
 	t.hands = body.posture == "upright" or body.arm_pairs > 0
 	if t.hands:
-		t.words.append("Hands: tools from the store (+1 food) and wall (+25% damage)")
-	return t
-
-
-## Adds the tools that buildings unlock for a body with hands.
-func with_tools(store: int, wall: int) -> VillageTraits:
-	var t := VillageTraits.new()
-	t.haul = haul + (1 if hands and store > 0 else 0)
-	t.attack = attack * (1.25 if hands and wall > 0 else 1.0)
-	t.warning = warning
-	t.aura = aura
-	t.hurt = hurt
-	t.hands = hands
-	t.words = words
+		t.words.append("Hands: discoveries are learned 30% faster")
 	return t
 
 

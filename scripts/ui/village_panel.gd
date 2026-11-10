@@ -3,18 +3,21 @@ extends PanelContainer
 ## The overhead view's command panel in stage 4, down the right side:
 ## how many villagers Gather, Hunt and Guard (minus and plus), the four
 ## buildings to raise or upgrade, the Alarm, clearing the focus flag and
-## going back to walking as the elder. Broad orders only.
+## going back to walking as the elder. Once baskets are learned, Basket
+## places the gatherers' drop-off point. Broad orders only.
 
 signal job_changed(job: int, step: int)
 signal build_pressed(id: String)
 signal alarm_pressed
 signal flag_cleared
 signal walk_pressed
+signal basket_pressed
 
 var _counts := {}
 var _resting := Label.new()
 var _builds := {}
 var _alarm: Button
+var _basket: Button
 
 
 func _ready() -> void:
@@ -65,6 +68,9 @@ func _ready() -> void:
 	var clear := _button("Clear flag", func() -> void: flag_cleared.emit(), 0)
 	clear.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(clear)
+	_basket = _button("Basket", func() -> void: basket_pressed.emit(), 0)
+	_basket.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(_basket)
 	var walk := _button("Walk as the elder", func() -> void: walk_pressed.emit(), 0)
 	UiTheme.primary(walk)
 	box.add_child(walk)
@@ -88,6 +94,7 @@ func refresh(village: Village) -> void:
 		else:
 			var verb := "Build: " if level == 0 else "Upgrade: "
 			button.text = head + ("\nDone" if next == "" else "\n" + verb + next)
+	_basket.visible = village.learning.has(Discovery.BASKETS)
 	_alarm.text = "Alarm is ON" if village.alarm else "Alarm"
 
 

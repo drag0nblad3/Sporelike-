@@ -12,6 +12,8 @@ signal back_pressed
 ## A tap on the overhead map, as shares of the screen (0 to 1), and the
 ## screen's width over its height.
 signal map_tapped(share: Vector2, aspect: float)
+## The same, while placing the drop-off basket.
+signal basket_tapped(share: Vector2, aspect: float)
 signal evolve_finished
 signal recipe_changed(recipe: AnimalRecipe)
 
@@ -20,6 +22,7 @@ var look := LookPad.new()
 var panel := VillagePanel.new()
 var editor := AnimalEditor.new()
 var summary := VillageSummary.new()
+var discovery := DiscoveryPick.new()
 var overhead := false
 var _map := Control.new()
 var _foot: Array[Control] = []
@@ -27,6 +30,7 @@ var _rally: TouchButton
 var _status := Label.new()
 var _notice := Label.new()
 var _notice_time := 0.0
+var _placing_basket := false
 
 
 func _ready() -> void:
@@ -76,6 +80,11 @@ func _ready() -> void:
 	root.add_child(editor)
 	summary.visible = false
 	root.add_child(summary)
+	discovery.visible = false
+	root.add_child(discovery)
+	panel.basket_pressed.connect(func() -> void:
+		_placing_basket = true
+		flash("Tap the map where gatherers should drop food"))
 	set_overhead(false)
 
 
@@ -107,6 +116,17 @@ func show_rally(wait: float) -> void:
 	_rally.modulate.a = 1.0 if wait <= 0.0 else 0.6
 
 
+## Asks which discovery a villager of `job` made.
+func open_discovery(job: int, offers: Array[String], known: String) -> void:
+	discovery.open(job, offers, known)
+	_show_controls()
+
+
+func close_discovery() -> void:
+	discovery.visible = false
+	_show_controls()
+
+
 func show_summary(text: String) -> void:
 	summary.open(text)
 	_show_controls()
@@ -130,7 +150,7 @@ func _close_evolve() -> void:
 
 
 func _show_controls() -> void:
-	var busy := editor.visible or summary.visible
+	var busy := editor.visible or summary.visible or discovery.visible
 	var walking := not overhead and not busy
 	for control in _foot:
 		control.visible = walking
@@ -147,4 +167,6 @@ func _on_map_input(event: InputEvent) -> void:
 		var click := event as InputEventMouseButton
 		if click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
 			var screen := get_viewport().get_visible_rect().size
-			map_tapped.emit(click.global_position / screen, screen.x / screen.y)
+			var tapped: Signal = basket_tapped if _placing_basket else map_tapped
+			_placing_basket = false
+			tapped.emit(click.global_position / screen, screen.x / screen.y)

@@ -19,6 +19,14 @@ static func text(lab: VillageLab) -> String:
 		village.food.carried])
 	lines.append("Rival tribe: %d, %s  ·  %s" % [lab.rival.size(), lab.rival.mood(), _raid(lab)])
 	lines.append(lab.run.goals_text())
+	var learning := village.learning
+	var bars := "Learning: gather %d%%  ·  hunt %d%%  ·  guard %d%%  ·  build %d%%"
+	lines.append((bars + "  ·  known %d/%d") % [
+		roundi(learning.share(VillageJob.GATHER) * 100.0),
+		roundi(learning.share(VillageJob.HUNT) * 100.0),
+		roundi(learning.share(VillageJob.GUARD) * 100.0),
+		roundi(learning.share(VillageJob.IDLE) * 100.0), learning.known.size(),
+		Discovery.ALL.size()])
 	return "\n".join(lines)
 
 

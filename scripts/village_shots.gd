@@ -16,6 +16,10 @@ static func run(tour: ScreenshotTour) -> void:
 	village.buildings.set_level(VillageBuilding.WALL, 1)
 	village.buildings.queue(VillageBuilding.LOOKOUT)
 	village.stock = 6
+	for id: String in [Discovery.STICKS, Discovery.CALLS, Discovery.FIRE]:
+		village.learn(id)
+	# Keep the builders' own discovery from popping up mid-tour.
+	village.learning.progress[VillageJob.IDLE] = -9999.0
 	lab.autopilot = Vector2(0.2, -1.0)
 	await tour.get_tree().create_timer(4.0).timeout
 	lab.autopilot = Vector2.ZERO
@@ -23,6 +27,10 @@ static func run(tour: ScreenshotTour) -> void:
 	await tour.get_tree().create_timer(2.0).timeout
 	await tour.shoot("stage4_elder")
 	print("shot: stage 4 on foot at %d FPS" % roundi(Engine.get_frames_per_second()))
+	village.learning.add(VillageJob.HUNT, 999.0)
+	await tour.get_tree().create_timer(0.5).timeout
+	await tour.shoot("stage4_discovery")
+	lab.hud.discovery.picked.emit(Discovery.SPEARS)
 	lab.set_overhead(true)
 	village.flag = village.center + Vector3(-22.0, 0.0, -14.0)
 	lab.generations.time_left = lab.generations.length * (1.0 - VillageRaids.WHEN) + 12.0

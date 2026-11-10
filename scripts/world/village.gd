@@ -16,6 +16,7 @@ const THINK := 0.3
 const VILLAGER_HEALTH := 10.0
 const ELDER_HEALTH := 24.0
 const FOOD_PER_BIRTH := 4
+const RACKS_FOOD := 15
 
 var center := Vector3.ZERO
 var villagers: Array[CrowdActor] = []
@@ -23,6 +24,9 @@ var elder: CrowdActor
 var jobs := VillageJob.new()
 var buildings := VillageBuildings.new()
 var traits := VillageTraits.new()
+var learning := VillageLearning.new()
+var camp := VillageCamp.new()
+var roots := LandRoots.new()
 ## The body newborns get (the tribe's latest design).
 var tribe_body: AnimalBody
 var stock := 0
@@ -41,6 +45,8 @@ var _next_slot := 0
 
 func _ready() -> void:
 	add_child(buildings)
+	add_child(camp)
+	add_child(roots)
 	buildings.finished.connect(func(id: String, level: int) -> void:
 		refresh_traits()
 		notice.emit("%s level %d is built" % [VillageBuilding.title(id), level]))
@@ -49,6 +55,10 @@ func _ready() -> void:
 func found(at: Vector3, body: AnimalBody, count: int) -> void:
 	center = Vector3(at.x, LandHeight.at(at.x, at.z), at.z)
 	buildings.place(center)
+	camp.place(center)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 77
+	roots.setup(center, rng)
 	tribe_body = body
 	elder = CrowdActor.make(CrowdActor.VILLAGE, body, center, ELDER_HEALTH)
 	for k in count:
@@ -67,8 +77,18 @@ func add_villager(body: AnimalBody) -> CrowdActor:
 
 
 func refresh_traits() -> void:
-	traits = VillageTraits.of(tribe_body).with_tools(buildings.level(VillageBuilding.STORE),
-		buildings.level(VillageBuilding.WALL))
+	traits = VillageTraits.of(tribe_body)
+	learning.rate = (VillageTraits.HANDS_LEARN if traits.hands else 1.0) \
+		* (1.5 if learning.has(Discovery.WORKSHOP) else 1.0)
+
+
+## The village learns a Discovery: what it builds appears, roots show.
+func learn(id: String) -> void:
+	learning.learn(id)
+	camp.learned(id)
+	roots.visible = learning.has(Discovery.STICKS)
+	refresh_traits()
+	notice.emit("Your villagers learned: %s. %s" % [Discovery.title(id), Discovery.text(id)])
 
 
 func step(delta: float) -> void:
@@ -83,6 +103,9 @@ func step(delta: float) -> void:
 		if v.think_in <= 0.0:
 			v.think_in += THINK
 			VillagerBrain.think(v, self, THINK)
+			if v.job != VillageJob.IDLE:
+				learning.add(v.job, THINK)
+	camp.step(self, delta)
 	if buildings.level(VillageBuilding.WALL) >= 2:
 		for foe in foes:
 			if foe.alive and foe.flat_to(center) < VillageBuildings.WALL_RADIUS + 2.0:
@@ -100,7 +123,7 @@ func focus() -> Vector3:
 
 func stock_cap() -> int:
 	var cap: int = VillageBuilding.STOCK[buildings.level(VillageBuilding.STORE)]
-	return cap
+	return cap + (RACKS_FOOD if learning.has(Discovery.RACKS) else 0)
 
 
 func deliver(count: int) -> void:

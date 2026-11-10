@@ -42,6 +42,8 @@ var giant := false
 var aim := -1
 ## True once a raider has given up and is heading home.
 var leaving := false
+## The tool in its hand (Discovery.TOOLS), 0 for none.
+var tool := 0
 ## Its place in a ring or herd, so members spread out.
 var slot := 0
 var avatar: Animal

@@ -2,7 +2,8 @@ class_name VillageEvents
 extends Node
 ## What happens between the parts of a VillageLab: the HUD's orders reach
 ## the village, the elder's Rally and succession, a generation ending
-## (births, then the newborns' body in the customizer), raids counting
+## (births, then the newborns' body in the customizer), a job's learning
+## bar filling (the discovery pick), raids counting
 ## their losses, and the run ending with its VillageSummary.
 
 const RALLY_REACH := 16.0
@@ -32,6 +33,9 @@ func wire(owner_lab: VillageLab) -> void:
 		if lab.paused:
 			lab.set_body(AnimalBuilder.build(recipe), village.elder.pos))
 	hud.evolve_finished.connect(evolved)
+	hud.discovery.picked.connect(learn)
+	hud.basket_tapped.connect(func(share: Vector2, aspect: float) -> void:
+		village.camp.set_basket(lab.overhead.ground_at(share, aspect)))
 	hud.summary.new_valley.connect(func() -> void: lab.new_valley_requested.emit())
 	hud.summary.back_pressed.connect(func() -> void: lab.back_requested.emit())
 	for part: Node in [village, lab.raids, lab.rival]:
@@ -56,6 +60,26 @@ func step(delta: float) -> void:
 			lab.hud.flash("The elder has fallen. The eldest villager takes over")
 	if lab.run.check(village, lab.rival, lab.generations.number) != "":
 		end_run()
+		return
+	var job := village.learning.ready_job()
+	if job == -1:
+		return
+	var offers := village.learning.offers(job)
+	if offers.size() == 1:
+		village.learn(offers[0])
+		return
+	lab.paused = true
+	lab.crowd.avatars.halt()
+	lab.animal.move_input = Vector2.ZERO
+	lab.hud.open_discovery(job, offers, village.learning.known_text())
+
+
+## The player picked a discovery (or a check teaches one outright).
+func learn(id: String) -> void:
+	lab.village.learn(id)
+	if lab.hud.discovery.visible:
+		lab.hud.close_discovery()
+		lab.paused = false
 
 
 func rally() -> void:

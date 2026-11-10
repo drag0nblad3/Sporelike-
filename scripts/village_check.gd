@@ -21,14 +21,26 @@ static func run(host: Node) -> void:
 	village.set_job(VillageJob.HUNT, -1)
 	village.buildings.queue(VillageBuilding.STORE)
 	var most_food := 0
+	var asked := 0
 	for i in 900:
-		lab.tick(0.1)
+		asked += _tick(lab)
 		most_food = maxi(most_food, village.stock)
 	print("smoke: village of %d stored up to %d food, store level %d, traits: %s" % [
 		village.people(), most_food, village.buildings.level(VillageBuilding.STORE),
 		village.traits.text().replace("\n", "; ")])
 	if most_food == 0 or village.buildings.level(VillageBuilding.STORE) != 1:
 		push_error("Villagers did not gather food or raise the store")
+	village.learning.add(VillageJob.HUNT, 999.0)
+	asked += _tick(lab)
+	for id in Discovery.ALL:
+		lab.events.learn(id)
+	village.camp.set_basket(village.center + Vector3(14.0, 0.0, 0.0))
+	for i in 600:
+		lab.tick(0.1)
+	print("smoke: discovery asked %d times, known %s, roots shown %s, food cap %d" % [asked,
+		village.learning.known_text(), village.roots.visible, village.stock_cap()])
+	if asked == 0 or lab.paused or village.learning.known.size() != Discovery.ALL.size():
+		push_error("Discoveries were not offered or learned")
 	lab.generations.time_left = lab.generations.length * 0.3
 	for i in 1200:
 		lab.tick(0.1)
@@ -61,6 +73,15 @@ static func run(host: Node) -> void:
 	if lab.run.outcome == "" or not lab.hud.summary.visible:
 		push_error("The village run did not end")
 	lab.queue_free()
+
+
+## One step; answers a discovery pick with its first offer. Returns 1 if asked.
+static func _tick(lab: VillageLab) -> int:
+	lab.tick(0.1)
+	if not lab.hud.discovery.visible:
+		return 0
+	lab.hud.discovery.picked.emit(lab.hud.discovery.offers[0])
+	return 1
 
 
 static func _check_family(host: Node) -> void:
