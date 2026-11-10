@@ -35,6 +35,15 @@ func _ready() -> void:
 
 func build(new_body: AnimalBody, at: Vector3) -> void:
 	body = new_body
+	place(at, heading)
+	if is_inside_tree():
+		_look.build(body)
+
+
+## Stands the same body at `at` facing `toward`, without rebuilding its look.
+func place(at: Vector3, toward: float) -> void:
+	heading = toward
+	speed_now = 0.0
 	spine.clear()
 	var p := at
 	for i in body.segments():
@@ -43,8 +52,6 @@ func build(new_body: AnimalBody, at: Vector3) -> void:
 			p -= forward() * spacing(i)
 	_rest_on_ground()
 	legs.build(self)
-	if is_inside_tree():
-		_look.build(body)
 
 
 func forward() -> Vector3:

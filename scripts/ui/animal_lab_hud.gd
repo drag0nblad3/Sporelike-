@@ -3,10 +3,13 @@ extends CanvasLayer
 ## Controls for the stage 3 feel-test lab: the joystick on the left, the
 ## look pad on the right, a status line (the body, the frame rate and the
 ## LandGoals progress), short notices (flash), New body, Customize (opens
-## the AnimalEditor over the look pad), Nest here and Back.
+## the AnimalEditor over the look pad), Nest here, Back, Call (kin come to
+## the player) and, once the family is ready, Found a village.
 
 signal new_body_pressed
 signal nest_pressed
+signal call_pressed
+signal found_pressed
 ## The player finished a generation's evolving (begin with open_evolve).
 signal evolve_finished
 signal back_pressed
@@ -16,6 +19,9 @@ var joystick := VirtualJoystick.new()
 var look := LookPad.new()
 var editor := AnimalEditor.new()
 var _corners: Array[Button] = []
+var _call: TouchButton
+var _found: Button
+var _can_found := false
 var _status: Label
 var _hint: Label
 var _notice: Label
@@ -49,6 +55,19 @@ func _ready() -> void:
 	_corner(root, "New body", 110.0, func() -> void: new_body_pressed.emit())
 	_corner(root, "Free edit", 200.0, open_editor)
 	_corner(root, "Nest here", 290.0, func() -> void: nest_pressed.emit())
+	_corner(root, "Found a village", 380.0, func() -> void: found_pressed.emit())
+	_found = _corners[-1]
+	_found.visible = false
+	UiTheme.primary(_found)
+	_call = TouchButton.new()
+	_call.text = "Call"
+	_call.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_call.offset_left = -200.0
+	_call.offset_right = -40.0
+	_call.offset_top = -200.0
+	_call.offset_bottom = -40.0
+	_call.tapped.connect(func() -> void: call_pressed.emit())
+	root.add_child(_call)
 	_notice = Label.new()
 	_notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_notice.offset_top = 200.0
@@ -91,6 +110,14 @@ func _show_editor(on: bool) -> void:
 	_hint.visible = not on
 	for button in _corners:
 		button.visible = not on
+	_call.visible = not on
+	_found.visible = not on and _can_found
+
+
+## Shows Found a village once the family is big enough and at the nest.
+func show_found(on: bool) -> void:
+	_can_found = on
+	_found.visible = on and not editor.visible
 
 
 func steering() -> Vector2:

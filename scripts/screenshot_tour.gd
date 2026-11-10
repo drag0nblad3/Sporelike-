@@ -66,6 +66,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	await _shoot_colony_lab()
 	await _shoot_animal_lab()
+	await VillageShots.run(self)
 	title.open(true)
 	await _shoot("title")
 	await _shoot_genes()
@@ -267,6 +268,11 @@ func _shoot_colony_lab() -> void:
 	await get_tree().create_timer(2.5).timeout
 	await _shoot("colony_radial")
 	lab.queue_free()
+
+
+## Saves a screenshot (for shot helpers in other files).
+func shoot(shot_name: String) -> void:
+	await _shoot(shot_name)
 
 
 func _shoot(shot_name: String) -> void:

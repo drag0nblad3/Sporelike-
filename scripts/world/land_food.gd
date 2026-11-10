@@ -68,6 +68,39 @@ func step(animal: Animal, delta: float) -> void:
 			+ Vector3.UP * sin(animal.time * 4.0 + k) * 0.12
 
 
+## The nearest piece of food within `reach` of `at`, or -1 (for villagers).
+func nearest(at: Vector3, reach: float) -> int:
+	var best := -1
+	var best_d := reach * reach
+	for i in _items.size():
+		if not _items[i].visible:
+			continue
+		var p := _items[i].position
+		var d := (p.x - at.x) * (p.x - at.x) + (p.z - at.z) * (p.z - at.z)
+		if d < best_d:
+			best_d = d
+			best = i
+	return best
+
+
+## True while piece i is still there to pick.
+func has(i: int) -> bool:
+	return i >= 0 and i < _items.size() and _items[i].visible
+
+
+func spot(i: int) -> Vector3:
+	return _items[i].position
+
+
+## Somebody other than the player picks piece i; false if it was gone.
+func take(i: int) -> bool:
+	if i < 0 or not _items[i].visible:
+		return false
+	_items[i].visible = false
+	_gone[i] = REGROW
+	return true
+
+
 ## Hands over everything carried, returning how much.
 func drop_all() -> int:
 	var count := carried

@@ -25,6 +25,13 @@ func is_active() -> bool:
 	return _touch_index != -1
 
 
+## Lets go of the stick (when the controls are switched off under a finger).
+func release() -> void:
+	_touch_index = -1
+	output = Vector2.ZERO
+	queue_redraw()
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch

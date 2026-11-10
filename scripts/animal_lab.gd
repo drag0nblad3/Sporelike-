@@ -6,10 +6,14 @@ extends Node3D
 ## (AnimalEditor, built by AnimalBuilder) and the land goals (LandGoals:
 ## food, nest and eggs, landmarks that unlock parts) and LandGenerations:
 ## when a generation's clock runs out, the eggs become changes in the
-## customizer and the new body hatches at the nest. Used from the title
+## customizer and the new body hatches at the nest, with kin (LandFamily)
+## who follow the player; with enough kin a village can be founded, which
+## starts stage 4. Used from the title
 ## screen's Test stage 3 and by the screenshot tour.
 
 signal back_requested
+## The player founded a village at the nest: stage 4 starts (VillageLab).
+signal village_founded(body: AnimalBody, recipe: AnimalRecipe, at: Vector3, kin: int)
 
 const SKY := Color(0.62, 0.77, 0.88)
 
@@ -18,6 +22,7 @@ var camera := ChaseCamera.new()
 var hud := AnimalLabHud.new()
 var goals := LandGoals.new()
 var generations := LandGenerations.new()
+var family := LandFamily.new()
 var rng := RandomNumberGenerator.new()
 ## When not zero, steers instead of the player, in screen terms like the
 ## joystick (the screenshot tour).
@@ -26,12 +31,19 @@ var autopilot := Vector2.ZERO
 
 func _ready() -> void:
 	rng.randomize()
-	add_child(_environment())
-	add_child(_sun())
+	var world := WorldEnvironment.new()
+	world.environment = environment()
+	add_child(world)
+	add_child(sun())
 	add_child(LandTerrain.new())
 	add_child(LandScatter.new())
 	add_child(goals)
 	add_child(generations)
+	add_child(family)
+	family.notice.connect(func(text: String) -> void: hud.flash(text))
+	hud.call_pressed.connect(family.call_kin)
+	hud.found_pressed.connect(func() -> void:
+		village_founded.emit(animal.body, hud.editor.recipe, goals.nest.position, family.kin.size()))
 	generations.ended.connect(_on_generation_ended)
 	hud.evolve_finished.connect(_hatch)
 	goals.notice.connect(func(text: String) -> void: hud.flash(text))
@@ -80,6 +92,7 @@ func _physics_process(delta: float) -> void:
 	var dir := right * stick.x - ahead * stick.y
 	animal.move_input = Vector2(dir.x, dir.z)
 	goals.step(animal, delta)
+	family.step(animal, delta)
 
 
 func _process(delta: float) -> void:
@@ -87,7 +100,9 @@ func _process(delta: float) -> void:
 		return
 	camera.showcase = hud.editor.visible
 	camera.follow(animal.focus(), animal.heading, animal.body.radii[0], delta)
-	hud.show_status(animal.body, generations.text() + "\n" + goals.status_text(animal.focus()))
+	hud.show_status(animal.body, "%s  ·  Kin %d/%d\n%s" % [generations.text(), family.kin.size(),
+		LandFamily.FOUND, goals.status_text(animal.focus())])
+	hud.show_found(family.ready_to_found(animal.focus(), goals.nest))
 
 
 func _on_generation_ended(number: int) -> void:
@@ -101,12 +116,14 @@ func _on_generation_ended(number: int) -> void:
 ## The evolved body hatches at the nest and the next generation starts.
 func _hatch() -> void:
 	set_body(AnimalBuilder.build(hud.editor.recipe), goals.nest.position)
+	var kin := family.hatch(goals.nest.eggs, animal.body, goals.nest.position)
 	goals.new_generation()
 	generations.begin_next()
-	hud.flash("Generation %d hatches from the nest" % generations.number)
+	hud.flash("Generation %d hatches from the nest, with %d new kin" % [generations.number, kin])
 
 
-func _environment() -> WorldEnvironment:
+## The open sky and haze of the land stages.
+static func environment() -> Environment:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = SKY
@@ -116,14 +133,12 @@ func _environment() -> WorldEnvironment:
 	env.fog_enabled = true
 	env.fog_light_color = SKY
 	env.fog_density = 0.012
-	var node := WorldEnvironment.new()
-	node.environment = env
-	return node
+	return env
 
 
-func _sun() -> DirectionalLight3D:
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50.0, 35.0, 0.0)
-	sun.light_color = Color(1.0, 0.95, 0.85)
-	sun.light_energy = 1.1
-	return sun
+static func sun() -> DirectionalLight3D:
+	var light := DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-50.0, 35.0, 0.0)
+	light.light_color = Color(1.0, 0.95, 0.85)
+	light.light_energy = 1.1
+	return light

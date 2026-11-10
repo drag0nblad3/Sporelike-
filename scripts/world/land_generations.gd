@@ -12,6 +12,8 @@ const LENGTH := 180.0
 const BASE_PICKS := 1
 const MAX_PICKS := 6
 
+## Seconds per generation (the village of stage 4 runs longer ones).
+var length := LENGTH
 var number := 1
 var time_left := LENGTH
 var running := true
@@ -39,7 +41,7 @@ func end_now() -> void:
 ## The next generation's clock starts.
 func begin_next() -> void:
 	number += 1
-	time_left = LENGTH
+	time_left = length
 	running = true
 
 
